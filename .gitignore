@@ -1,0 +1,128 @@
+# ===================================
+# TIFFIN SERVICE MONOREPO .GITIGNORE
+# ===================================
+
+# Node.js Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Package manager lock files (keep one based on preference)
+# package-lock.json  # Uncomment if using yarn or pnpm
+# yarn.lock         # Uncomment if using npm or pnpm
+# pnpm-lock.yaml    # Uncomment if using npm or yarn
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build Outputs
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+
+# Runtime Data
+pids/
+*.pid
+*.seed
+*.pid.lock
+*.log
+
+# Cache directories
+.npm/
+.yarn/
+.pnpm/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+jest_0/
+
+# Debugging
+.vscode/launch.json
+chrome-user-data/
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Client Specific
+client/dist/
+client/build/
+client/.vite/
+client/storybook-static/
+
+# Server Specific
+server/dist/
+server/build/
+server/uploads/*
+!server/uploads/.gitkeep
+server/logs/
+server/.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary Files
+tmp/
+temp/
+.tmp/
+
+# Monorepo specific
+.rush/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Miscellaneous
+*.tgz
+*.tar.gz
+.docker/
+
+# Local configuration files
+config/local.json
+config/local.js

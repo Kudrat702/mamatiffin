@@ -1,0 +1,101 @@
+{
+  "name": "tiffin-service-monorepo",
+  "version": "1.0.0",
+  "description": "Tiffin Service Fullstack Application - React + Vite Frontend & Node.js + Express Backend",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\" --kill-others-on-fail",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev:server:watch": "cd server && npm run dev:watch",
+    
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    
+    "start": "npm run start:server",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run preview",
+    "start:both": "concurrently \"npm run start:server\" \"npm run start:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
+    
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    
+    "lint": "npm run lint:server && npm run lint:client",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "lint:fix": "npm run lint:fix:server && npm run lint:fix:client",
+    "lint:fix:server": "cd server && npm run lint:fix",
+    "lint:fix:client": "cd client && npm run lint:fix",
+    
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:server": "cd server && npm run format",
+    "format:client": "cd client && npm run format || echo 'Format script not configured in client'",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    
+    "test": "npm run test:server",
+    "test:server": "cd server && npm run test",
+    "test:client": "cd client && npm run test || echo 'Tests not configured in client'",
+    "test:coverage": "cd server && npm run test:coverage",
+    
+    "type-check": "npm run type-check:server && npm run type-check:client",
+    "type-check:server": "cd server && npm run type-check",
+    "type-check:client": "cd client && tsc --noEmit",
+    
+    "clean": "npm run clean:deps && npm run clean:builds",
+    "clean:deps": "rimraf node_modules client/node_modules server/node_modules",
+    "clean:builds": "rimraf client/dist server/dist",
+    "clean:cache": "rimraf client/.vite server/.tsbuildinfo client/node_modules/.cache server/node_modules/.cache",
+    "clean:all": "npm run clean && rimraf package-lock.json client/package-lock.json server/package-lock.json",
+    
+    "reset": "npm run clean:all && npm run install:all",
+    "fresh": "npm run clean:all && npm install && npm run install:all && npm run dev",
+    
+    "db:seed": "cd server && npm run db:seed",
+    "db:backup": "cd server && npm run db:backup",
+    "migration": "cd server && npm run migration:fixIndexes",
+    
+    "health": "curl -f http://localhost:3000/api/health || echo 'Server not responding'",
+    "health-check": "npm run health",
+    
+    "docker:build": "docker build -t tiffin-service .",
+    "docker:run": "docker run -p 3000:3000 -p 5173:5173 tiffin-service",
+    "docker:stop": "docker stop $(docker ps -q --filter ancestor=tiffin-service)",
+    
+    "postinstall": "echo '\n✅ Root dependencies installed!\n💡 Run: npm run install:all (to install client & server deps)\n🚀 Then: npm run dev (to start development)\n'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tiffin-service-monorepo.git"
+  },
+  "keywords": [
+    "tiffin-service",
+    "food-delivery",
+    "react",
+    "vite",
+    "express",
+    "typescript",
+    "mongodb",
+    "fullstack",
+    "monorepo"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/tiffin-service-monorepo/issues"
+  },
+  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme"
+}

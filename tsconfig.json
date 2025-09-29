@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2020", // Updated for better modern JS support
+    "module": "commonjs",
+    "rootDir": "./",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node", // Added for better Node.js compatibility
+    "resolveJsonModule": true,  // Allow importing JSON files
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
