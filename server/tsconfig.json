@@ -52,7 +52,10 @@
    
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": [
     "**/*.ts",
