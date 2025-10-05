@@ -36,7 +36,6 @@
     "health-check": "curl -f http://localhost:3000/api/health || echo 'Server not running'"
   },
   "dependencies": {
-    "@types/node": "^24.6.2",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
@@ -61,6 +60,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/node": "^24.6.2",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.8.1",
