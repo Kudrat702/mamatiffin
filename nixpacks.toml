@@ -1,19 +1,90 @@
-[phases.setup]
-nixPkgs = ["nodejs-18_x"]
+# Nixpacks Configuration for Tiffin Service Monorepo
+# Optimized for Railway/Nixpacks Deployment
+# Node.js + Express Backend & React + Vite Frontend
 
+# ============================================
+# SETUP PHASE - Node.js Installation
+# ============================================
+[phases.setup]
+# Using Node 22.x to match local development (v22.14.0)
+# and satisfy package requirements (Node 20 || >=22)
+nixPkgs = ["nodejs-22_x"]
+
+# ============================================
+# INSTALL PHASE - Dependencies Installation
+# ============================================
 [phases.install]
 cmds = [
-  "npm ci",
-  "cd server && npm ci",
-  "cd ../client && npm ci",
-  "cd .."
+  # Clean up cache folders to prevent EBUSY errors
+  "echo '🧹 Cleaning cache folders...'",
+  "rm -rf node_modules/.cache || true",
+  "rm -rf .npm/_cacache || true",
+  
+  # Install root dependencies (production only)
+  "echo '📦 Installing root dependencies...'",
+  "npm ci --omit=dev --prefer-offline --no-audit",
+  
+  # Install server dependencies
+  "echo '📦 Installing server dependencies...'",
+  "cd server",
+  "rm -rf node_modules/.cache || true",
+  "npm ci --omit=dev --prefer-offline --no-audit",
+  "cd ..",
+  
+  # Install client dependencies
+  "echo '📦 Installing client dependencies...'",
+  "cd client",
+  "rm -rf node_modules/.cache || true",
+  "npm ci --omit=dev --prefer-offline --no-audit",
+  "cd ..",
+  
+  "echo '✅ All dependencies installed successfully!'"
 ]
 
+# ============================================
+# BUILD PHASE - Compile TypeScript & Build Assets
+# ============================================
 [phases.build]
 cmds = [
+  # Build server (TypeScript compilation)
+  "echo '🔨 Building server (TypeScript → JavaScript)...'",
   "npm run build:server",
-  "npm run build:client"
+  
+  # Build client (Vite/React production build)
+  "echo '🔨 Building client (Vite production build)...'",
+  "npm run build:client",
+  
+  # Verify build outputs
+  "echo '🔍 Verifying build outputs...'",
+  "ls -la server/dist || echo '⚠️  Server dist not found'",
+  "ls -la client/dist || echo '⚠️  Client dist not found'",
+  
+  "echo '✅ Build completed successfully!'"
 ]
 
+# ============================================
+# START PHASE - Run Production Server
+# ============================================
 [start]
 cmd = "npm run start:server"
+
+# ============================================
+# VARIABLES (Optional - Environment Configuration)
+# ============================================
+[variables]
+NODE_ENV = "production"
+PORT = "3000"
+
+# ============================================
+# STATIC ASSETS (Optional - For Client Build)
+# ============================================
+# Uncomment if you want to serve client static files
+# [staticAssets]
+# output = "client/dist"
+
+# ============================================
+# HEALTH CHECK (Optional)
+# ============================================
+# [healthcheck]
+# path = "/api/health"
+# interval = 30

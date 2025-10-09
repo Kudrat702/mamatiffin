@@ -61,9 +61,6 @@
     "health-check": "npm run health",
     "postinstall": "echo '\n✅ Root dependencies installed!\n💡 Run: npm run install:all (to install client & server deps)\n🚀 Then: npm run dev (to start development)\n'"
   },
-  "dependencies": {
-    "rimraf": "^6.0.1"
-  },
   "devDependencies": {
     "@types/node": "^24.6.2",
     "concurrently": "^8.2.2",
@@ -90,5 +87,8 @@
   "bugs": {
     "url": "https://github.com/yourusername/tiffin-service-monorepo/issues"
   },
-  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme"
+  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme",
+  "dependencies": {
+    "rimraf": "^5.0.10"
+  }
 }
