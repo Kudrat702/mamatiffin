@@ -72,7 +72,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/tiffin-service-monorepo.git"
+    "url": "https://github.com/Kudrat702/mamatiffin"
   },
   "keywords": [
     "tiffin-service",
@@ -85,7 +85,7 @@
     "fullstack",
     "monorepo"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Mohammad Kudratullah <mdkudratullah55@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/yourusername/tiffin-service-monorepo/issues"
