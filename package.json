@@ -62,10 +62,13 @@
     "postinstall": "echo '\n✅ Root dependencies installed!\n💡 Run: npm run install:all (to install client & server deps)\n🚀 Then: npm run dev (to start development)\n'"
   },
   "devDependencies": {
-    "@types/node": "^24.6.2",
-    "concurrently": "^8.2.2",
-    "prettier": "^3.3.3",
-    "typescript": "^5.6.3"
+    "@types/node": "24.6.2",
+    "concurrently": "8.2.2",
+    "prettier": "3.6.2",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "rimraf": "5.0.10"
   },
   "repository": {
     "type": "git",
@@ -87,8 +90,5 @@
   "bugs": {
     "url": "https://github.com/yourusername/tiffin-service-monorepo/issues"
   },
-  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme",
-  "dependencies": {
-    "rimraf": "^5.0.10"
-  }
+  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme"
 }

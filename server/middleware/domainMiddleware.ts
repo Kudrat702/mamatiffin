@@ -182,6 +182,7 @@ export const healthEndpoint = (req: Request, res: Response): void => {
 };
 
 // CORS CONFIGURATION FOR DIFFERENT DOMAINS
+// CORS CONFIGURATION FOR DIFFERENT DOMAINS
 export const corsConfig = {
   origin: (origin: string | undefined, callback: Function) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
@@ -191,11 +192,18 @@ export const corsConfig = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://admin.localhost:5173',  // ✅ ADD THIS
       'https://mamatiffin.com',
       'https://www.mamatiffin.com',
       'https://admin.mamatiffin.com',
-      // Add your production domains here
     ];
+    
+    // Development mode: Allow all localhost subdomains
+    if (process.env.NODE_ENV === 'development' && origin) {
+      if (origin.includes('localhost')) {
+        return callback(null, true);
+      }
+    }
     
     // Check if origin is allowed
     if (allowedOrigins.includes(origin)) {
