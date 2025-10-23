@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../src/configapi/api';
-import { SliderImage, SliderImageResponse } from '../src/types/slider';
+import type { SliderImage, SliderImageResponse } from '../src/types/slider';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

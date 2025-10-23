@@ -1,4 +1,4 @@
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 // ✅ DYNAMIC API BASE URL - NO EXTERNAL IMPORT NEEDED
 const getApiBaseUrl = (): string => {

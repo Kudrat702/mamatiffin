@@ -1,4 +1,4 @@
-import { API_BASE } from '../../../services/paymentApi';
+import { API_BASE } from '../../configapi/api' ;
 
 export async function login(phone: string, password: string) {
   const res = await fetch(`${API_BASE}/auth/login`, {

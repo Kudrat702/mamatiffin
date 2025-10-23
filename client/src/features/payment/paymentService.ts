@@ -1,5 +1,5 @@
 // src/features/payment/paymentService.ts
-import { postAuthJSON } from '../../../services/paymentApi';
+import { postAuthJSON } from '../../configapi/api';
 
 type Delivery = {
   district: string;

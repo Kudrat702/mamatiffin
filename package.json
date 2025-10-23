@@ -14,22 +14,22 @@
     "dev:client": "cd client && npm run dev",
     "dev:server:watch": "cd server && npm run dev:watch",
     "build": "npm run install:deps && npm run build:compile",
-    "install:deps": "npm ci && cd server && npm ci && cd ../client && npm ci && cd ..",
+    "install:deps": "cd server && npm install && cd ../client && npm install && cd ..",
     "build:compile": "cd server && npm run build && cd ../client && npm run build && cd ..",
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
     "build:prod": "npm run prebuild && npm run build && npm run install:prod",
-    "install:prod": "cd server && npm ci --omit=dev && cd ../client && npm ci --omit=dev && cd ..",
+    "install:prod": "cd server && npm install --omit=dev && cd ../client && npm install --omit=dev && cd ..",
     "start": "npm run start:server",
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm run preview",
     "start:both": "concurrently \"npm run start:server\" \"npm run start:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "install:all:prod": "npm ci --omit=dev && cd client && npm ci --omit=dev && cd ../server && npm ci --omit=dev",
+    "install:all:prod": "npm install --omit=dev && cd client && npm install --omit=dev && cd ../server && npm install --omit=dev",
     "install:server": "cd server && npm install",
-    "install:server:prod": "cd server && npm ci --omit=dev",
+    "install:server:prod": "cd server && npm install --omit=dev",
     "install:client": "cd client && npm install",
-    "install:client:prod": "cd client && npm ci --omit=dev",
+    "install:client:prod": "cd client && npm install --omit=dev",
     "lint": "npm run lint:server && npm run lint:client",
     "lint:server": "cd server && npm run lint",
     "lint:client": "cd client && npm run lint",
@@ -50,7 +50,7 @@
     "clean": "npm run clean:deps && npm run clean:builds",
     "clean:deps": "rimraf node_modules client/node_modules server/node_modules",
     "clean:builds": "rimraf client/dist server/dist",
-    "clean:cache": "rimraf client/.vite server/.tsbuildinfo client/node_modules/.cache server/node_modules/.cache",
+    "clean:cache": "rimraf client/.vite server/.tsbuildinfo client/node_modules/.cache server/node_modules/.cache node_modules/.cache",
     "clean:all": "npm run clean && rimraf package-lock.json client/package-lock.json server/package-lock.json",
     "reset": "npm run clean:all && npm run install:all",
     "fresh": "npm run clean:all && npm install && npm run install:all && npm run dev",
@@ -88,7 +88,7 @@
   "author": "Mohammad Kudratullah <mdkudratullah55@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yourusername/tiffin-service-monorepo/issues"
+    "url": "https://github.com/Kudrat702/mamatiffin/issues"
   },
-  "homepage": "https://github.com/yourusername/tiffin-service-monorepo#readme"
+  "homepage": "https://github.com/Kudrat702/mamatiffin#readme"
 }
