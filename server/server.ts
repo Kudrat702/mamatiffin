@@ -475,7 +475,7 @@ import { configureMiddleware } from './middleware/appMiddleware';
 
 dotenv.config();
 
-const port: number = 3000;
+const port: number = parseInt(process.env.PORT || '3000', 10);
 const app: Express = express();
 
 // Environment check
@@ -512,9 +512,6 @@ app.use(cors({
     
     // Production: Strict whitelist
     const allowedOrigins = [
-      'https://yourdomain.com',
-      'https://admin.yourdomain.com',
-      'https://www.yourdomain.com',
       'https://mamatiffin.com',
       'https://admin.mamatiffin.com'
     ];
@@ -720,7 +717,7 @@ process.on('SIGINT', () => {
 });
 
 // START SERVER
-app.listen(port, (): void => {
+app.listen(port, '0.0.0.0', (): void => {
   console.log('\n🎉 SERVER STARTED SUCCESSFULLY!');
   console.log('--------------------------------------------------');
   console.log(`🚀 Server: http://localhost:${port}`);
@@ -729,6 +726,8 @@ app.listen(port, (): void => {
   console.log(`📖 API Docs: http://localhost:${port}/api`);
   console.log('--------------------------------------------------');
   console.log(`✅ Environment: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
+  console.log(`✅ Port: ${port} (Railway assigned or default)`);
+  console.log(`✅ Listening on: 0.0.0.0:${port}`);
   console.log('✅ Subdomain CORS support enabled');
   console.log('✅ All routes registered successfully');
 });
