@@ -12,7 +12,7 @@
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node server.ts",
     "dev:watch": "nodemon --watch '**/*.ts' --exec ts-node server.ts",
-    "build": "rimraf dist && tsc && tsc-alias",
+    "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
     "postbuild": "echo 'Build completed successfully for deployment'",
     "predeploy": "npm run build && npm run type-check",
@@ -32,7 +32,7 @@
     "db:seed": "ts-node scripts/seed.ts",
     "db:backup": "ts-node scripts/backup.ts",
     "logs:clear": "rimraf logs/*.log",
-    "install:production": "npm ci --omit=dev",
+    "install:production": "npm install --omit=dev",
     "health-check": "curl -f http://localhost:3000/api/health || echo 'Server not running'"
   },
   "dependencies": {
