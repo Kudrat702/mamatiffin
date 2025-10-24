@@ -4,7 +4,7 @@ import type { SliderImage, SliderImageResponse } from '../src/types/slider';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 // Request interceptor
