@@ -1025,13 +1025,28 @@ app.get('/api/health', healthEndpoint);
 
 // CORS TEST ENDPOINT
 app.get('/api/test-cors', (req: Request, res: Response): void => {
+  const origin = (req.headers.origin || '') as string;
+  const allowed = getAllowedOrigins();
+
+  // Normalize allowed origins to include both with/without trailing slash
+  const normalizedAllowed = Array.from(new Set([
+    ...allowed,
+    ...allowed.map(o => o.replace(/\/+$/, '')),
+    ...allowed.map(o => o.endsWith('/') ? o : `${o}/`)
+  ])).sort();
+
+  const originNormalized = origin.replace(/\/+$/, '');
+  const isOriginAllowed = !origin || normalizedAllowed.includes(origin) || normalizedAllowed.includes(originNormalized);
+
   res.json({
     success: true,
     message: 'CORS is working correctly!',
     debug: {
-      origin: req.headers.origin,
-      host: req.headers.host,
-      allowedOrigins: getAllowedOrigins(),
+      origin: origin || null,
+      originNormalized: originNormalized || null,
+      host: req.headers.host || null,
+      allowedOrigins: normalizedAllowed,
+      isOriginAllowed,
       environment: isDevelopment ? 'development' : 'production',
       timestamp: new Date().toISOString()
     }

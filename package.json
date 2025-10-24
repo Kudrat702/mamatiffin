@@ -68,6 +68,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "rimraf": "5.0.10"
   },
   "repository": {
