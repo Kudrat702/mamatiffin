@@ -9,9 +9,9 @@
     "npm": ">=8.x"
   },
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "ts-node dist/server.ts",
     "dev": "nodemon --exec ts-node server.ts",
-    "start:server": "node dist/server.ts",
+    "start:server": "ts-node dist/server.ts",
     "dev:watch": "nodemon --watch '**/*.ts' --exec ts-node server.ts",
     "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
@@ -34,7 +34,7 @@
     "db:backup": "ts-node scripts/backup.ts",
     "logs:clear": "rimraf logs/*.log",
     "install:production": "npm install --omit=dev",
-    "health-check": "curl -f http://localhost:3000/api/health || echo 'Server not running'"
+    "health-check": "curl -f https://mamatiffin-production.up.railway.app/api/health || echo 'Server not running'"
   },
   "dependencies": {
     "axios": "1.7.7",

@@ -57,7 +57,7 @@
     "db:seed": "cd server && npm run db:seed",
     "db:backup": "cd server && npm run db:backup",
     "migration": "cd server && npm run migration:fixIndexes",
-    "health": "curl -f http://localhost:3000/api/health || echo 'Server not responding'",
+    "health": "curl -f https://mamatiffin-production.up.railway.app/api/health || echo 'Server not responding'",
     "health-check": "npm run health",
     "postinstall": "echo '\n✅ Root dependencies installed!\n💡 Run: npm run install:all (to install client & server deps)\n🚀 Then: npm run dev (to start development)\n'"
   },
