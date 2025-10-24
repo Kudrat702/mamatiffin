@@ -951,41 +951,63 @@ const getAllowedOrigins = (): string[] => {
       'http://localhost:3000'
     ];
   } else {
-    // ⚠️ IMPORTANT: Replace with your actual Vercel URLs
-    return [
+    // ✅ PRODUCTION - Explicit origins (NO environment variables dependency)
+    const origins = [
       'https://mamatiffin.vercel.app',
       'https://admin-mamatiffin.vercel.app',
-      process.env.CLIENT_URL,
-      process.env.ADMIN_URL,
-      process.env.FRONTEND_URL
-    ].filter(Boolean) as string[]; // Remove undefined values
+      'https://www.mamatiffin.vercel.app',
+    ];
+
+    console.log('🔒 Production CORS Origins:', origins);
+    return origins;
   }
 };
+
+// server.ts - CORS section ko ye version se replace karo
 
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = getAllowedOrigins();
     
-    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    console.log('🔍 CORS Check:', {
+      requestOrigin: origin || 'no-origin',
+      allowedOrigins,
+      isDevelopment
+    });
+    
+    // Allow requests with no origin (Postman, mobile apps, curl)
     if (!origin) {
+      console.log('✅ No origin header - allowing');
       return callback(null, true);
     }
     
-    // Development: Allow all localhost variations
-    if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
-      console.log('✅ CORS allowed (dev):', origin);
-      return callback(null, true);
+    // Normalize origins (remove trailing slashes)
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowed = allowedOrigins.map(o => o.replace(/\/$/, ''));
+    
+    // Development: Allow all localhost
+    if (isDevelopment) {
+      if (normalizedOrigin.includes('localhost') || normalizedOrigin.includes('127.0.0.1')) {
+        console.log('✅ Dev origin allowed:', origin);
+        return callback(null, true);
+      }
     }
     
     // Production: Check whitelist
-    if (allowedOrigins.includes(origin)) {
-      console.log('✅ CORS allowed:', origin);
+    if (normalizedAllowed.includes(normalizedOrigin)) {
+      console.log('✅ Origin allowed:', origin);
       return callback(null, true);
     }
     
-    console.warn('⚠️ CORS blocked origin:', origin);
-    console.warn('Allowed origins:', allowedOrigins);
-    return callback(new Error('Not allowed by CORS policy'));
+    // BLOCKED
+    console.error('❌ CORS BLOCKED:', {
+      origin,
+      normalizedOrigin,
+      allowedOrigins: normalizedAllowed,
+      timestamp: new Date().toISOString()
+    });
+    
+    callback(new Error('Not allowed by CORS policy'));
   },
   credentials: true,
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -996,15 +1018,17 @@ app.use(cors({
     'Accept', 
     'Authorization', 
     'x-access-token',
-    'Cache-Control'
+    'Cache-Control',
+    'X-CSRF-Token'
   ],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range', 'Set-Cookie'],
   maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 204, // Some legacy browsers choke on 200
+  preflightContinue: false
 }));
 
-console.log('✅ CORS setup complete');
-console.log('📋 Allowed origins:', getAllowedOrigins());
+console.log('✅ CORS Configuration Complete');
+console.log('📋 Allowed Origins:', getAllowedOrigins());
 
 // DATABASE CONNECTION
 console.log('🗄️ Connecting to database...');
