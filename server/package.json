@@ -11,6 +11,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node server.ts",
+    "start:server": "node dist/server.ts",
     "dev:watch": "nodemon --watch '**/*.ts' --exec ts-node server.ts",
     "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
