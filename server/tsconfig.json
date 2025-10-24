@@ -59,8 +59,7 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.d.ts",
-    "server/**/*"
+    "**/*.d.ts"
 
   ],
   "exclude": [

@@ -2,15 +2,15 @@
   "name": "tiffin-service-backend",
   "version": "1.0.0",
   "description": "Tiffin Service Backend API",
-  "main": "dist/server/server.js",
+  "main": "dist/server.js",
   "type": "commonjs",
   "engines": {
     "node": ">=18.x",
     "npm": ">=8.x"
   },
   "scripts": {
-    "start": "node dist/server/server.js",
-    "dev": "nodemon --exec ts-node server/server.ts",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec ts-node server.ts",
     "dev:watch": "nodemon --watch '**/*.ts' --exec ts-node server.ts",
     "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
