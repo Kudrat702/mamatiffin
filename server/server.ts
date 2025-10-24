@@ -442,7 +442,7 @@
 
 // export default app;
 
-// server.ts - FIXED CORS CONFIGURATION
+// server.ts - PRODUCTION READY VERSION
 import express, { Express, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
@@ -488,39 +488,59 @@ console.log('🔧 Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
 // ✅ APPLY SECURITY MIDDLEWARE FIRST
 configureMiddleware(app);
 
-// TRUST PROXY for production
+// ✅ TRUST PROXY - CRITICAL FOR RAILWAY/PRODUCTION
 if (isProduction) {
   app.set('trust proxy', 1);
   console.log('✅ Trust proxy enabled for production');
 }
 
-// ✅ ENHANCED CORS CONFIGURATION - FIXED FOR SUBDOMAIN SUPPORT
+// ✅ PRODUCTION-READY CORS CONFIGURATION
 console.log('🔧 Setting up CORS...');
+
+const getAllowedOrigins = (): string[] => {
+  if (isDevelopment) {
+    return [
+      'http://localhost:5173',
+      'http://admin.localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://admin.127.0.0.1:5173',
+      'http://localhost:3000'
+    ];
+  } else {
+    // ⚠️ IMPORTANT: Replace with your actual Vercel URLs
+    return [
+      'https://mamatiffin.vercel.app',
+      'https://admin-mamatiffin.vercel.app',
+      process.env.CLIENT_URL,
+      process.env.ADMIN_URL,
+      process.env.FRONTEND_URL
+    ].filter(Boolean) as string[]; // Remove undefined values
+  }
+};
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, postman, curl)
+    const allowedOrigins = getAllowedOrigins();
+    
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
     if (!origin) {
       return callback(null, true);
     }
     
-    // Development: Allow all localhost and subdomains
-    if (isDevelopment) {
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return callback(null, true);
-      }
-    }
-    
-    // Production: Strict whitelist
-    const allowedOrigins = [
-      'https://mamatiffin.com',
-      'https://admin.mamatiffin.com'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
+    // Development: Allow all localhost variations
+    if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+      console.log('✅ CORS allowed (dev):', origin);
       return callback(null, true);
     }
     
-    console.warn(`⚠️ CORS blocked origin: ${origin}`);
+    // Production: Check whitelist
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed:', origin);
+      return callback(null, true);
+    }
+    
+    console.warn('⚠️ CORS blocked origin:', origin);
+    console.warn('Allowed origins:', allowedOrigins);
     return callback(new Error('Not allowed by CORS policy'));
   },
   credentials: true,
@@ -534,10 +554,13 @@ app.use(cors({
     'x-access-token',
     'Cache-Control'
   ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 86400, // 24 hours
   optionsSuccessStatus: 200
 }));
-console.log('✅ CORS setup complete - Subdomain support enabled');
+
+console.log('✅ CORS setup complete');
+console.log('📋 Allowed origins:', getAllowedOrigins());
 
 // DATABASE CONNECTION
 console.log('🗄️ Connecting to database...');
@@ -546,10 +569,13 @@ connectDB();
 // STATIC FILES SERVING
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1d',
-  etag: true
+  etag: true,
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
 }));
 
-// BASIC HEALTH AND CONFIG ENDPOINTS (No domain middleware needed)
+// BASIC HEALTH AND CONFIG ENDPOINTS
 app.get('/api/config', configEndpoint);
 app.get('/api/health', healthEndpoint);
 
@@ -561,16 +587,17 @@ app.get('/api/test-cors', (req: Request, res: Response): void => {
     debug: {
       origin: req.headers.origin,
       host: req.headers.host,
-      isLocalhost: req.headers.origin?.includes('localhost') || false,
+      allowedOrigins: getAllowedOrigins(),
+      environment: isDevelopment ? 'development' : 'production',
       timestamp: new Date().toISOString()
     }
   });
 });
 
-// ✅ ROUTES SETUP
+// ✅ ROUTES SETUP - PROPER ORDER
 console.log('🛣️ Setting up application routes...');
 
-// ORDER ROUTES
+// ORDER ROUTES - Highest priority
 console.log('📦 Setting up order routes...');
 app.use('/api/orders', adminOrderRoutes);
 console.log('✅ Order routes registered');
@@ -601,7 +628,7 @@ app.use('/api/veg/catalog', vegCatalogRoutes);
 app.use('/api/non-veg/catalog', nonVegCatalogRoutes);
 console.log('✅ Catalog routes registered');
 
-// ADMIN AUTH ROUTES - Apply domain middleware
+// ADMIN AUTH ROUTES
 console.log('🔐 Setting up admin auth routes...');
 app.use('/admin-auth', domainMiddleware, adminAuthRoutes);
 console.log('✅ Admin auth routes registered');
@@ -622,7 +649,7 @@ app.use('/api/locations', locationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/slider', sliderRoutes);
 
-// MENU ROUTES - MUST BE LAST
+// MENU ROUTES - MUST BE LAST (most generic)
 console.log('📋 Setting up menu routes...');
 app.use('/api', menuRoutes);
 console.log('✅ Menu routes registered');
@@ -636,10 +663,27 @@ app.get('/api', (req: Request, res: Response): void => {
     message: 'Mama Tiffin API Server',
     version: '2.0.0',
     environment: isDevelopment ? 'development' : 'production',
+    server: {
+      port: port,
+      host: req.headers.host,
+      protocol: req.protocol
+    },
     cors: {
       enabled: true,
       origin: req.headers.origin,
-      subdomainSupport: isDevelopment ? 'enabled' : 'production-only'
+      allowedOrigins: getAllowedOrigins()
+    },
+    endpoints: {
+      health: '/api/health',
+      config: '/api/config',
+      testCors: '/api/test-cors',
+      orders: '/api/orders',
+      payments: '/api/payments',
+      messages: '/api/messages',
+      user: '/api/user',
+      auth: '/api/auth',
+      slider: '/api/slider',
+      locations: '/api/locations'
     },
     timestamp: new Date().toISOString()
   });
@@ -648,11 +692,13 @@ app.get('/api', (req: Request, res: Response): void => {
 // ERROR HANDLING MIDDLEWARE
 app.use((error: any, req: Request, res: Response, _next: NextFunction): void => {
   const timestamp = new Date().toISOString();
+  
   console.error(`[${timestamp}] Server Error:`, {
     message: error.message,
     url: req.url,
     method: req.method,
-    origin: req.headers.origin
+    origin: req.headers.origin,
+    stack: isDevelopment ? error.stack : undefined
   });
   
   // CORS Error
@@ -662,9 +708,10 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       message: 'CORS policy violation',
       error: 'CORS_ORIGIN_NOT_ALLOWED',
       origin: req.headers.origin,
+      allowedOrigins: getAllowedOrigins(),
       hint: isDevelopment 
-        ? 'All localhost subdomains should be allowed in development' 
-        : 'Contact administrator to whitelist your domain'
+        ? 'All localhost should be allowed in development' 
+        : 'Your domain is not whitelisted. Contact administrator.'
     });
     return;
   }
@@ -679,6 +726,35 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       });
       return;
     }
+    
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      res.status(400).json({
+        success: false,
+        message: 'Too many files. Maximum 10 files allowed.',
+        error: 'FILE_COUNT_LIMIT_EXCEEDED'
+      });
+      return;
+    }
+  }
+
+  // JSON Syntax Errors
+  if (error instanceof SyntaxError && 'body' in error) {
+    res.status(400).json({
+      success: false,
+      message: 'Invalid JSON format',
+      error: 'INVALID_JSON_SYNTAX'
+    });
+    return;
+  }
+
+  // Database Errors
+  if (error.name === 'MongoError' || error.name === 'MongooseError') {
+    res.status(503).json({
+      success: false,
+      message: 'Database connection error',
+      error: 'DATABASE_ERROR'
+    });
+    return;
   }
 
   // Generic Server Error
@@ -691,7 +767,7 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
   });
 });
 
-// 404 HANDLER
+// 404 HANDLER - Route not found
 app.use((req: Request, res: Response): void => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
   
@@ -701,11 +777,16 @@ app.use((req: Request, res: Response): void => {
     error: 'ROUTE_NOT_FOUND',
     path: req.path,
     method: req.method,
+    suggestions: [
+      'Check /api for documentation',
+      'Verify HTTP method',
+      'Ensure correct URL format'
+    ],
     timestamp: new Date().toISOString()
   });
 });
 
-// GRACEFUL SHUTDOWN
+// GRACEFUL SHUTDOWN HANDLING
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received. Shutting down gracefully...');
   process.exit(0);
@@ -716,20 +797,34 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// START SERVER
+process.on('uncaughtException', (error) => {
+  console.error('🔥 Uncaught Exception:', error);
+  if (isProduction) {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🔥 Unhandled Rejection at:', promise, 'reason:', reason);
+  if (isProduction) {
+    process.exit(1);
+  }
+});
+
+// ✅ START SERVER - RAILWAY COMPATIBLE
 app.listen(port, '0.0.0.0', (): void => {
   console.log('\n🎉 SERVER STARTED SUCCESSFULLY!');
   console.log('--------------------------------------------------');
-  console.log(`🚀 Server: http://localhost:${port}`);
-  console.log(`🌐 User Site: http://localhost:5173`);
-  console.log(`👑 Admin Site: http://admin.localhost:5173`);
-  console.log(`📖 API Docs: http://localhost:${port}/api`);
+  console.log(`🚀 Server: http://0.0.0.0:${port}`);
+  console.log(`📖 API Docs: http://0.0.0.0:${port}/api`);
   console.log('--------------------------------------------------');
   console.log(`✅ Environment: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
-  console.log(`✅ Port: ${port} (Railway assigned or default)`);
-  console.log(`✅ Listening on: 0.0.0.0:${port}`);
-  console.log('✅ Subdomain CORS support enabled');
+  console.log(`✅ Port: ${port} ${isProduction ? '(Railway assigned)' : '(Local)'}`);
+  console.log(`✅ Host: 0.0.0.0 (All interfaces)`);
+  console.log(`✅ Trust Proxy: ${isProduction ? 'ENABLED' : 'DISABLED'}`);
+  console.log(`✅ CORS Origins: ${getAllowedOrigins().length} configured`);
   console.log('✅ All routes registered successfully');
+  console.log('--------------------------------------------------\n');
 });
 
 export default app;
