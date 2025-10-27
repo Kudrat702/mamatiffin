@@ -105,7 +105,13 @@ const corsOptions = {
       }
     }
     
-    // 4. Check against whitelist
+    // 4. Production - Allow all Vercel preview deployments
+    if (isProduction && origin.includes('vercel.app')) {
+      console.log('✅ Vercel origin allowed:', origin);
+      return callback(null, true);
+    }
+    
+    // 5. Check against whitelist
     const isAllowed = allowedOrigins.some(allowed => 
       normalizedOrigin === allowed.toLowerCase().replace(/\/$/, '')
     );
@@ -114,7 +120,7 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    // 5. BLOCKED
+    // 6. BLOCKED
     console.error('❌ CORS BLOCKED:', origin);
     callback(new Error('Not allowed by CORS policy'));
   },
