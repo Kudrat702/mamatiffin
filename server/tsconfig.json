@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2020",
     "module": "CommonJS",
-    "lib": ["ES2022"],
-    "moduleResolution": "node10",
-    //"ignoreDeprecations": "5.0",
-   
+    "lib": ["ES2020"],
+    "moduleResolution": "node",
+    
     "rootDir": "./",
     "baseUrl": "./",
+    "outDir": "./dist",
+    
     "paths": {
       "@/*": ["./src/*"],
       "@config/*": ["./config/*"],
@@ -19,61 +20,37 @@
       "@utils/*": ["./utils/*"],
       "@types/*": ["./types/*"]
     },
+    
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-   
-    "outDir": "./dist",
-    "sourceMap": true,
-    "removeComments": false,
-    "importHelpers": false,
-    "declaration": false,
-    "declarationMap": false,
-   
     "forceConsistentCasingInFileNames": true,
-   
+    
+    "sourceMap": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
-    "strictBindCallApply": false,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": false,
-    "useUnknownInCatchVariables": false,
-    "alwaysStrict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": false,
-    "noImplicitOverride": false,
-    "noPropertyAccessFromIndexSignature": false,
-   
-    "skipLibCheck": true,
+    
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     
     "types": ["node"],
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.d.ts"
-
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
-    "esm": false,
     "transpileOnly": true,
     "compilerOptions": {
       "module": "CommonJS"
     }
   }
 }
-
