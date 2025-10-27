@@ -4,13 +4,13 @@
     "module": "CommonJS",
     "lib": ["ES2020"],
     "moduleResolution": "node",
-    
+   
     "rootDir": "./",
     "baseUrl": "./",
     "outDir": "./dist",
-    
+   
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./*"],
       "@config/*": ["./config/*"],
       "@controllers/*": ["./controllers/*"],
       "@models/*": ["./models/*"],
@@ -20,16 +20,17 @@
       "@utils/*": ["./utils/*"],
       "@types/*": ["./types/*"]
     },
-    
+   
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    
-    "sourceMap": true,
+   
+    "sourceMap": false,
+    "declaration": false,
     "removeComments": true,
     "skipLibCheck": true,
-    
+   
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
@@ -38,15 +39,30 @@
     "noUnusedParameters": false,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
-    
+   
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    
+   
     "types": ["node"],
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "**/*.ts",
+    "server.ts",
+    "config/**/*",
+    "controllers/**/*",
+    "models/**/*",
+    "routes/**/*",
+    "middleware/**/*",
+    "services/**/*",
+    "utils/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
