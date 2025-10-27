@@ -9,16 +9,28 @@
     "npm": ">=9.x"
   },
   "scripts": {
-    "start": "NODE_ENV=production node dist/server.js",
-    "dev": "nodemon --exec ts-node server.ts",
+    "start": "node dist/server.js",
+    "start:prod": "cross-env NODE_ENV=production node dist/server.js",
+    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node src/server.ts",
+    "dev:watch": "cross-env NODE_ENV=development nodemon --watch src --exec ts-node src/server.ts",
     "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts || true",
-    "test": "jest || true",
+    "lint:fix": "eslint . --ext .ts --fix || true",
+    "test": "cross-env NODE_ENV=test jest || true",
+    "test:watch": "cross-env NODE_ENV=test jest --watch || true",
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage || true",
     "railway:build": "npm install && npm run build",
-    "railway:start": "NODE_ENV=production node dist/server.js"
+    "railway:start": "cross-env NODE_ENV=production node dist/server.js",
+    "heroku-postbuild": "npm run build",
+    "generate:hash": "node -e \"const bcrypt = require('bcrypt'); const pass = process.argv[1]; bcrypt.hash(pass, 12, (e, h) => console.log('Hash:', h));\"",
+    "db:seed": "cross-env NODE_ENV=development ts-node src/scripts/seed.ts",
+    "db:migrate": "cross-env NODE_ENV=development ts-node src/scripts/migrate.ts",
+    "audit:fix": "npm audit fix",
+    "audit:force": "npm audit fix --force",
+    "update:deps": "npm update && npm audit fix"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -27,6 +39,7 @@
     "cloudinary": "^1.41.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.1",
@@ -75,6 +88,37 @@
     "ts-jest": "^29.4.4",
     "tsconfig-paths": "^4.2.0"
   },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts,json",
+    "ignore": [
+      "src/**/*.spec.ts",
+      "src/**/*.test.ts"
+    ],
+    "exec": "ts-node src/server.ts",
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.ts",
+      "**/?(*.)+(spec|test).ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/*.test.ts",
+      "!src/**/*.spec.ts"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/tiffin-service-backend.git"
@@ -91,8 +135,12 @@
     "express",
     "mongodb",
     "typescript",
-    "railway"
+    "railway",
+    "mama-tiffin",
+    "food-service",
+    "api",
+    "rest-api"
   ],
-  "author": "Mohammad Kudratullah",
+  "author": "Mohammad Kudratullah <mdkudratullah55@gmail.com>",
   "license": "ISC"
 }

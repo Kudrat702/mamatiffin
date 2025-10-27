@@ -1,522 +1,8 @@
-// // server.ts - PRODUCTION READY VERSION (IMPROVED)
-// import express, { Express, Request, Response, NextFunction } from 'express';
-// import dotenv from 'dotenv';
-// import multer from 'multer';
-// import cors from 'cors';
-// import mongoose from 'mongoose';
-// import connectDB from './config/db';
-// import locationRoutes from './routes/location.routes';
-// import authRoutes from './routes/authRoutes';
-// import adminAuthRoutes from './routes/adminAuthRoutes';
-// import sliderRoutes from './routes/slider';
-// import vegCatalogRoutes from './routes/vegCatalogRoutes';
-// import nonVegCatalogRoutes from './routes/nonVegCatalogRoutes';
-// import menuRoutes from './routes/menuDetailsRoutes';
-// import path from 'path';
-// import uploadRoutes from './routes/uploadRoutes';
-// import paymentRoutes from './routes/paymentRoutes';
-// import adminOrderRoutes from './routes/adminOrderRoutes';
-// import userRoutes from './routes/userRoutes';
-// import messageRoutes from './routes/messageRoutes';
-
-// // Import domain middleware
-// import { 
-//   domainMiddleware, 
-//   adminOnly, 
-//   configEndpoint,
-//   healthEndpoint 
-// } from './middleware/domainMiddleware';
-
-// // Import configure middleware
-// import { configureMiddleware } from './middleware/appMiddleware';
-
-// dotenv.config();
-
-// // Environment check
-// const isProduction = process.env.NODE_ENV === 'production';
-// const isDevelopment = !isProduction;
-
-// console.log('🚀 Starting Mama Tiffin Server...');
-// console.log('🔧 Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
-
-// // ✅ VALIDATE REQUIRED ENVIRONMENT VARIABLES
-// const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-
-// if (isProduction) {
-//   const missing = requiredEnvVars.filter(key => !process.env[key]);
-//   if (missing.length > 0) {
-//     console.error('❌ Missing required environment variables:', missing);
-//     console.error('⚠️  Server cannot start without these variables');
-//     process.exit(1);
-//   }
-//   console.log('✅ All required environment variables present');
-// }
-
-// const port: number = parseInt(process.env.PORT || '3000', 10);
-// const app: Express = express();
-
-// // ✅ APPLY SECURITY MIDDLEWARE FIRST
-// configureMiddleware(app);
-
-// // ✅ TRUST PROXY - CRITICAL FOR RAILWAY/PRODUCTION
-// if (isProduction) {
-//   app.set('trust proxy', 1);
-//   console.log('✅ Trust proxy enabled for production');
-// }
-
-// // ✅ PRODUCTION-READY CORS CONFIGURATION
-// console.log('🔧 Setting up CORS...');
-
-// const getAllowedOrigins = (): string[] => {
-//   if (isDevelopment) {
-//     return [
-//       'http://localhost:5173',
-//       'http://admin.localhost:5173',
-//       'http://127.0.0.1:5173',
-//       'http://admin.127.0.0.1:5173',
-//       'http://localhost:3000'
-//     ];
-//   } else {
-//     // ✅ PRODUCTION - Explicit origins
-//     const origins = [
-//       'https://mamatiffin.vercel.app',
-//       'https://admin-mamatiffin.vercel.app',
-//       'https://www.mamatiffin.vercel.app',
-//     ];
-
-//     console.log('🔒 Production CORS Origins:', origins);
-//     return origins;
-//   }
-// };
-
-// // ✅ IMPROVED CORS CONFIGURATION
-// app.use(cors({
-//   origin: (origin, callback) => {
-//     const allowedOrigins = getAllowedOrigins();
-    
-//     console.log('🔍 CORS Check:', {
-//       requestOrigin: origin || 'no-origin',
-//       isDevelopment
-//     });
-    
-//     // Allow requests with no origin (Postman, mobile apps, curl)
-//     if (!origin) {
-//       console.log('✅ No origin header - allowing');
-//       return callback(null, true);
-//     }
-    
-//     // Normalize and check origin
-//     const normalizedOrigin = origin.toLowerCase().replace(/\/$/, '');
-//     const isAllowed = allowedOrigins.some(allowed => 
-//       normalizedOrigin === allowed.toLowerCase().replace(/\/$/, '')
-//     );
-    
-//     // Development: Allow all localhost/127.0.0.1
-//     if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
-//       console.log('✅ Dev origin allowed:', origin);
-//       return callback(null, true);
-//     }
-    
-//     // Production: Check whitelist
-//     if (isAllowed) {
-//       console.log('✅ Origin allowed:', origin);
-//       return callback(null, true);
-//     }
-    
-//     // BLOCKED
-//     console.error('❌ CORS BLOCKED:', {
-//       origin,
-//       normalizedOrigin,
-//       allowedOrigins,
-//       timestamp: new Date().toISOString()
-//     });
-    
-//     callback(new Error('Not allowed by CORS policy'));
-//   },
-//   credentials: true,
-//   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
-//   allowedHeaders: [
-//     'Origin', 
-//     'X-Requested-With', 
-//     'Content-Type', 
-//     'Accept', 
-//     'Authorization', 
-//     'x-access-token',
-//     'Cache-Control',
-//     'X-CSRF-Token'
-//   ],
-//   exposedHeaders: ['Content-Range', 'X-Content-Range', 'Set-Cookie'],
-//   maxAge: 86400, // 24 hours
-//   optionsSuccessStatus: 204,
-//   preflightContinue: false
-// }));
-
-// console.log('✅ CORS Configuration Complete');
-// console.log('📋 Allowed Origins:', getAllowedOrigins());
-
-// // ✅ DATABASE CONNECTION WITH ERROR HANDLING
-// console.log('🗄️ Connecting to database...');
-// connectDB()
-//   .then(() => {
-//     console.log('✅ Database connected successfully');
-//     console.log('📊 DB Status:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
-//   })
-//   .catch((error) => {
-//     console.error('❌ Database connection failed:', error.message);
-//     if (isProduction) {
-//       console.error('⚠️  Exiting due to database connection failure in production');
-//       process.exit(1);
-//     }
-//   });
-
-// // STATIC FILES SERVING
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
-//   maxAge: '1d',
-//   etag: true,
-//   setHeaders: (res) => {
-//     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-//   }
-// }));
-
-// // ✅ RAILWAY STANDARD HEALTH CHECKS
-// app.get('/health', (req: Request, res: Response): void => {
-//   res.status(200).send('OK');
-// });
-
-// app.get('/healthz', (req: Request, res: Response): void => {
-//   res.status(200).send('OK');
-// });
-
-// // ✅ DETAILED HEALTH CHECK WITH DB STATUS
-// app.get('/api/health', async (req: Request, res: Response) => {
-//   try {
-//     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-//     const memoryUsage = process.memoryUsage();
-    
-//     res.status(200).json({
-//       success: true,
-//       status: 'ok',
-//       timestamp: new Date().toISOString(),
-//       uptime: Math.floor(process.uptime()),
-//       database: {
-//         status: dbStatus,
-//         readyState: mongoose.connection.readyState
-//       },
-//       memory: {
-//         heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
-//         heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
-//         rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`
-//       },
-//       environment: isDevelopment ? 'development' : 'production',
-//       version: '2.0.0'
-//     });
-//   } catch (error) {
-//     res.status(503).json({
-//       success: false,
-//       status: 'error',
-//       message: 'Service unavailable',
-//       timestamp: new Date().toISOString()
-//     });
-//   }
-// });
-
-// // BASIC CONFIG ENDPOINT
-// app.get('/api/config', configEndpoint);
-
-// // ✅ IMPROVED CORS TEST ENDPOINT
-// app.get('/api/test-cors', (req: Request, res: Response): void => {
-//   const origin = (req.headers.origin || '') as string;
-//   const allowed = getAllowedOrigins();
-//   const originNormalized = origin.toLowerCase().replace(/\/$/, '');
-//   const isOriginAllowed = !origin || allowed.some(o => 
-//     o.toLowerCase().replace(/\/$/, '') === originNormalized
-//   );
-
-//   res.json({
-//     success: true,
-//     message: 'CORS is working correctly!',
-//     debug: {
-//       origin: origin || null,
-//       host: req.headers.host || null,
-//       allowedOrigins: allowed,
-//       isOriginAllowed,
-//       environment: isDevelopment ? 'development' : 'production',
-//       timestamp: new Date().toISOString()
-//     }
-//   });
-// });
-
-// // ✅ ROUTES SETUP - PROPER ORDER
-// console.log('🛣️ Setting up application routes...');
-
-// // ORDER ROUTES - Highest priority
-// console.log('📦 Setting up order routes...');
-// app.use('/api/orders', adminOrderRoutes);
-// console.log('✅ Order routes registered');
-
-// // PAYMENT ROUTES
-// console.log('💳 Setting up payment routes...');
-// app.use('/api/payments', paymentRoutes);
-// console.log('✅ Payment routes registered');
-
-// // MESSAGE ROUTES
-// console.log('📧 Setting up message routes...');
-// app.use('/api/messages', messageRoutes);
-// console.log('✅ Message routes registered');
-
-// // USER ROUTES
-// console.log('👤 Setting up user routes...');
-// app.use('/api/user', userRoutes);
-// console.log('✅ User routes registered');
-
-// // UPLOAD ROUTES
-// console.log('📤 Setting up upload routes...');
-// app.use('/api/upload', uploadRoutes);
-// console.log('✅ Upload routes registered');
-
-// // CATALOG ROUTES
-// console.log('🥗 Setting up catalog routes...');
-// app.use('/api/veg/catalog', vegCatalogRoutes);
-// app.use('/api/non-veg/catalog', nonVegCatalogRoutes);
-// console.log('✅ Catalog routes registered');
-
-// // ADMIN AUTH ROUTES
-// console.log('🔐 Setting up admin auth routes...');
-// app.use('/admin-auth', domainMiddleware, adminAuthRoutes);
-// console.log('✅ Admin auth routes registered');
-
-// // ADMIN-ONLY ROUTES
-// app.use('/api/admin', domainMiddleware, adminOnly, (req: Request, res: Response): void => {
-//   res.json({
-//     success: true,
-//     message: 'Admin area accessible',
-//     interface: req.isAdmin ? 'admin' : 'user',
-//     timestamp: new Date().toISOString()
-//   });
-// });
-
-// // PUBLIC API ROUTES
-// console.log('🌐 Setting up public API routes...');
-// app.use('/api/locations', locationRoutes);
-// app.use('/api/auth', authRoutes);
-// app.use('/api/slider', sliderRoutes);
-
-// // MENU ROUTES - MUST BE LAST (most generic)
-// console.log('📋 Setting up menu routes...');
-// app.use('/api', menuRoutes);
-// console.log('✅ Menu routes registered');
-
-// console.log('✅ All routes configured successfully');
-
-// // API DOCUMENTATION ENDPOINT
-// app.get('/api', (req: Request, res: Response): void => {
-//   res.json({
-//     success: true,
-//     message: 'Mama Tiffin API Server',
-//     version: '2.0.0',
-//     environment: isDevelopment ? 'development' : 'production',
-//     server: {
-//       port: port,
-//       host: req.headers.host,
-//       protocol: req.protocol,
-//       uptime: Math.floor(process.uptime())
-//     },
-//     database: {
-//       status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-//     },
-//     cors: {
-//       enabled: true,
-//       origin: req.headers.origin,
-//       allowedOrigins: getAllowedOrigins()
-//     },
-//     endpoints: {
-//       health: '/api/health',
-//       simpleHealth: '/health',
-//       config: '/api/config',
-//       testCors: '/api/test-cors',
-//       orders: '/api/orders',
-//       payments: '/api/payments',
-//       messages: '/api/messages',
-//       user: '/api/user',
-//       auth: '/api/auth',
-//       slider: '/api/slider',
-//       locations: '/api/locations'
-//     },
-//     timestamp: new Date().toISOString()
-//   });
-// });
-
-// // ✅ ERROR HANDLING MIDDLEWARE
-// app.use((error: any, req: Request, res: Response, _next: NextFunction): void => {
-//   const timestamp = new Date().toISOString();
-  
-//   console.error(`[${timestamp}] Server Error:`, {
-//     message: error.message,
-//     url: req.url,
-//     method: req.method,
-//     origin: req.headers.origin,
-//     stack: isDevelopment ? error.stack : undefined
-//   });
-  
-//   // CORS Error
-//   if (error.message === 'Not allowed by CORS policy') {
-//     res.status(403).json({
-//       success: false,
-//       message: 'CORS policy violation',
-//       error: 'CORS_ORIGIN_NOT_ALLOWED',
-//       origin: req.headers.origin,
-//       allowedOrigins: getAllowedOrigins(),
-//       hint: isDevelopment 
-//         ? 'All localhost should be allowed in development' 
-//         : 'Your domain is not whitelisted. Contact administrator.'
-//     });
-//     return;
-//   }
-  
-//   // Multer File Upload Errors
-//   if (error instanceof multer.MulterError) {
-//     if (error.code === 'LIMIT_FILE_SIZE') {
-//       res.status(400).json({
-//         success: false,
-//         message: 'File size too large. Maximum 5MB.',
-//         error: 'FILE_SIZE_LIMIT_EXCEEDED'
-//       });
-//       return;
-//     }
-    
-//     if (error.code === 'LIMIT_FILE_COUNT') {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Too many files. Maximum 10 files allowed.',
-//         error: 'FILE_COUNT_LIMIT_EXCEEDED'
-//       });
-//       return;
-//     }
-//   }
-
-//   // JSON Syntax Errors
-//   if (error instanceof SyntaxError && 'body' in error) {
-//     res.status(400).json({
-//       success: false,
-//       message: 'Invalid JSON format',
-//       error: 'INVALID_JSON_SYNTAX'
-//     });
-//     return;
-//   }
-
-//   // Database Errors
-//   if (error.name === 'MongoError' || error.name === 'MongooseError' || error.name === 'MongoServerError') {
-//     res.status(503).json({
-//       success: false,
-//       message: 'Database connection error',
-//       error: 'DATABASE_ERROR'
-//     });
-//     return;
-//   }
-
-//   // Generic Server Error
-//   res.status(500).json({
-//     success: false,
-//     message: 'Internal server error',
-//     error: 'INTERNAL_SERVER_ERROR',
-//     details: isDevelopment ? error.message : 'Something went wrong',
-//     timestamp: timestamp
-//   });
-// });
-
-// // ✅ 404 HANDLER - Route not found
-// app.use((req: Request, res: Response): void => {
-//   console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
-  
-//   res.status(404).json({
-//     success: false,
-//     message: 'API endpoint not found',
-//     error: 'ROUTE_NOT_FOUND',
-//     path: req.path,
-//     method: req.method,
-//     suggestions: [
-//       'Check /api for documentation',
-//       'Verify HTTP method',
-//       'Ensure correct URL format'
-//     ],
-//     timestamp: new Date().toISOString()
-//   });
-// });
-
-// // ✅ GRACEFUL SHUTDOWN HANDLING
-// process.on('SIGTERM', () => {
-//   console.log('🛑 SIGTERM received. Shutting down gracefully...');
-//   mongoose.connection.close();
-//   process.exit(0);
-// });
-
-// process.on('SIGINT', () => {
-//   console.log('🛑 SIGINT received. Shutting down gracefully...');
-//   mongoose.connection.close();
-//   process.exit(0);
-// });
-
-// process.on('uncaughtException', (error) => {
-//   console.error('🔥 Uncaught Exception:', error);
-//   if (isProduction) {
-//     mongoose.connection.close();
-//     process.exit(1);
-//   }
-// });
-
-// process.on('unhandledRejection', (reason, promise) => {
-//   console.error('🔥 Unhandled Rejection at:', promise, 'reason:', reason);
-//   if (isProduction) {
-//     mongoose.connection.close();
-//     process.exit(1);
-//   }
-// });
-
-// // ✅ START SERVER - RAILWAY COMPATIBLE WITH ERROR HANDLING
-// try {
-//   const server = app.listen(port, '0.0.0.0', (): void => {
-//     console.log('\n🎉 SERVER STARTED SUCCESSFULLY!');
-//     console.log('--------------------------------------------------');
-//     console.log(`🚀 Server: http://0.0.0.0:${port}`);
-//     console.log(`📖 API Docs: http://0.0.0.0:${port}/api`);
-//     console.log(`💚 Health Check: http://0.0.0.0:${port}/api/health`);
-//     console.log('--------------------------------------------------');
-//     console.log(`✅ Environment: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
-//     console.log(`✅ Port: ${port} ${isProduction ? '(Railway assigned)' : '(Local)'}`);
-//     console.log(`✅ Host: 0.0.0.0 (All interfaces)`);
-//     console.log(`✅ Trust Proxy: ${isProduction ? 'ENABLED' : 'DISABLED'}`);
-//     console.log(`✅ CORS Origins: ${getAllowedOrigins().length} configured`);
-//     console.log(`✅ Database: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connecting...'}`);
-//     console.log('✅ All routes registered successfully');
-//     console.log('--------------------------------------------------\n');
-//   });
-
-//   // Server error handling
-//   server.on('error', (error: any) => {
-//     if (error.code === 'EADDRINUSE') {
-//       console.error(`❌ Port ${port} is already in use`);
-//       process.exit(1);
-//     } else {
-//       console.error('❌ Server error:', error);
-//       process.exit(1);
-//     }
-//   });
-
-// } catch (error) {
-//   console.error('❌ Failed to start server:', error);
-//   process.exit(1);
-// }
-
-// export default app;
-
-// server.ts - PRODUCTION READY VERSION WITH CLOUDINARY SUPPORT
 import express, { Express, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import fs from 'fs';
-import path from 'path';
 import connectDB from './config/db';
 import locationRoutes from './routes/location.routes';
 import authRoutes from './routes/authRoutes';
@@ -525,13 +11,14 @@ import sliderRoutes from './routes/slider';
 import vegCatalogRoutes from './routes/vegCatalogRoutes';
 import nonVegCatalogRoutes from './routes/nonVegCatalogRoutes';
 import menuRoutes from './routes/menuDetailsRoutes';
+import path from 'path';
 import uploadRoutes from './routes/uploadRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import adminOrderRoutes from './routes/adminOrderRoutes';
 import userRoutes from './routes/userRoutes';
 import messageRoutes from './routes/messageRoutes';
 
-// Import domain middleware
+// ✅ DOMAIN MIDDLEWARE IMPORT
 import { 
   domainMiddleware, 
   adminOnly, 
@@ -539,9 +26,9 @@ import {
   healthEndpoint 
 } from './middleware/domainMiddleware';
 
-// Import configure middleware
 import { configureMiddleware } from './middleware/appMiddleware';
 
+// Load environment variables
 dotenv.config();
 
 // Environment check
@@ -551,7 +38,7 @@ const isDevelopment = !isProduction;
 console.log('🚀 Starting Mama Tiffin Server...');
 console.log('🔧 Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
 
-// ✅ VALIDATE REQUIRED ENVIRONMENT VARIABLES
+// Validate required environment variables
 const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
 
 if (isProduction) {
@@ -562,229 +49,203 @@ if (isProduction) {
     process.exit(1);
   }
   console.log('✅ All required environment variables present');
-  
-  // Check Cloudinary configuration
-  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-    console.log('☁️  Cloudinary configuration detected');
-  } else {
-    console.log('⚠️  Cloudinary not configured - local storage will be used');
-  }
 }
 
 const port: number = parseInt(process.env.PORT || '3000', 10);
 const app: Express = express();
 
-// ✅ TRUST PROXY - CRITICAL FOR RAILWAY/PRODUCTION (BEFORE MIDDLEWARE)
+// ✅ APPLY SECURITY MIDDLEWARE FIRST
+configureMiddleware(app);
+
+// ✅ TRUST PROXY - CRITICAL FOR RAILWAY/PRODUCTION
 if (isProduction) {
   app.set('trust proxy', 1);
   console.log('✅ Trust proxy enabled for production');
 }
 
-// ✅ APPLY SECURITY MIDDLEWARE
-configureMiddleware(app);
-
-// ✅ ENHANCED CORS CONFIGURATION
+// ✅ PRODUCTION-READY CORS CONFIGURATION
 console.log('🔧 Setting up CORS...');
 
 const getAllowedOrigins = (): string[] => {
   if (isDevelopment) {
+    // Development - Allow all local origins (both main and admin)
     return [
+      // Main frontend URLs
       'http://localhost:5173',
       'http://localhost:5174',
+      'http://localhost:5175',
       'http://localhost:3000',
       'http://localhost:3001',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:5174',
+      'http://127.0.0.1:5175',
       'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      // Admin subdomain URLs (for local development)
       'http://admin.localhost:5173',
-      'http://admin.127.0.0.1:5173'
+      'http://admin.localhost:5174',
+      'http://admin.localhost:5175',
+      'http://admin.localhost:3000',
+      'http://admin.localhost:3001',
+      'http://admin.127.0.0.1:5173',
+      'http://admin.127.0.0.1:5174',
+      'http://admin.127.0.0.1:5175',
+      'http://admin.127.0.0.1:3000',
+      'http://admin.127.0.0.1:3001',
     ];
   } else {
-    // ✅ PRODUCTION - Add ALL possible domain variations
+    // Production - Explicit domains
     const origins = [
       'https://mamatiffin.vercel.app',
-      'https://www.mamatiffin.vercel.app',
       'https://admin-mamatiffin.vercel.app',
+      'https://www.mamatiffin.vercel.app',
       'https://www.admin-mamatiffin.vercel.app',
-      'https://mamatiffin-3tmdz9s87-mdkudratullah77-3420s-projects.vercel.app',
+      // Production custom domains (if you have)
+      'https://mamatiffin.com',
+      'https://www.mamatiffin.com',
+      'https://admin.mamatiffin.com',
     ];
-
-    // Add custom environment variable origins if provided
-    if (process.env.FRONTEND_URL) {
-      origins.push(process.env.FRONTEND_URL);
-    }
-    if (process.env.ADMIN_FRONTEND_URL) {
-      origins.push(process.env.ADMIN_FRONTEND_URL);
-    }
 
     console.log('🔒 Production CORS Origins:', origins);
     return origins;
   }
 };
 
-// ✅ CORS OPTIONS
-const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    const allowedOrigins = getAllowedOrigins();
-    
+// ✅ Helper function to check if origin is allowed
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true; // Allow requests with no origin (Postman, mobile apps)
+
+  const normalizedOrigin = origin.toLowerCase().replace(/\/$/, '');
+  const allowedOrigins = getAllowedOrigins();
+
+  // Direct match
+  const directMatch = allowedOrigins.some(allowed =>
+    normalizedOrigin === allowed.toLowerCase().replace(/\/$/, '')
+  );
+
+  if (directMatch) return true;
+
+  // Development: Allow all localhost/127.0.0.1 on any port
+  if (isDevelopment && (
+    normalizedOrigin.includes('localhost') || 
+    normalizedOrigin.includes('127.0.0.1')
+  )) {
+    return true;
+  }
+
+  // Production: Allow all Vercel preview/deployment URLs
+  if (isProduction && normalizedOrigin.includes('.vercel.app')) {
+    console.log('✅ Vercel preview URL allowed:', origin);
+    return true;
+  }
+
+  return false;
+};
+
+// ✅ IMPROVED CORS CONFIGURATION
+app.use(cors({
+  origin: (origin, callback) => {
     console.log('🔍 CORS Check:', {
       requestOrigin: origin || 'no-origin',
-      timestamp: new Date().toISOString(),
-      isDevelopment
-    });
-    
-    // 1. Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
-    if (!origin) {
-      console.log('✅ No origin header - allowing (mobile/native app or tool)');
-      return callback(null, true);
-    }
-    
-    // 2. Normalize origin (remove trailing slash, lowercase)
-    const normalizedOrigin = origin.toLowerCase().replace(/\/$/, '');
-    
-    // 3. Development mode - Allow all localhost and 127.0.0.1
-    if (isDevelopment) {
-      if (normalizedOrigin.includes('localhost') || normalizedOrigin.includes('127.0.0.1')) {
-        console.log('✅ Dev origin allowed:', origin);
-        return callback(null, true);
-      }
-    }
-    
-    // 4. Check against whitelist
-    const isAllowed = allowedOrigins.some(allowed => 
-      normalizedOrigin === allowed.toLowerCase().replace(/\/$/, '')
-    );
-    
-    if (isAllowed) {
-      console.log('✅ Origin allowed:', origin);
-      return callback(null, true);
-    }
-    
-    // 5. BLOCKED - Log detailed info
-    console.error('❌ CORS BLOCKED:', {
-      origin,
-      normalizedOrigin,
-      allowedOrigins,
       isDevelopment,
       timestamp: new Date().toISOString()
     });
     
-    callback(new Error('Not allowed by CORS policy'));
+    if (isOriginAllowed(origin)) {
+      console.log('✅ Origin allowed:', origin || 'no-origin');
+      callback(null, true);
+    } else {
+      console.error('❌ CORS BLOCKED:', {
+        origin,
+        allowedOrigins: getAllowedOrigins(),
+        isDevelopment,
+        timestamp: new Date().toISOString()
+      });
+      callback(new Error('Not allowed by CORS policy'));
+    }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
-    'Origin',
-    'X-Requested-With',
-    'Content-Type',
-    'Accept',
-    'Authorization',
+    'Origin', 
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept', 
+    'Authorization', 
     'x-access-token',
-    'X-Auth-Token',
     'Cache-Control',
-    'X-CSRF-Token',
-    'x-client-id',
-    'x-api-key'
+    'X-CSRF-Token'
   ],
-  exposedHeaders: [
-    'Content-Range',
-    'X-Content-Range',
-    'Set-Cookie',
-    'Authorization'
-  ],
-  maxAge: 86400, // 24 hours - cache preflight requests
+  exposedHeaders: ['Content-Range', 'X-Content-Range', 'Set-Cookie'],
+  maxAge: 86400, // 24 hours
   optionsSuccessStatus: 204,
   preflightContinue: false
-};
+}));
 
-// Apply CORS
-app.use(cors(corsOptions));
-
-// ✅ HANDLE PREFLIGHT REQUESTS EXPLICITLY
-app.options('*', cors(corsOptions));
+// Handle preflight requests
+app.options('*', cors());
 
 console.log('✅ CORS Configuration Complete');
 console.log('📋 Allowed Origins:', getAllowedOrigins());
 
-// ✅ ADDITIONAL CORS HEADERS MIDDLEWARE (Belt and suspenders approach)
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = getAllowedOrigins();
-  
-  // Check if origin is allowed
-  if (!origin || 
-      allowedOrigins.some(allowed => 
-        origin.toLowerCase().replace(/\/$/, '') === allowed.toLowerCase().replace(/\/$/, '')
-      ) ||
-      (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1')))
-  ) {
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
-    res.header('Access-Control-Allow-Headers', 
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-access-token, X-Auth-Token, Cache-Control, X-CSRF-Token');
-    res.header('Access-Control-Expose-Headers', 
-      'Content-Range, X-Content-Range, Set-Cookie, Authorization');
-  }
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  
-  next();
-});
+// ✅ DOMAIN MIDDLEWARE - APPLY GLOBALLY TO DETECT ADMIN/USER
+app.use(domainMiddleware);
 
-// ✅ DATABASE CONNECTION WITH ERROR HANDLING
+// ✅ DATABASE CONNECTION WITH RETRY LOGIC
 console.log('🗄️ Connecting to database...');
-connectDB()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-    console.log('📊 DB Status:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
-  })
-  .catch((error) => {
-    console.error('❌ Database connection failed:', error.message);
-    if (isProduction) {
-      console.error('⚠️  Exiting due to database connection failure in production');
-      process.exit(1);
-    }
-  });
 
-// ✅ STATIC FILES SERVING - CONDITIONAL FOR DEVELOPMENT/HYBRID MODE
-if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
-  console.log('📁 Setting up static files serving...');
-  
-  const uploadsPath = path.join(__dirname, 'uploads');
-  
-  // Check if uploads directory exists
-  if (fs.existsSync(uploadsPath)) {
-    app.use('/uploads', express.static(uploadsPath, {
-      maxAge: isDevelopment ? '0' : '1d', // No cache in dev, 1 day in prod
-      etag: true,
-      setHeaders: (res) => {
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.setHeader('Access-Control-Allow-Origin', '*');
+const connectWithRetry = async (retries = 5) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await connectDB();
+      console.log('✅ Database connected successfully');
+      console.log('📊 DB Status:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
+      return;
+    } catch (error: any) {
+      console.error(`❌ Database connection attempt ${i + 1} failed:`, error.message);
+      
+      if (i === retries - 1) {
+        console.error('❌ All database connection attempts failed');
+        if (isProduction) {
+          console.error('⚠️  Exiting due to database connection failure in production');
+          process.exit(1);
+        }
+      } else {
+        console.log(`⏳ Retrying in 5 seconds... (${i + 2}/${retries})`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
-    }));
-    console.log('✅ Static files serving enabled for /uploads');
-    console.log(`📂 Uploads directory: ${uploadsPath}`);
-  } else {
-    console.log('⚠️  Uploads directory not found, skipping static file serving');
-    console.log('💡 This is normal if using Cloudinary for all images');
+    }
   }
-} else {
-  console.log('☁️  Production mode: Images served from Cloudinary');
-  console.log('📁 Local static file serving: DISABLED');
-}
+};
+
+connectWithRetry();
+
+// STATIC FILES SERVING
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1d',
+  etag: true,
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+}));
+
+// ✅ DOMAIN MIDDLEWARE ENDPOINTS
+app.get('/api/config', configEndpoint);
+app.get('/api/domain-health', healthEndpoint);
 
 // ✅ RAILWAY STANDARD HEALTH CHECKS
 app.get('/health', (req: Request, res: Response): void => {
-  res.status(200).send('OK');
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 app.get('/healthz', (req: Request, res: Response): void => {
-  res.status(200).send('OK');
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // ✅ DETAILED HEALTH CHECK WITH DB STATUS
@@ -793,13 +254,6 @@ app.get('/api/health', async (req: Request, res: Response) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     const memoryUsage = process.memoryUsage();
     
-    // Check Cloudinary configuration
-    const cloudinaryConfigured = !!(
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
-      process.env.CLOUDINARY_API_SECRET
-    );
-    
     res.status(200).json({
       success: true,
       status: 'ok',
@@ -807,176 +261,71 @@ app.get('/api/health', async (req: Request, res: Response) => {
       uptime: Math.floor(process.uptime()),
       database: {
         status: dbStatus,
-        readyState: mongoose.connection.readyState
-      },
-      storage: {
-        cloudinary: cloudinaryConfigured ? 'configured' : 'not-configured',
-        staticFiles: isDevelopment || process.env.SERVE_STATIC_FILES === 'true' ? 'enabled' : 'disabled'
+        host: mongoose.connection.host || 'not connected'
       },
       memory: {
         heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
         heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
         rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`
-      },
-      environment: isDevelopment ? 'development' : 'production',
-      version: '2.0.0'
+      }
     });
-  } catch (error) {
-    res.status(503).json({
+  } catch (error: any) {
+    res.status(500).json({
       success: false,
       status: 'error',
-      message: 'Service unavailable',
-      timestamp: new Date().toISOString()
+      message: error.message
     });
   }
 });
 
-// BASIC CONFIG ENDPOINT
-app.get('/api/config', configEndpoint);
-
-// ✅ IMPROVED CORS TEST ENDPOINT
+// ✅ CORS TEST ENDPOINT
 app.get('/api/test-cors', (req: Request, res: Response): void => {
-  const origin = (req.headers.origin || '') as string;
-  const allowed = getAllowedOrigins();
-  const originNormalized = origin.toLowerCase().replace(/\/$/, '');
-  const isOriginAllowed = !origin || allowed.some(o => 
-    o.toLowerCase().replace(/\/$/, '') === originNormalized
-  );
-
   res.json({
     success: true,
-    message: 'CORS is working correctly!',
-    debug: {
-      origin: origin || null,
-      host: req.headers.host || null,
-      allowedOrigins: allowed,
-      isOriginAllowed,
-      environment: isDevelopment ? 'development' : 'production',
-      timestamp: new Date().toISOString(),
-      headers: {
-        'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
-        'access-control-allow-credentials': res.getHeader('access-control-allow-credentials'),
-      }
-    }
-  });
-});
-
-// ✅ DEBUG ENDPOINT FOR CORS TROUBLESHOOTING
-app.get('/api/debug-cors', (req: Request, res: Response) => {
-  res.json({
-    requestHeaders: req.headers,
+    message: 'CORS is working!',
     origin: req.headers.origin,
-    host: req.headers.host,
-    method: req.method,
-    allowedOrigins: getAllowedOrigins(),
-    environment: isDevelopment ? 'development' : 'production',
-    isProduction,
-    isDevelopment,
-    corsEnabled: true,
-    cloudinaryConfigured: !!(
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
-      process.env.CLOUDINARY_API_SECRET
-    ),
     timestamp: new Date().toISOString()
   });
 });
 
-// ✅ STORAGE INFO ENDPOINT
-app.get('/api/storage-info', (req: Request, res: Response) => {
-  const cloudinaryConfigured = !!(
-    process.env.CLOUDINARY_CLOUD_NAME && 
-    process.env.CLOUDINARY_API_KEY && 
-    process.env.CLOUDINARY_API_SECRET
-  );
-  
-  const uploadsPath = path.join(__dirname, 'uploads');
-  const uploadsExists = fs.existsSync(uploadsPath);
-  
+// ✅ CORS DEBUG ENDPOINT
+app.get('/api/debug-cors', (req: Request, res: Response): void => {
   res.json({
     success: true,
-    storage: {
-      mode: isProduction ? 'production' : 'development',
-      cloudinary: {
-        configured: cloudinaryConfigured,
-        enabled: isProduction && cloudinaryConfigured
-      },
-      local: {
-        directory: uploadsPath,
-        exists: uploadsExists,
-        serving: isDevelopment || process.env.SERVE_STATIC_FILES === 'true'
-      }
+    message: 'CORS Debug Information',
+    request: {
+      origin: req.headers.origin,
+      host: req.headers.host,
+      method: req.method,
+      headers: req.headers
     },
-    recommendation: cloudinaryConfigured 
-      ? 'Using Cloudinary for image storage' 
-      : 'Using local file system for image storage',
+    configuration: {
+      allowedOrigins: getAllowedOrigins(),
+      environment: isDevelopment ? 'development' : 'production',
+      corsEnabled: true
+    },
     timestamp: new Date().toISOString()
   });
 });
 
-// ✅ ROUTES SETUP - PROPER ORDER
-console.log('🛣️ Setting up application routes...');
-
-// ORDER ROUTES - Highest priority
-console.log('📦 Setting up order routes...');
-app.use('/api/orders', adminOrderRoutes);
-console.log('✅ Order routes registered');
-
-// PAYMENT ROUTES
-console.log('💳 Setting up payment routes...');
-app.use('/api/payments', paymentRoutes);
-console.log('✅ Payment routes registered');
-
-// MESSAGE ROUTES
-console.log('📧 Setting up message routes...');
-app.use('/api/messages', messageRoutes);
-console.log('✅ Message routes registered');
-
-// USER ROUTES
-console.log('👤 Setting up user routes...');
-app.use('/api/user', userRoutes);
-console.log('✅ User routes registered');
-
-// UPLOAD ROUTES
-console.log('📤 Setting up upload routes...');
-app.use('/api/upload', uploadRoutes);
-console.log('✅ Upload routes registered');
-
-// CATALOG ROUTES
-console.log('🥗 Setting up catalog routes...');
-app.use('/api/veg/catalog', vegCatalogRoutes);
-app.use('/api/non-veg/catalog', nonVegCatalogRoutes);
-console.log('✅ Catalog routes registered');
-
-// ADMIN AUTH ROUTES
-console.log('🔐 Setting up admin auth routes...');
-app.use('/admin-auth', domainMiddleware, adminAuthRoutes);
-console.log('✅ Admin auth routes registered');
-
-// ADMIN-ONLY ROUTES
-app.use('/api/admin', domainMiddleware, adminOnly, (req: Request, res: Response): void => {
-  res.json({
-    success: true,
-    message: 'Admin area accessible',
-    interface: req.isAdmin ? 'admin' : 'user',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// PUBLIC API ROUTES
-console.log('🌐 Setting up public API routes...');
+// ✅ API ROUTES - WITH ADMIN MIDDLEWARE PROTECTION
 app.use('/api/locations', locationRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/slider', sliderRoutes);
+app.use('/api/veg-catalog', vegCatalogRoutes);
+app.use('/api/non-veg-catalog', nonVegCatalogRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/messages', messageRoutes);
 
-// MENU ROUTES - MUST BE LAST (most generic)
-console.log('📋 Setting up menu routes...');
-app.use('/api', menuRoutes);
-console.log('✅ Menu routes registered');
+// ✅ ADMIN ROUTES - PROTECTED WITH ADMIN MIDDLEWARE
+app.use('/api/admin/orders', adminOnly, adminOrderRoutes);
+app.use('/api/admin', adminOnly); // General admin protection
 
-console.log('✅ All routes configured successfully');
-
-// API DOCUMENTATION ENDPOINT
+// ✅ API ROOT DOCUMENTATION
 app.get('/api', (req: Request, res: Response): void => {
   const cloudinaryConfigured = !!(
     process.env.CLOUDINARY_CLOUD_NAME && 
@@ -987,12 +336,15 @@ app.get('/api', (req: Request, res: Response): void => {
   res.json({
     success: true,
     message: 'Mama Tiffin API Server',
-    version: '2.0.0',
-    environment: isDevelopment ? 'development' : 'production',
-    server: {
-      port: port,
-      host: req.headers.host,
-      protocol: req.protocol,
+    version: '3.0.0',
+    domain: {
+      isAdmin: req.isAdmin || false,
+      userType: req.userType || 'user',
+      hostname: req.get('host')
+    },
+    environment: {
+      mode: isDevelopment ? 'development' : 'production',
+      nodeVersion: process.version,
       uptime: Math.floor(process.uptime())
     },
     database: {
@@ -1008,19 +360,20 @@ app.get('/api', (req: Request, res: Response): void => {
       allowedOrigins: getAllowedOrigins()
     },
     endpoints: {
-      health: '/api/health',
-      simpleHealth: '/health',
+      health: '/health, /healthz, /api/health',
+      domainHealth: '/api/domain-health',
       config: '/api/config',
       testCors: '/api/test-cors',
       debugCors: '/api/debug-cors',
-      storageInfo: '/api/storage-info',
-      orders: '/api/orders',
+      documentation: '/api',
+      locations: '/api/locations',
+      slider: '/api/slider',
+      auth: '/api/auth',
+      user: '/api/user',
       payments: '/api/payments',
       messages: '/api/messages',
-      user: '/api/user',
-      auth: '/api/auth',
-      slider: '/api/slider',
-      locations: '/api/locations'
+      catalogs: '/api/veg-catalog, /api/non-veg-catalog',
+      admin: '/api/admin/* (requires admin access)'
     },
     timestamp: new Date().toISOString()
   });
@@ -1049,7 +402,8 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       hint: isDevelopment 
         ? 'All localhost should be allowed in development' 
         : 'Your domain is not whitelisted. Contact administrator.',
-      solution: 'Check /api/debug-cors for detailed information'
+      solution: 'Check /api/debug-cors for detailed information',
+      timestamp: timestamp
     });
     return;
   }
@@ -1105,7 +459,7 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
   });
 });
 
-// ✅ 404 HANDLER - Route not found
+// ✅ 404 HANDLER
 app.use((req: Request, res: Response): void => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
   
@@ -1125,90 +479,153 @@ app.use((req: Request, res: Response): void => {
 });
 
 // ✅ GRACEFUL SHUTDOWN HANDLING
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('🛑 SIGTERM received. Shutting down gracefully...');
-  mongoose.connection.close();
+  await mongoose.connection.close();
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('🛑 SIGINT received. Shutting down gracefully...');
-  mongoose.connection.close();
+  await mongoose.connection.close();
   process.exit(0);
 });
 
 process.on('uncaughtException', (error) => {
   console.error('🔥 Uncaught Exception:', error);
   if (isProduction) {
-    mongoose.connection.close();
-    process.exit(1);
+    mongoose.connection.close().then(() => process.exit(1));
   }
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('🔥 Unhandled Rejection at:', promise, 'reason:', reason);
   if (isProduction) {
-    mongoose.connection.close();
-    process.exit(1);
+    mongoose.connection.close().then(() => process.exit(1));
   }
 });
 
-// ✅ START SERVER - RAILWAY COMPATIBLE WITH ERROR HANDLING
-try {
-  const server = app.listen(port, '0.0.0.0', (): void => {
-    console.log('\n🎉 SERVER STARTED SUCCESSFULLY!');
-    console.log('--------------------------------------------------');
-    console.log(`🚀 Server: http://0.0.0.0:${port}`);
-    console.log(`📖 API Docs: http://0.0.0.0:${port}/api`);
-    console.log(`💚 Health Check: http://0.0.0.0:${port}/api/health`);
-    console.log(`🔍 CORS Test: http://0.0.0.0:${port}/api/test-cors`);
-    console.log(`🐛 CORS Debug: http://0.0.0.0:${port}/api/debug-cors`);
-    console.log(`📦 Storage Info: http://0.0.0.0:${port}/api/storage-info`);
-    console.log('--------------------------------------------------');
-    console.log(`✅ Environment: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
-    console.log(`✅ Port: ${port} ${isProduction ? '(Railway assigned)' : '(Local)'}`);
-    console.log(`✅ Host: 0.0.0.0 (All interfaces)`);
-    console.log(`✅ Trust Proxy: ${isProduction ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`✅ CORS Origins: ${getAllowedOrigins().length} configured`);
-    console.log(`✅ Database: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connecting...'}`);
-    
-    // Storage info
-    const cloudinaryConfigured = !!(
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
-      process.env.CLOUDINARY_API_SECRET
-    );
-    
-    if (cloudinaryConfigured) {
-      console.log('☁️  Image Storage: Cloudinary (configured)');
-    } else {
-      console.log('📁 Image Storage: Local file system');
-    }
-    
-    if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
-      console.log('✅ Static file serving: ENABLED');
-    } else {
-      console.log('🚫 Static file serving: DISABLED');
-    }
-    
-    console.log('✅ All routes registered successfully');
-    console.log('--------------------------------------------------\n');
-  });
+// ✅ START SERVER - WORKS IN BOTH LOCAL & RAILWAY
+const startServer = async () => {
+  try {
+    const server = app.listen(port, '0.0.0.0', (): void => {
+      console.log('\n🎉 SERVER STARTED SUCCESSFULLY!');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`🚀 Backend API running at: http://localhost:${port}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Frontend URLs (Development)
+      if (isDevelopment) {
+        console.log('\n📱 FRONTEND URLs (Click to open):');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('\n👤 USER APP (Customer Interface):');
+        console.log('   🌐 http://localhost:5173           ← Main user app');
+        console.log('   🌐 http://127.0.0.1:5173');
+        console.log('\n👑 ADMIN PANEL (Management Interface):');
+        console.log('   🌐 http://admin.localhost:5173     ← Subdomain (Recommended ✅)');
+        console.log('   🌐 http://localhost:5174           ← Different port');
+        console.log('   🌐 http://127.0.0.1:5174');
+        console.log('\n💡 TIP: Domain middleware will detect "admin" subdomain automatically!');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      } else {
+        console.log('\n🌍 PRODUCTION URLs:');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('👤 USER APP:');
+        console.log('   🌐 https://mamatiffin.vercel.app');
+        console.log('   🌐 https://www.mamatiffin.vercel.app');
+        console.log('\n👑 ADMIN PANEL:');
+        console.log('   🌐 https://admin-mamatiffin.vercel.app');
+        console.log('   🌐 https://admin.mamatiffin.com (if configured)');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }
+      
+      // API Endpoints
+      console.log('\n🔗 API ENDPOINTS:');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`📖 API Docs:        http://localhost:${port}/api`);
+      console.log(`💚 Health Check:    http://localhost:${port}/health`);
+      console.log(`🏥 Domain Health:   http://localhost:${port}/api/domain-health`);
+      console.log(`⚙️  Config Info:     http://localhost:${port}/api/config`);
+      console.log(`🔍 CORS Test:       http://localhost:${port}/api/test-cors`);
+      console.log(`🐛 CORS Debug:      http://localhost:${port}/api/debug-cors`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Server Status
+      console.log('\n⚙️  SERVER STATUS:');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`✅ Environment:     ${isDevelopment ? 'DEVELOPMENT 🏠' : 'PRODUCTION 🚀'}`);
+      console.log(`✅ Port:            ${port}`);
+      console.log(`✅ Host:            0.0.0.0 (All interfaces)`);
+      console.log(`✅ Domain Detect:   ENABLED (Admin/User separation)`);
+      console.log(`✅ Trust Proxy:     ${isProduction ? 'ENABLED' : 'DISABLED'}`);
+      console.log(`✅ CORS Origins:    ${getAllowedOrigins().length} configured`);
+      console.log(`✅ Database:        ${mongoose.connection.readyState === 1 ? 'Connected ✓' : 'Connecting... ⏳'}`);
+      
+      // Storage info
+      const cloudinaryConfigured = !!(
+        process.env.CLOUDINARY_CLOUD_NAME && 
+        process.env.CLOUDINARY_API_KEY && 
+        process.env.CLOUDINARY_API_SECRET
+      );
+      
+      if (cloudinaryConfigured) {
+        console.log('☁️  Image Storage:  Cloudinary (configured)');
+      } else {
+        console.log('📁 Image Storage:  Local file system');
+      }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      if (isDevelopment) {
+        console.log('\n💡 QUICK TEST COMMANDS:');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`   curl http://localhost:${port}/health`);
+        console.log(`   curl http://localhost:${port}/api/test-cors`);
+        console.log(`   curl http://localhost:${port}/api/config`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        console.log('\n📝 HOW TO START FRONTEND:');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('   👤 USER APP:');
+        console.log('      cd client && npm run dev');
+        console.log('      Opens at: http://localhost:5173');
+        console.log('\n   👑 ADMIN PANEL (Option 1 - Subdomain):');
+        console.log('      cd admin && npm run dev');
+        console.log('      Opens at: http://admin.localhost:5173');
+        console.log('\n   👑 ADMIN PANEL (Option 2 - Different Port):');
+        console.log('      cd admin && npm run dev -- --port 5174');
+        console.log('      Opens at: http://localhost:5174');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        console.log('\n🎯 DOMAIN MIDDLEWARE FEATURES:');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('   ✅ Auto-detects admin subdomain (admin.localhost)');
+        console.log('   ✅ Sets req.isAdmin flag for all requests');
+        console.log('   ✅ Adds X-Interface-Type header');
+        console.log('   ✅ Protects /api/admin routes with adminOnly middleware');
+        console.log('   ✅ Works in both development and production');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      }
+    });
 
-  // Server error handling
-  server.on('error', (error: any) => {
-    if (error.code === 'EADDRINUSE') {
-      console.error(`❌ Port ${port} is already in use`);
-      process.exit(1);
-    } else {
-      console.error('❌ Server error:', error);
-      process.exit(1);
-    }
-  });
+    // Server error handling
+    server.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${port} is already in use`);
+        console.error(`💡 Try: killall -9 node  or use a different port`);
+        process.exit(1);
+      } else {
+        console.error('❌ Server error:', error);
+        process.exit(1);
+      }
+    });
 
-} catch (error) {
-  console.error('❌ Failed to start server:', error);
-  process.exit(1);
-}
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();
 
 export default app;
