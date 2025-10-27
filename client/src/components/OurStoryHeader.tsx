@@ -195,7 +195,7 @@ const OurStoryPage: React.FC = () => {
           {/* Main Story Image */}
           <div className={`flex justify-center mb-20 lg:mb-24 ${isVisible ? 'floating-animation' : ''}`}>
             <img 
-              src="/src/assets/story.png" 
+              src="/story.png" 
               alt="Our Story - From Conflicts to Harmony"
               className="main-story-image w-full max-w-6xl"
             />

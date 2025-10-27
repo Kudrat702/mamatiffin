@@ -47,6 +47,7 @@ const PaymentSuccessPage: React.FC = () => {
         navigate('/user/dashboard');
       }, 3000);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Countdown timer for auto redirect

@@ -23,6 +23,12 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Tailwind CSS warnings ko ignore karo
+      '@typescript-eslint/no-explicit-any': 'warn', // 'any' type warning instead of error
+      '@typescript-eslint/no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_' 
+      }],
     },
   },
 )

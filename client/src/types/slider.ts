@@ -3,6 +3,7 @@ export interface SliderImage {
   title: string;
   alt: string;
   src: string;
+  imagePublicId?: string;
   dataAiHint?: string | undefined;
   isActive: boolean;
   order: number;

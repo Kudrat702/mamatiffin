@@ -33,7 +33,7 @@ const AboutUs = () => {
           <div className="relative order-1 lg:order-2">
             <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-pink-100 to-purple-100 p-8">
               <img
-                src="/src/assets/about.jpg"
+                src="/about.jpg"
                 alt="MamaTiffin Kitchen"
                 className="w-full h-auto object-cover rounded-2xl transform hover:scale-105 transition-transform duration-500"
                 onError={(e) => {

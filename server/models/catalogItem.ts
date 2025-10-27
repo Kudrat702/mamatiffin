@@ -1,12 +1,13 @@
-// ===== FILE: models/catalogItem.ts (UPDATED) =====
+// models/catalogItem.ts - UPDATED WITH CLOUDINARY SUPPORT
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ICatalogItem extends Document {
   category: string;
   imageUrl: string;
+  imagePublicId?: string;              // NEW: Cloudinary public ID
   price: number;
   type: 'veg' | 'non-veg';
-  menuDetailId?: mongoose.Types.ObjectId; // ADDED: Reference to menu details
+  menuDetailId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,11 @@ const CatalogItemSchema: Schema = new Schema({
     type: String,
     required: true
   },
+  // NEW: Cloudinary public ID for image management
+  imagePublicId: {
+    type: String,
+    required: false  // Optional because old records won't have it
+  },
   price: {
     type: Number,
     required: true,
@@ -41,14 +47,14 @@ const CatalogItemSchema: Schema = new Schema({
   },
   menuDetailId: {
     type: Schema.Types.ObjectId,
-    ref: 'MenuDetails', // FIXED: Changed from 'Menu' to 'MenuDetails'
+    ref: 'MenuDetails',
     default: null
   }
 }, {
   timestamps: true
 });
 
-// ADDED: Index for better performance
+// Indexes for better performance
 CatalogItemSchema.index({ category: 1, type: 1 });
 CatalogItemSchema.index({ menuDetailId: 1 });
 

@@ -10,13 +10,13 @@ const Footer: React.FC = () => {
           <div className="mb-6 md:mb-0 md:w-1/2">
             <div className="mb-4">
               <img
-                src="/src/assets/logo1.png"
+                src="/logo1.png"
                 alt="MamaTiffin Logo"
                 className="h-12 w-auto"
                 onError={(e) => {
                   // Fallback to png if ico fails to load
                   const target = e.target as HTMLImageElement;
-                  target.src = "/src/assets/logo1.png";
+                  target.src = "/logo1.png";
                 }}
               />
             </div>

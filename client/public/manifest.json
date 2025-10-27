@@ -1,7 +1,7 @@
 {
   "name": "Mama Tiffin",
   "short_name": "MamaTiffin",
-  "start_url": "/",
+  "start_url": "/home",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",

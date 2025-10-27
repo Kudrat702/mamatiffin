@@ -3,6 +3,7 @@ export interface SliderImage {
   title: string;
   alt: string;
   src: string;
+  imagePublicId?: string;  // NEW: Added for Cloudinary
   dataAiHint?: string;
   isActive: boolean;
   order: number;

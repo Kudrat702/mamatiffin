@@ -2,22 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Leaf, Drumstick } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-interface LocalUser {
-  id: string;
-  name: string;
-  phone: string;
-  address: {
-    district: string;
-    block: string;
-    city: string;
-    homeLodgeName: string;
+// NEW: More comprehensive User interface ✅
+interface User {
+  id?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  address?: string | {
+    district?: string;
+    block?: string;
+    city?: string;
+    homeLodgeName?: string;
   };
-  role: string;
+  city?: string;
+  role?: string;
 }
 
 const VegNonVegCards: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<LocalUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   
   // Load user data from sessionStorage on component mount
   useEffect(() => {
@@ -26,7 +29,12 @@ const VegNonVegCards: React.FC = () => {
       const savedToken = sessionStorage.getItem('token');
       
       if (savedUser && savedToken) {
-        setUser(JSON.parse(savedUser));
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -56,14 +64,22 @@ const VegNonVegCards: React.FC = () => {
     };
   }, []);
   
+  // NEW: Updated card click handler with better redirect logic ✅
   const handleCardClick = (menuType: 'veg' | 'non-veg') => {
     if (user) {
       // User is logged in, navigate to respective menu page
       const path = menuType === 'veg' ? '/veg-menu' : '/non-veg-menu';
       navigate(path);
     } else {
-      // User is not logged in, store intended destination and trigger login
-      sessionStorage.setItem('redirectAfterLogin', menuType === 'veg' ? '/veg-menu' : '/non-veg-menu');
+      // NEW: Store redirect data as object (consistent with MenuDetailsPage) ✅
+      const redirectData = {
+        path: menuType === 'veg' ? '/veg-menu' : '/non-veg-menu',
+        from: 'veg-nonveg-cards',
+        menuType: menuType,
+        timestamp: new Date().toISOString()
+      };
+      
+      sessionStorage.setItem('redirectAfterLogin', JSON.stringify(redirectData));
       
       // Dispatch custom event to trigger login modal in header
       window.dispatchEvent(new CustomEvent('triggerLogin'));
@@ -98,6 +114,17 @@ const VegNonVegCards: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-6">
+      {/* NEW: Login status indicator (optional) ✅ */}
+      {!user && (
+        <div className="mb-6 max-w-4xl w-full">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+            <p className="text-blue-800 text-sm">
+              <strong>Note:</strong> Please login to explore our delicious menu options
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
         {/* Veg Card */}
         <div 
@@ -131,7 +158,7 @@ const VegNonVegCards: React.FC = () => {
               onMouseEnter={(e) => handleVegButtonHover(e, true)}
               onMouseLeave={(e) => handleVegButtonHover(e, false)}
             >
-              {user ? 'Explore' : 'Login to Explore'}
+              {user ? 'Explore Menu' : 'Login to Explore'}
             </button>
           </div>
           
@@ -161,7 +188,7 @@ const VegNonVegCards: React.FC = () => {
             
             {/* Description */}
             <p className="text-gray-600 text-lg mb-6 group-hover:text-gray-700 transition-colors duration-300">
-              Perfectly banaye gaye meats , taste mein kamaal
+              Perfectly banaye gaye meats, taste mein kamaal
             </p>
             
             {/* Explore Button with Light Red Color */}
@@ -171,7 +198,7 @@ const VegNonVegCards: React.FC = () => {
               onMouseEnter={(e) => handleNonVegButtonHover(e, true)}
               onMouseLeave={(e) => handleNonVegButtonHover(e, false)}
             >
-              {user ? 'Explore' : 'Login to Explore'}
+              {user ? 'Explore Menu' : 'Login to Explore'}
             </button>
           </div>
           
@@ -179,6 +206,17 @@ const VegNonVegCards: React.FC = () => {
           <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
         </div>
       </div>
+
+      {/* NEW: User greeting (optional) ✅ */}
+      {user && (
+        <div className="mt-6 max-w-4xl w-full">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+            <p className="text-green-800 text-sm">
+              Welcome back, <strong>{user.name || 'Food Lover'}</strong>! 🍽️ Select your preferred menu
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

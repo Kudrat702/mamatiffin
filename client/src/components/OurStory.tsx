@@ -23,7 +23,7 @@ const OurStory: React.FC = () => {
         <div className="text-center mb-12">
           <div className="relative inline-block">
             <img 
-              src="/src/assets/story.png" 
+              src="/story.png" 
               alt="Mama Tiffin Story - From Kitchen Conflicts to Food Solutions" 
               className="mx-auto w-full max-w-4xl h-80 object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
               style={{ 

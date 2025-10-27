@@ -1,4 +1,4 @@
-// types/menu.ts - Fixed TypeScript errors
+// types/menu.ts - Updated with Cloudinary support
 
 export interface WeeklyMenuDay {
   day: string;
@@ -12,6 +12,7 @@ export interface Menu {
   title: string;
   description: string;
   imageUrl: string;
+  imagePublicId?: string; // ✅ Already added - Perfect!
   deliveryTime: string;
   price?: number | undefined;
   priceMonthly: number;
@@ -29,6 +30,7 @@ export interface MenuDetails {
   title: string;
   description: string;
   imageUrl: string;
+  imagePublicId?: string; // NEW: Add Cloudinary support ✅
   deliveryTime: string;
   priceMonthly: number;
   priceTrial: number;
@@ -42,6 +44,7 @@ export interface CatalogItem {
   _id: string;
   category: string;
   imageUrl: string;
+  imagePublicId?: string; // NEW: Add Cloudinary support ✅
   price: number;
   type: 'veg' | 'non-veg';
   menuDetailId?: string;
@@ -97,6 +100,7 @@ export interface MenuFormSubmission {
   weeklyMenu: WeeklyMenuDay[];
   image?: File;
   imageUrl?: string;
+  imagePublicId?: string; // NEW: Add Cloudinary support ✅
 }
 
 export const DAYS_OF_WEEK = [
@@ -118,6 +122,27 @@ export interface ExtendedMenu extends MenuDetails {
   isPopular?: boolean;
   rating?: number;
   orderCount?: number;
+}
+
+// NEW: Slider Image Interface ✅
+export interface SliderImage {
+  _id: string;
+  title: string;
+  alt: string;
+  src: string;
+  imagePublicId?: string; // NEW: Cloudinary support ✅
+  dataAiHint?: string;
+  isActive: boolean;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// NEW: Slider Response Interface ✅
+export interface SliderImageResponse {
+  success: boolean;
+  message: string;
+  data?: SliderImage | SliderImage[];
 }
 
 // FIXED: Type-safe conversion with proper checks

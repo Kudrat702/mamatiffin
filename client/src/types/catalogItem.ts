@@ -3,6 +3,7 @@ export interface CatalogItem {
   _id: string;
   category: string;
   imageUrl: string;
+  imagePublicId?: string; 
   price: number;
   type: 'veg' | 'non-veg';
   createdAt?: string | undefined;
