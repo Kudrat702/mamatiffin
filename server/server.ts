@@ -280,7 +280,7 @@ if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
 // ============================================
 // DOMAIN MIDDLEWARE - ALWAYS ACTIVE
 // ============================================
-app.use(domainMiddleware);
+app.use(domainMiddleware); 
 
 // ============================================
 // INTERFACE TYPE OVERRIDE MIDDLEWARE
