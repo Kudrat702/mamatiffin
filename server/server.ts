@@ -1,4 +1,4 @@
-// server.ts - PRODUCTION READY VERSION WITH INTERFACE_TYPE CONTROL
+// server.ts - CLEAN VERSION
 import express, { Express, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
@@ -42,53 +42,17 @@ const isProduction = process.env.NODE_ENV === 'production';
 const isDevelopment = !isProduction;
 const INTERFACE_TYPE = (process.env.INTERFACE_TYPE || 'user').toLowerCase(); // 'user' or 'admin'
 
-// ============================================
-// STARTUP BANNER WITH INTERFACE TYPE
-// ============================================
-console.log('\n' + '='.repeat(70));
-console.log('🚀 MAMA TIFFIN SERVER STARTING...');
-console.log('='.repeat(70));
-console.log(`📦 Environment     : ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
-console.log(`🎯 Interface Type  : ${INTERFACE_TYPE.toUpperCase()}`);
-console.log(`🔌 Port           : ${port}`);
-console.log(`🏠 Host           : ${HOST}`);
-console.log(`⏰ Started At     : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
-console.log('='.repeat(70) + '\n');
-
-// ✅ VALIDATE REQUIRED ENVIRONMENT VARIABLES
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-
-if (isProduction) {
-  const missing = requiredEnvVars.filter(key => !process.env[key]);
-  if (missing.length > 0) {
-    console.error('❌ Missing required environment variables:', missing);
-    console.error('⚠️  Server cannot start without these variables');
-    process.exit(1);
-  }
-  console.log('✅ All required environment variables present');
-  
-  // Check Cloudinary configuration
-  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-    console.log('☁️  Cloudinary configuration detected');
-  } else {
-    console.log('⚠️  Cloudinary not configured - local storage will be used');
-  }
-}
-
 const app: Express = express();
 
 // ✅ TRUST PROXY - CRITICAL FOR RAILWAY/PRODUCTION (BEFORE MIDDLEWARE)
 if (isProduction) {
   app.set('trust proxy', 1);
-  console.log('✅ Trust proxy enabled for production');
 }
 
 // ✅ APPLY SECURITY MIDDLEWARE
 configureMiddleware(app);
 
 // ✅ ENHANCED CORS CONFIGURATION
-console.log('🔧 Setting up CORS...');
-
 const getAllowedOrigins = (): string[] => {
   if (isDevelopment) {
     return [
@@ -103,7 +67,6 @@ const getAllowedOrigins = (): string[] => {
       'http://admin.127.0.0.1:5173'
     ];
   } else {
-    // ✅ PRODUCTION - Add ALL possible domain variations
     const origins = [
       'https://mamatiffin.vercel.app',
       'https://www.mamatiffin.vercel.app',
@@ -111,7 +74,6 @@ const getAllowedOrigins = (): string[] => {
       'https://www.admin-mamatiffin.vercel.app',
     ];
 
-    // Add custom environment variable origins if provided
     if (process.env.FRONTEND_URL) {
       origins.push(process.env.FRONTEND_URL);
     }
@@ -119,7 +81,6 @@ const getAllowedOrigins = (): string[] => {
       origins.push(process.env.ADMIN_FRONTEND_URL);
     }
 
-    console.log('🔒 Production CORS Origins:', origins);
     return origins;
   }
 };
@@ -129,15 +90,8 @@ const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     const allowedOrigins = getAllowedOrigins();
     
-    console.log('🔍 CORS Check:', {
-      requestOrigin: origin || 'no-origin',
-      timestamp: new Date().toISOString(),
-      isDevelopment
-    });
-    
     // 1. Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
     if (!origin) {
-      console.log('✅ No origin header - allowing (mobile/native app or tool)');
       return callback(null, true);
     }
     
@@ -147,7 +101,6 @@ const corsOptions = {
     // 3. Development mode - Allow all localhost and 127.0.0.1
     if (isDevelopment) {
       if (normalizedOrigin.includes('localhost') || normalizedOrigin.includes('127.0.0.1')) {
-        console.log('✅ Dev origin allowed:', origin);
         return callback(null, true);
       }
     }
@@ -158,19 +111,11 @@ const corsOptions = {
     );
     
     if (isAllowed) {
-      console.log('✅ Origin allowed:', origin);
       return callback(null, true);
     }
     
-    // 5. BLOCKED - Log detailed info
-    console.error('❌ CORS BLOCKED:', {
-      origin,
-      normalizedOrigin,
-      allowedOrigins,
-      isDevelopment,
-      timestamp: new Date().toISOString()
-    });
-    
+    // 5. BLOCKED
+    console.error('❌ CORS BLOCKED:', origin);
     callback(new Error('Not allowed by CORS policy'));
   },
   credentials: true,
@@ -194,33 +139,26 @@ const corsOptions = {
     'Set-Cookie',
     'Authorization'
   ],
-  maxAge: 86400, // 24 hours - cache preflight requests
+  maxAge: 86400,
   optionsSuccessStatus: 204,
   preflightContinue: false
 };
 
 // Apply CORS
 app.use(cors(corsOptions));
-
-// ✅ HANDLE PREFLIGHT REQUESTS EXPLICITLY
 app.options('*', cors(corsOptions));
 
-console.log('✅ CORS Configuration Complete');
-console.log('📋 Allowed Origins:', getAllowedOrigins());
-
-// ✅ ADDITIONAL CORS HEADERS MIDDLEWARE (Belt and suspenders approach)
+// ✅ ADDITIONAL CORS HEADERS MIDDLEWARE
 app.use((req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
   const allowedOrigins = getAllowedOrigins();
   
-  // Check if origin is allowed
   if (!origin || 
       allowedOrigins.some(allowed => 
         origin.toLowerCase().replace(/\/$/, '') === allowed.toLowerCase().replace(/\/$/, '')
       ) ||
       (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1')))
   ) {
-    // Set CORS headers
     res.header('Access-Control-Allow-Origin', origin || '*');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
@@ -230,7 +168,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       'Content-Range, X-Content-Range, Set-Cookie, Authorization');
   }
   
-  // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
@@ -238,148 +175,105 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// ✅ DATABASE CONNECTION WITH ERROR HANDLING
-console.log('🗄️ Connecting to database...');
+// ✅ DATABASE CONNECTION
 connectDB()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-    console.log('📊 DB Status:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
-  })
+  .then(() => console.log('✅ Database Connected'))
   .catch((error) => {
-    console.error('❌ Database connection failed:', error.message);
+    console.error('❌ Database Error:', error.message);
     if (isProduction) {
-      console.error('⚠️  Exiting due to database connection failure in production');
       process.exit(1);
     }
   });
 
-// ✅ STATIC FILES SERVING - CONDITIONAL FOR DEVELOPMENT/HYBRID MODE
-if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
-  console.log('📁 Setting up static files serving...');
-  
-  const uploadsPath = path.join(__dirname, 'uploads');
-  
-  // Check if uploads directory exists
-  if (fs.existsSync(uploadsPath)) {
-    app.use('/uploads', express.static(uploadsPath, {
-      maxAge: isDevelopment ? '0' : '1d', // No cache in dev, 1 day in prod
-      etag: true,
-      setHeaders: (res) => {
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-      }
-    }));
-    console.log('✅ Static uploads directory configured:', uploadsPath);
-  } else {
-    console.log('⚠️  Uploads directory not found - will be created on first upload');
-  }
-} else {
-  console.log('🚫 Static file serving disabled (production mode - use Cloudinary)');
-}
-
-// ============================================
-// DOMAIN MIDDLEWARE - ALWAYS ACTIVE
-// ============================================
-app.use(domainMiddleware); 
-
-// ============================================
-// INTERFACE TYPE OVERRIDE MIDDLEWARE
-// ============================================
+// ✅ REQUEST LOGGING MIDDLEWARE
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Override interface type based on environment variable
-  if (INTERFACE_TYPE === 'admin') {
-    req.isAdmin = true;
-    req.userType = 'admin';
-    res.setHeader('X-Interface-Type', 'admin');
-  } else if (INTERFACE_TYPE === 'user') {
-    req.isAdmin = false;
-    req.userType = 'user';
-    res.setHeader('X-Interface-Type', 'user');
-  }
+  const logPrefix = INTERFACE_TYPE === 'admin' ? '🔧' : '📱';
+  console.log(`${logPrefix} ${req.method} ${req.path}`);
   next();
 });
 
 // ============================================
-// HEALTH & CONFIG ENDPOINTS
+// STATIC FILES - ONLY IN DEVELOPMENT OR IF EXPLICITLY ENABLED
 // ============================================
-console.log('🏥 Setting up health endpoints...');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Simple health check (no auth required)
-app.get('/health', healthEndpoint);
+if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
+  app.use('/uploads', express.static(uploadsDir));
+}
+
+// ============================================
+// HEALTH & UTILITY ENDPOINTS
+// ============================================
+
+// Simple health endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Detailed health endpoint
 app.get('/api/health', healthEndpoint);
 
-// Config endpoint with interface info
+// Configuration endpoint
 app.get('/api/config', configEndpoint);
 
 // Interface status endpoint
-app.get('/api/interface-status', (req: Request, res: Response): void => {
+app.get('/api/interface-status', (req: Request, res: Response) => {
   res.json({
     success: true,
-    message: 'Interface status',
-    data: {
-      interfaceType: INTERFACE_TYPE,
-      isAdmin: req.isAdmin || false,
-      userType: req.userType || 'user',
-      environment: isDevelopment ? 'development' : 'production',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
-
-console.log('✅ Health endpoints configured');
-
-// ============================================
-// CORS DEBUG ENDPOINTS
-// ============================================
-app.get('/api/test-cors', (req: Request, res: Response): void => {
-  res.json({
-    success: true,
-    message: 'CORS is working!',
-    origin: req.headers.origin,
+    interface: INTERFACE_TYPE,
     timestamp: new Date().toISOString()
   });
 });
 
-app.get('/api/debug-cors', (req: Request, res: Response): void => {
+// CORS test endpoint
+app.get('/api/test-cors', (req: Request, res: Response) => {
   res.json({
     success: true,
-    message: 'CORS Debug Information',
-    data: {
-      requestOrigin: req.headers.origin,
+    message: 'CORS is working correctly',
+    origin: req.headers.origin || 'no-origin',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Debug CORS endpoint
+app.get('/api/debug-cors', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    cors: {
+      requestOrigin: req.headers.origin || 'no-origin',
       allowedOrigins: getAllowedOrigins(),
-      environment: isDevelopment ? 'development' : 'production',
       corsEnabled: true,
-      credentials: true,
-      headers: {
-        received: Object.keys(req.headers),
-        origin: req.headers.origin,
-        host: req.headers.host,
-        userAgent: req.headers['user-agent']
-      }
+      credentials: true
     },
+    headers: req.headers,
     timestamp: new Date().toISOString()
   });
 });
 
-// Storage configuration endpoint
-app.get('/api/storage-info', (req: Request, res: Response): void => {
+// Storage info endpoint
+app.get('/api/storage-info', (req: Request, res: Response) => {
   const cloudinaryConfigured = !!(
     process.env.CLOUDINARY_CLOUD_NAME && 
     process.env.CLOUDINARY_API_KEY && 
     process.env.CLOUDINARY_API_SECRET
   );
-  
+
   res.json({
     success: true,
-    message: 'Storage configuration',
-    data: {
+    storage: {
       cloudinary: {
         configured: cloudinaryConfigured,
         cloudName: cloudinaryConfigured ? process.env.CLOUDINARY_CLOUD_NAME : null
       },
-      localStorage: {
+      local: {
         enabled: isDevelopment || process.env.SERVE_STATIC_FILES === 'true',
-        path: '/uploads'
+        uploadsPath: '/uploads'
       }
     },
     timestamp: new Date().toISOString()
@@ -387,107 +281,39 @@ app.get('/api/storage-info', (req: Request, res: Response): void => {
 });
 
 // ============================================
-// PROTECTED ROUTES
+// API ROUTES WITH DOMAIN MIDDLEWARE
 // ============================================
-console.log('🔐 Setting up protected routes...');
+app.use('/api/locations', domainMiddleware, locationRoutes);
+app.use('/api/auth', domainMiddleware, authRoutes);
+app.use('/api/admin/auth', domainMiddleware, adminAuthRoutes);
+app.use('/api/slider', domainMiddleware, sliderRoutes);
+app.use('/api/veg-menus', domainMiddleware, vegCatalogRoutes);
+app.use('/api/non-veg-menus', domainMiddleware, nonVegCatalogRoutes);
+app.use('/api/menus', domainMiddleware, menuRoutes);
+app.use('/api/upload', domainMiddleware, uploadRoutes);
+app.use('/api/payments', domainMiddleware, paymentRoutes);
+app.use('/api/admin/orders', domainMiddleware, adminOnly, adminOrderRoutes);
+app.use('/api/user', domainMiddleware, userRoutes);
+app.use('/api/messages', domainMiddleware, messageRoutes);
 
-// ADMIN ROUTES
-app.use('/api/admin/auth', adminAuthRoutes);
-app.use('/api/veg-catalog', adminOnly, vegCatalogRoutes);
-app.use('/api/non-veg-catalog', adminOnly, nonVegCatalogRoutes);
-app.use('/api/orders', adminOnly, adminOrderRoutes);
-app.use('/api/admin/upload', adminOnly, uploadRoutes);
-
-// USER ROUTES (Protected)
-app.use('/api/payments', paymentRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/user', userRoutes);
-
-console.log('✅ Protected routes configured');
-
-// ============================================
-// TEST ENDPOINTS FOR INTERFACE
-// ============================================
-app.get('/api/user/dashboard', (req: Request, res: Response): void => {
-  res.json({
-    success: true,
-    message: 'User Dashboard',
-    data: {
-      interface: 'user',
-      isAdmin: req.isAdmin || false,
-      userType: req.userType || 'user',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
-
-app.get('/api/admin/dashboard', adminOnly, (req: Request, res: Response): void => {
-  res.json({
-    success: true,
-    message: 'Admin Dashboard',
-    data: {
-      interface: 'admin',
-      isAdmin: req.isAdmin || false,
-      userType: req.userType || 'admin',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
-
-// Admin area test
-app.get('/admin', adminOnly, (req: Request, res: Response): void => {
-  res.json({
-    success: true,
-    message: 'Admin area accessible',
-    interface: req.isAdmin ? 'admin' : 'user',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// PUBLIC API ROUTES
-console.log('🌐 Setting up public API routes...');
-app.use('/api/locations', locationRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/slider', sliderRoutes);
-
-// MENU ROUTES - MUST BE LAST (most generic)
-console.log('📋 Setting up menu routes...');
-app.use('/api', menuRoutes);
-console.log('✅ Menu routes registered');
-
-console.log('✅ All routes configured successfully');
-
-// API DOCUMENTATION ENDPOINT
-app.get('/api', (req: Request, res: Response): void => {
-  const cloudinaryConfigured = !!(
-    process.env.CLOUDINARY_CLOUD_NAME && 
-    process.env.CLOUDINARY_API_KEY && 
-    process.env.CLOUDINARY_API_SECRET
-  );
+// API documentation
+app.get('/api', (req: Request, res: Response) => {
+  const host = req.headers.host;
+  const protocol = req.protocol;
   
   res.json({
     success: true,
-    message: 'Mama Tiffin API Server',
-    version: '2.0.0',
-    environment: isDevelopment ? 'development' : 'production',
-    interfaceType: INTERFACE_TYPE,
+    message: 'Mama Tiffin API',
+    version: '1.0.0',
+    interface: INTERFACE_TYPE,
     server: {
-      port: port,
+      environment: isDevelopment ? 'development' : 'production',
       host: req.headers.host,
       protocol: req.protocol,
       uptime: Math.floor(process.uptime())
     },
     database: {
       status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-    },
-    storage: {
-      cloudinary: cloudinaryConfigured ? 'configured' : 'not-configured',
-      staticFiles: isDevelopment || process.env.SERVE_STATIC_FILES === 'true' ? 'enabled' : 'disabled'
-    },
-    cors: {
-      enabled: true,
-      origin: req.headers.origin,
-      allowedOrigins: getAllowedOrigins()
     },
     endpoints: {
       health: '/api/health',
@@ -497,29 +323,17 @@ app.get('/api', (req: Request, res: Response): void => {
       testCors: '/api/test-cors',
       debugCors: '/api/debug-cors',
       storageInfo: '/api/storage-info',
-      orders: '/api/orders',
-      payments: '/api/payments',
-      messages: '/api/messages',
-      user: '/api/user',
-      auth: '/api/auth',
-      slider: '/api/slider',
       locations: '/api/locations'
     },
     timestamp: new Date().toISOString()
   });
 });
 
-// ✅ ERROR HANDLING MIDDLEWARE
+// ============================================
+// ERROR HANDLING MIDDLEWARE
+// ============================================
 app.use((error: any, req: Request, res: Response, _next: NextFunction): void => {
-  const timestamp = new Date().toISOString();
-  
-  console.error(`[${timestamp}] Server Error:`, {
-    message: error.message,
-    url: req.url,
-    method: req.method,
-    origin: req.headers.origin,
-    stack: isDevelopment ? error.stack : undefined
-  });
+  console.error('❌ Error:', error.message);
   
   // CORS Error
   if (error.message === 'Not allowed by CORS policy') {
@@ -527,12 +341,7 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       success: false,
       message: 'CORS policy violation',
       error: 'CORS_ORIGIN_NOT_ALLOWED',
-      origin: req.headers.origin,
-      allowedOrigins: getAllowedOrigins(),
-      hint: isDevelopment 
-        ? 'All localhost should be allowed in development' 
-        : 'Your domain is not whitelisted. Contact administrator.',
-      solution: 'Check /api/debug-cors for detailed information'
+      origin: req.headers.origin
     });
     return;
   }
@@ -547,169 +356,62 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       });
       return;
     }
-    
-    if (error.code === 'LIMIT_FILE_COUNT') {
-      res.status(400).json({
-        success: false,
-        message: 'Too many files. Maximum 10 files allowed.',
-        error: 'FILE_COUNT_LIMIT_EXCEEDED'
-      });
-      return;
-    }
-  }
-
-  // JSON Syntax Errors
-  if (error instanceof SyntaxError && 'body' in error) {
-    res.status(400).json({
-      success: false,
-      message: 'Invalid JSON format',
-      error: 'INVALID_JSON_SYNTAX'
-    });
-    return;
-  }
-
-  // Database Errors
-  if (error.name === 'MongoError' || error.name === 'MongooseError' || error.name === 'MongoServerError') {
-    res.status(503).json({
-      success: false,
-      message: 'Database connection error',
-      error: 'DATABASE_ERROR'
-    });
-    return;
   }
 
   // Generic Server Error
   res.status(500).json({
     success: false,
     message: 'Internal server error',
-    error: 'INTERNAL_SERVER_ERROR',
-    details: isDevelopment ? error.message : 'Something went wrong',
-    timestamp: timestamp
+    error: 'INTERNAL_SERVER_ERROR'
   });
 });
 
-// ✅ 404 HANDLER - Route not found
+// ============================================
+// 404 HANDLER
+// ============================================
 app.use((req: Request, res: Response): void => {
-  console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
+  console.log(`❌ 404: ${req.method} ${req.path}`);
   
   res.status(404).json({
     success: false,
     message: 'API endpoint not found',
     error: 'ROUTE_NOT_FOUND',
     path: req.path,
-    method: req.method,
-    suggestions: [
-      'Check /api for documentation',
-      'Verify HTTP method',
-      'Ensure correct URL format'
-    ],
-    timestamp: new Date().toISOString()
+    method: req.method
   });
 });
 
-// ✅ GRACEFUL SHUTDOWN HANDLING
+// ============================================
+// GRACEFUL SHUTDOWN
+// ============================================
 process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received. Shutting down gracefully...');
+  console.log('\n🛑 Shutting down...');
   mongoose.connection.close();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received. Shutting down gracefully...');
+  console.log('\n🛑 Shutting down...');
   mongoose.connection.close();
   process.exit(0);
 });
 
-process.on('uncaughtException', (error) => {
-  console.error('🔥 Uncaught Exception:', error);
-  if (isProduction) {
-    mongoose.connection.close();
-    process.exit(1);
-  }
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🔥 Unhandled Rejection at:', promise, 'reason:', reason);
-  if (isProduction) {
-    mongoose.connection.close();
-    process.exit(1);
-  }
-});
-
 // ============================================
-// START SERVER WITH CLICKABLE LINKS
+// START SERVER - CLEAN OUTPUT
 // ============================================
 try {
   const server = app.listen(port, HOST, (): void => {
-    const localUrl = `http://localhost:${port}`;
-    const networkUrl = `http://${HOST}:${port}`;
-    
-    console.log('\n' + '✅'.repeat(35));
-    console.log('\n🎉 SERVER STARTED SUCCESSFULLY!\n');
-    console.log('='.repeat(70));
-    
-    // Interface-specific banner
-    if (INTERFACE_TYPE === 'admin') {
-      console.log('👑 ADMIN INTERFACE MODE');
-      console.log('='.repeat(70));
-      console.log(`\n🔗 Admin Portal: ${localUrl}`);
-      console.log(`🔗 Network:      ${networkUrl}`);
-    } else {
-      console.log('👤 USER INTERFACE MODE');
-      console.log('='.repeat(70));
-      console.log(`\n🔗 User Portal: ${localUrl}`);
-      console.log(`🔗 Network:     ${networkUrl}`);
-    }
-    
-    console.log('\n📚 API ENDPOINTS:');
-    console.log('='.repeat(70));
-    console.log(`📖 API Docs:        ${localUrl}/api`);
-    console.log(`💚 Health Check:    ${localUrl}/health`);
-    console.log(`⚙️  Config:          ${localUrl}/api/config`);
-    console.log(`🎯 Interface:       ${localUrl}/api/interface-status`);
-    console.log(`🔍 CORS Test:       ${localUrl}/api/test-cors`);
-    console.log(`🐛 CORS Debug:      ${localUrl}/api/debug-cors`);
-    console.log(`📦 Storage Info:    ${localUrl}/api/storage-info`);
-    
-    console.log('\n⚙️  SERVER CONFIGURATION:');
-    console.log('='.repeat(70));
-    console.log(`✅ Environment:     ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
-    console.log(`✅ Interface Type:  ${INTERFACE_TYPE.toUpperCase()}`);
-    console.log(`✅ Port:            ${port}`);
-    console.log(`✅ Host:            ${HOST}`);
-    console.log(`✅ Trust Proxy:     ${isProduction ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`✅ CORS Origins:    ${getAllowedOrigins().length} configured`);
-    console.log(`✅ Database:        ${mongoose.connection.readyState === 1 ? 'Connected ✓' : 'Connecting...'}`);
-    
-    // Storage info
-    const cloudinaryConfigured = !!(
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
-      process.env.CLOUDINARY_API_SECRET
-    );
-    
-    if (cloudinaryConfigured) {
-      console.log('☁️  Image Storage:   Cloudinary (configured)');
-    } else {
-      console.log('📁 Image Storage:   Local file system');
-    }
-    
-    if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
-      console.log('✅ Static Files:    ENABLED');
-    } else {
-      console.log('🚫 Static Files:    DISABLED');
-    }
-    
-    console.log('\n' + '='.repeat(70));
-    console.log('💡 TIP: Click on the links above to open in browser');
-    console.log('='.repeat(70));
-    console.log('\n✅'.repeat(35) + '\n');
+    console.clear();
+    console.log('\n🚀 SERVER STARTED');
+    console.log('📱 User:  http://localhost:3000');
+    console.log('🔧 Admin: http://admin.localhost:5173');
+    console.log('💚 Health: http://localhost:3000/health\n');
   });
 
   // Server error handling
   server.on('error', (error: any) => {
     if (error.code === 'EADDRINUSE') {
-      console.error(`❌ Port ${port} is already in use`);
+      console.error(`❌ Port ${port} already in use`);
       process.exit(1);
     } else {
       console.error('❌ Server error:', error);

@@ -11,8 +11,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "start:prod": "cross-env NODE_ENV=production node dist/server.js",
-    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node src/server.ts",
-    "dev:watch": "cross-env NODE_ENV=development nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node server.ts",
+    "dev:watch": "cross-env NODE_ENV=development nodemon --watch . --exec ts-node server.ts",
     "build": "npm run clean && tsc && tsc-alias",
     "build:watch": "tsc --watch",
     "clean": "rimraf dist",
@@ -26,8 +26,8 @@
     "railway:start": "cross-env NODE_ENV=production node dist/server.js",
     "heroku-postbuild": "npm run build",
     "generate:hash": "node -e \"const bcrypt = require('bcrypt'); const pass = process.argv[1]; bcrypt.hash(pass, 12, (e, h) => console.log('Hash:', h));\"",
-    "db:seed": "cross-env NODE_ENV=development ts-node src/scripts/seed.ts",
-    "db:migrate": "cross-env NODE_ENV=development ts-node src/scripts/migrate.ts",
+    "db:seed": "cross-env NODE_ENV=development ts-node scripts/seed.ts",
+    "db:migrate": "cross-env NODE_ENV=development ts-node scripts/migrate.ts",
     "audit:fix": "npm audit fix",
     "audit:force": "npm audit fix --force",
     "update:deps": "npm update && npm audit fix"
@@ -90,14 +90,14 @@
   },
   "nodemonConfig": {
     "watch": [
-      "src"
+      "."
     ],
     "ext": "ts,json",
     "ignore": [
-      "src/**/*.spec.ts",
-      "src/**/*.test.ts"
+      "**/*.spec.ts",
+      "**/*.test.ts"
     ],
-    "exec": "ts-node src/server.ts",
+    "exec": "ts-node server.ts",
     "env": {
       "NODE_ENV": "development"
     }
@@ -106,17 +106,17 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "roots": [
-      "<rootDir>/src"
+      "<rootDir>"
     ],
     "testMatch": [
       "**/__tests__/**/*.ts",
       "**/?(*.)+(spec|test).ts"
     ],
     "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/**/*.d.ts",
-      "!src/**/*.test.ts",
-      "!src/**/*.spec.ts"
+      "**/*.ts",
+      "!**/*.d.ts",
+      "!**/*.test.ts",
+      "!**/*.spec.ts"
     ]
   },
   "repository": {
