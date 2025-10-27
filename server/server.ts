@@ -606,6 +606,7 @@ const getAllowedOrigins = (): string[] => {
       'https://www.mamatiffin.vercel.app',
       'https://admin-mamatiffin.vercel.app',
       'https://www.admin-mamatiffin.vercel.app',
+      'https://mamatiffin-3tmdz9s87-mdkudratullah77-3420s-projects.vercel.app',
     ];
 
     // Add custom environment variable origins if provided
