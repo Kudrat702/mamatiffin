@@ -11,8 +11,8 @@
   "scripts": {
     "dev": "vite --mode development --port 5173 --host",
     "dev:admin": "vite --mode development.admin --port 3001 --host",
-    "build": "tsc -b && vite build --mode production",
-    "build:admin": "tsc -b && vite build --mode production.admin",
+    "build": "vite build --mode production",
+    "build:admin": "vite build --mode production.admin",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview --port 4173",
