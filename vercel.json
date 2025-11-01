@@ -4,5 +4,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "https://admin.mamatiffin.com",
+      "permanent": false
+    }
   ]
 }
