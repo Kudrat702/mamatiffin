@@ -345,7 +345,7 @@ const PaymentPage: React.FC = () => {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Mamatiffin',
+        name: 'mamatiffin',
         description: paymentData?.menuTitle || 'Food Subscription',
         order_id: orderData.orderId,
         handler: async (response: RazorpayResponse) => {

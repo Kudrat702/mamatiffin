@@ -1,50 +1,129 @@
-// ===== FILE: controllers/uploadController.ts =====
-// UPDATED: Fixed upload path for server/uploads structure
+// controllers/uploadController.ts - CLEAN CLOUDINARY VERSION
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinaryUpload';
 
-// STEP 1: Ensure uploads directory exists - FIXED PATH
-const uploadDir = path.join(__dirname, '../uploads'); // ek level upar (server/uploads)
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  console.log('Upload directory created:', uploadDir);
+// ============================================
+// ENVIRONMENT DETECTION
+// ============================================
+const useCloudinary = process.env.NODE_ENV === 'production';
+
+console.log(`📸 Upload Mode: ${useCloudinary ? 'CLOUDINARY (Production)' : 'LOCAL (Development)'}`);
+
+// ============================================
+// LOCAL STORAGE SETUP (Development Only)
+// ============================================
+const baseUploadDir = path.join(__dirname, '../uploads');
+
+if (!useCloudinary) {
+  // Create directories only in development
+  const directories = [
+    baseUploadDir,
+    path.join(baseUploadDir, 'slider-images'),
+    path.join(baseUploadDir, 'menus'),
+    path.join(baseUploadDir, 'catalog')
+  ];
+
+  directories.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`✅ Created directory: ${dir}`);
+    }
+  });
 }
 
-// STEP 2: Configure multer for image storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // FIXED: Use uploadDir variable
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename to avoid conflicts
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
-});
+// ============================================
+// MULTER STORAGE CONFIGURATION
+// ============================================
+const storage = useCloudinary 
+  ? multer.memoryStorage() // Cloudinary uses buffer
+  : multer.diskStorage({
+      destination: (req, file, cb) => {
+        let uploadPath = baseUploadDir;
+        
+        // Route-based folder selection
+        if (req.path.includes('slider') || req.body.type === 'slider') {
+          uploadPath = path.join(baseUploadDir, 'slider-images');
+        } else if (req.path.includes('menu') || req.body.type === 'menu') {
+          uploadPath = path.join(baseUploadDir, 'menus');
+        } else if (req.path.includes('catalog') || req.body.type === 'catalog') {
+          uploadPath = path.join(baseUploadDir, 'catalog');
+        }
+        
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueId = uuidv4();
+        const ext = path.extname(file.originalname);
+        
+        let prefix = 'image';
+        if (req.path.includes('slider')) prefix = 'slider';
+        else if (req.path.includes('menu')) prefix = 'menu';
+        else if (req.path.includes('catalog')) prefix = 'catalog';
+        
+        const filename = `${prefix}-${uniqueId}${ext}`;
+        cb(null, filename);
+      }
+    });
 
-// STEP 3: Configure multer with file validation
-export const upload = multer({
+// ============================================
+// FILE FILTER (Image Validation)
+// ============================================
+const fileFilter = (req: any, file: any, cb: any) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  if (mimetype && extname) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (jpeg, jpg, png, gif, webp) are allowed!'));
+  }
+};
+
+// ============================================
+// MULTER UPLOAD MIDDLEWARE
+// ============================================
+const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB file size limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: (req, file, cb) => {
-    // Only allow image files
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed (JPEG, PNG, WebP, GIF)'));
-    }
+  fileFilter: fileFilter
+});
+
+export default upload;
+
+// ============================================
+// NAMED EXPORTS (Backward Compatibility)
+// ============================================
+export const uploadSlider = upload;
+export const uploadMenu = upload;
+export const uploadCatalog = upload;
+
+// ============================================
+// UPLOAD INFO UTILITY
+// ============================================
+export const getUploadInfo = () => ({
+  mode: useCloudinary ? 'cloudinary' : 'local',
+  baseDir: useCloudinary ? 'cloudinary' : baseUploadDir,
+  maxSize: '5MB',
+  allowedTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp'],
+  folders: {
+    slider: useCloudinary ? 'slider-images' : path.join(baseUploadDir, 'slider-images'),
+    menus: useCloudinary ? 'menus' : path.join(baseUploadDir, 'menus'),
+    catalog: useCloudinary ? 'catalog' : path.join(baseUploadDir, 'catalog')
   }
 });
 
-// STEP 4: Image upload controller function
+// ============================================
+// IMAGE UPLOAD HANDLER
+// ============================================
 export const uploadImage = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Check if file was uploaded
     if (!req.file) {
       res.status(400).json({
         success: false,
@@ -53,27 +132,39 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Generate the complete image URL
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-   
-    console.log('Image uploaded successfully:', {
-      originalName: req.file.originalname,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-      url: imageUrl
-    });
+    let imageUrl: string;
+    let imagePublicId: string | undefined;
+
+    if (useCloudinary) {
+      // CLOUDINARY UPLOAD
+      const folder = req.body.folder || 'general';
+      const result = await uploadToCloudinary(req.file.buffer, {
+        folder: folder,
+        publicId: `${folder}-${Date.now()}`
+      });
+
+      imageUrl = result.secure_url;
+      imagePublicId = result.public_id;
+
+      console.log('☁️ Cloudinary upload success:', imagePublicId);
+    } else {
+      // LOCAL UPLOAD
+      imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+      console.log('💾 Local upload success:', req.file.filename);
+    }
 
     res.json({
       success: true,
       imageUrl: imageUrl,
+      imagePublicId: imagePublicId,
       filename: req.file.filename,
       originalName: req.file.originalname,
       size: req.file.size,
-      message: 'Image uploaded successfully'
+      message: 'Image uploaded successfully',
+      storage: useCloudinary ? 'cloudinary' : 'local'
     });
   } catch (error: any) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to upload image',
@@ -82,24 +173,34 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// STEP 5: Helper function to delete image files - FIXED PATH
-export const deleteImageFile = (imageUrl: string): boolean => {
+// ============================================
+// DELETE IMAGE HANDLER
+// ============================================
+export const deleteImageFile = async (
+  imageUrl: string, 
+  imagePublicId?: string
+): Promise<boolean> => {
   try {
-    if (imageUrl && imageUrl.includes('/uploads/')) {
-      // Extract filename from URL
+    if (useCloudinary && imagePublicId) {
+      // DELETE FROM CLOUDINARY
+      await deleteFromCloudinary(imagePublicId);
+      console.log('☁️ Cloudinary delete success:', imagePublicId);
+      return true;
+    } else if (!useCloudinary && imageUrl && imageUrl.includes('/uploads/')) {
+      // DELETE FROM LOCAL
       const filename = imageUrl.split('/uploads/')[1];
       if (filename) {
-        const filePath = path.join(uploadDir, filename); // FIXED: Use uploadDir variable
+        const filePath = path.join(baseUploadDir, filename);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
-          console.log('Image file deleted:', filename);
+          console.log('💾 Local delete success:', filename);
           return true;
         }
       }
     }
     return false;
   } catch (error) {
-    console.error('Error deleting image file:', error);
+    console.error('❌ Error deleting image:', error);
     return false;
   }
 };

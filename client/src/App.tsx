@@ -1,13 +1,12 @@
-// // frontend/src/App.tsx - COMPLETE VERSION WITH OUR STORY ROUTE
+// // frontend/src/App.tsx - UPDATED WITH AUTO SUBDOMAIN DETECTION
 // import React from 'react';
 // import { LocationProvider } from './context/LocationContext';
 // import { AuthProvider as AdminAuthProvider } from './context/AdminAuthContext';
 // import { AuthProvider } from './context/AuthContext';
 // import { useAuth } from './hooks/AdminAuthHooks';
-// import { useDomain } from './hooks/useDomain';
 // import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 
-// // Import all your existing components
+// // Import all components
 // import Header from './components/Header';
 // import LocationModal from './components/LocationModal';
 // import Footer from './components/footer/Footer';
@@ -37,6 +36,52 @@
 // import OurStoryPage from './components/OurStoryHeader';
 
 // import './App.css';
+
+// // ✅ AUTOMATIC APP TYPE DETECTION
+// const getAppType = (): 'user' | 'admin' => {
+//   // Check hostname for subdomain
+//   if (typeof window !== 'undefined') {
+//     const hostname = window.location.hostname;
+//     const port = window.location.port;
+    
+//     // Check for admin subdomain or admin port
+//     if (hostname.includes('admin') || port === '5174') {
+//       console.log('🔧 Detected ADMIN mode from hostname:', hostname);
+//       return 'admin';
+//     }
+//   }
+  
+//   // Check environment variable
+//   const envAppType = import.meta.env.VITE_APP_TYPE;
+//   if (envAppType === 'admin') {
+//     console.log('🔧 Detected ADMIN mode from environment variable');
+//     return 'admin';
+//   }
+  
+//   console.log('📱 Detected USER mode (default)');
+//   return 'user';
+// };
+
+// // ✅ Get app type
+// const APP_TYPE = getAppType();
+
+// // ✅ Get URLs from environment
+// const USER_APP_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
+// const ADMIN_APP_URL = import.meta.env.VITE_ADMIN_URL || 'http://admin.localhost:5173';
+
+// // ✅ API URL from environment
+// const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// // Log configuration on startup
+// console.log('🔧 App Configuration:', {
+//   APP_TYPE,
+//   HOSTNAME: window.location.hostname,
+//   PORT: window.location.port,
+//   USER_APP_URL,
+//   ADMIN_APP_URL,
+//   API_URL,
+//   NODE_ENV: import.meta.env.MODE
+// });
 
 // // Protected Route Component
 // const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -95,24 +140,23 @@
 //   );
 // };
 
-// // Simple Error Boundary Component
-// const DomainMismatch: React.FC<{ message: string }> = ({ message }) => {
+// // ✅ External Redirect Component
+// const ExternalRedirect: React.FC<{ to: string }> = ({ to }) => {
+//   React.useEffect(() => {
+//     window.location.href = to;
+//   }, [to]);
+  
 //   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-//       <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
-//         <div className="text-red-500 text-6xl mb-4">⚠️</div>
-//         <h2 className="text-xl font-bold text-gray-800 mb-4">Domain Mismatch</h2>
-//         <p className="text-gray-600 mb-6">{message}</p>
-//         <div className="space-y-2 text-sm text-gray-500">
-//           <p><strong>User Site:</strong> http://localhost:5173</p>
-//           <p><strong>Admin Site:</strong> http://admin.localhost:5173</p>
-//         </div>
+//     <div className="min-h-screen flex items-center justify-center">
+//       <div className="text-center">
+//         <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+//         <p className="text-gray-600">Redirecting...</p>
 //       </div>
 //     </div>
 //   );
 // };
 
-// // User Routes Component - WITH OUR STORY ROUTE ADDED
+// // User Routes Component
 // const UserRoutes: React.FC = () => {
 //   return (
 //     <Routes>
@@ -134,16 +178,10 @@
 //         <Route path="/contact" element={<Contact />} />
 //         <Route path="/our-story" element={<OurStoryPage />} />
         
-//         {/* Admin routes - show error message instead of redirect */}
-//         <Route path="/admin/*" element={
-//           <DomainMismatch message="Admin routes should be accessed from admin.localhost:5173" />
-//         } />
-//         <Route path="/admin-login" element={
-//           <DomainMismatch message="Please go to admin.localhost:5173/admin-login" />
-//         } />
-//         <Route path="/super-admin/*" element={
-//           <DomainMismatch message="Super admin routes should be accessed from admin.localhost:5173" />
-//         } />
+//         {/* ✅ Admin routes redirect to admin app */}
+//         <Route path="/admin/*" element={<ExternalRedirect to={`${ADMIN_APP_URL}/admin`} />} />
+//         <Route path="/admin-login" element={<ExternalRedirect to={`${ADMIN_APP_URL}/admin-login`} />} />
+//         <Route path="/super-admin/*" element={<ExternalRedirect to={`${ADMIN_APP_URL}/super-admin`} />} />
         
 //         <Route path="*" element={<Navigate to="/home" replace />} />
 //       </Route>
@@ -151,11 +189,12 @@
 //   );
 // };
 
-// // Admin Routes Component - SIMPLIFIED
+// // Admin Routes Component
 // const AdminRoutes: React.FC = () => {
 //   return (
 //     <Routes>
 //       <Route path="/admin-login" element={<AdminLogin />} />
+      
 //       <Route element={<ProtectedRoute><AdminLayoutWrapper /></ProtectedRoute>}>
 //         <Route path="/super-admin" element={<AdminDashboard />} />
 //         <Route path="/admin" element={<AdminDashboard />} />
@@ -176,42 +215,30 @@
 //         <Route path="/admin/users" element={<UsersList />} />
 //         <Route path="/admin/orders" element={<AdminOrders />} />
 //       </Route>
+      
 //       <Route path="/admin/menu-catalog-standalone" element={
 //         <ProtectedRoute>
 //           <MenuCatalogManager />
 //         </ProtectedRoute>
 //       } />
       
-//       {/* User routes - show error message instead of redirect */}
-//       <Route path="/home" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/veg-menu" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/non-veg-menu" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/my-orders" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/about-us" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/contact" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
-//       <Route path="/our-story" element={
-//         <DomainMismatch message="User routes should be accessed from localhost:5173" />
-//       } />
+//       {/* ✅ User routes redirect to user app */}
+//       <Route path="/home" element={<ExternalRedirect to={`${USER_APP_URL}/home`} />} />
+//       <Route path="/veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/veg-menu`} />} />
+//       <Route path="/non-veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/non-veg-menu`} />} />
+//       <Route path="/my-orders" element={<ExternalRedirect to={`${USER_APP_URL}/my-orders`} />} />
+//       <Route path="/about-us" element={<ExternalRedirect to={`${USER_APP_URL}/about-us`} />} />
+//       <Route path="/contact" element={<ExternalRedirect to={`${USER_APP_URL}/contact`} />} />
+//       <Route path="/our-story" element={<ExternalRedirect to={`${USER_APP_URL}/our-story`} />} />
       
+//       {/* Default redirects */}
 //       <Route path="/" element={<Navigate to="/admin" replace />} />
 //       <Route path="*" element={<Navigate to="/admin" replace />} />
 //     </Routes>
 //   );
 // };
 
-// // Global Styles Component (keeping your existing styles)
+// // Global Styles Component
 // const GlobalStyles: React.FC = () => {
 //   return (
 //     <style>{`
@@ -408,16 +435,22 @@
 //   );
 // };
 
-// // Main App Component - CLEAN & SIMPLE
+// // ✅ Main App Component - Environment Based with Auto Detection
 // const App: React.FC = () => {
-//   const { isAdmin, hostname } = useDomain();
-
-//   console.log(`Mama Tiffin App loaded - Domain: ${hostname}, Mode: ${isAdmin ? 'Admin' : 'User'}`);
+//   console.log(`✅ Mama Tiffin App - Mode: ${APP_TYPE}`);
+  
+//   // ✅ Show warning if admin subdomain but in user mode
+//   React.useEffect(() => {
+//     const hostname = window.location.hostname;
+//     if (hostname.includes('admin') && APP_TYPE === 'user') {
+//       console.warn('⚠️ WARNING: Admin subdomain detected but app is in USER mode!');
+//     }
+//   }, []);
 
 //   return (
 //     <AdminAuthProvider>
 //       <Router>
-//         {isAdmin ? (
+//         {APP_TYPE === 'admin' ? (
 //           <AdminRoutes />
 //         ) : (
 //           <LocationProvider>
@@ -432,16 +465,16 @@
 
 // export default App;
 
-// frontend/src/App.tsx - FIXED VERSION - NO DOMAIN MISMATCH
+// frontend/src/App.tsx - UPDATED WITH OPEN GRAPH META TAGS
 import React from 'react';
+import { Helmet } from 'react-helmet'; // ✅ NEW IMPORT
 import { LocationProvider } from './context/LocationContext';
 import { AuthProvider as AdminAuthProvider } from './context/AdminAuthContext';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/AdminAuthHooks';
-import { useDomain } from './hooks/useDomain';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 
-// Import all components (keeping your existing imports)
+// Import all components
 import Header from './components/Header';
 import LocationModal from './components/LocationModal';
 import Footer from './components/footer/Footer';
@@ -472,6 +505,62 @@ import OurStoryPage from './components/OurStoryHeader';
 
 import './App.css';
 
+// ✅ AUTOMATIC APP TYPE DETECTION
+const getAppType = (): 'user' | 'admin' => {
+  // Check hostname for subdomain
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    
+    // Check for admin subdomain or admin port
+    if (hostname.includes('admin') || port === '5174') {
+      console.log('🔧 Detected ADMIN mode from hostname:', hostname);
+      return 'admin';
+    }
+  }
+  
+  // Check environment variable
+  const envAppType = import.meta.env.VITE_APP_TYPE;
+  if (envAppType === 'admin') {
+    console.log('🔧 Detected ADMIN mode from environment variable');
+    return 'admin';
+  }
+  
+  console.log('📱 Detected USER mode (default)');
+  return 'user';
+};
+
+// ✅ NEW: Function to get Open Graph Image URL
+const getOgImageUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin;
+    return `${origin}/og-image.png`;
+  }
+  // Fallback for SSR
+  return 'https://www.mamatiffin.com/og-image.png';
+};
+
+// ✅ Get app type
+const APP_TYPE = getAppType();
+
+// ✅ Get URLs from environment
+const USER_APP_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
+const ADMIN_APP_URL = import.meta.env.VITE_ADMIN_URL || 'http://admin.localhost:5173';
+
+// ✅ API URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Log configuration on startup
+console.log('🔧 App Configuration:', {
+  APP_TYPE,
+  HOSTNAME: window.location.hostname,
+  PORT: window.location.port,
+  USER_APP_URL,
+  ADMIN_APP_URL,
+  API_URL,
+  NODE_ENV: import.meta.env.MODE
+});
+
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -484,10 +573,51 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
 };
 
-// Customer Layout Component
+// ✅ UPDATED: Customer Layout Component with Helmet
 const CustomerLayout: React.FC = () => {
+  // Get dynamic URLs
+  const currentUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.mamatiffin.com';
+  const ogImageUrl = getOgImageUrl();
+  
+  // Log for debugging
+  console.log('🖼️ Open Graph Image URL:', ogImageUrl);
+  
   return (
     <AuthProvider>
+      {/* ✅ HELMET FOR META TAGS */}
+      <Helmet>
+        {/* Basic Meta Tags */}
+        <title>mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery</title>
+        <meta name="description" content="mamatiffin is a trusted Student Tiffin Service provider that delivers hot, homemade-style and delicious food right to your hostel or room, sourced only from hygienic and FSSAI-approved kitchens across the city." />
+        <meta name="author" content="mamatiffin" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* ✅ Open Graph Tags (Facebook, WhatsApp, Instagram) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:site_name" content="mamatiffin" />
+        <meta property="og:title" content="mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery" />
+        <meta property="og:description" content="mamatiffin delivers hot, homemade-style delicious food right to your hostel or room from FSSAI-approved kitchens. Order fresh tiffin service today!" />
+        
+        {/* ✅ Image Tags for Social Media */}
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:secure_url" content={ogImageUrl} />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="mamatiffin - Fresh Homemade Food Delivery Service" />
+        
+        {/* ✅ Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="mamatiffin - Student Tiffin Service" />
+        <meta name="twitter:description" content="mamatiffin delivers hot, homemade food to your hostel from FSSAI-approved kitchens." />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <meta name="twitter:image:alt" content="mamatiffin - Fresh Homemade Food" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={currentUrl} />
+      </Helmet>
+
       <div className="App flex flex-col min-h-screen dark:bg-gray-900">
         <Header />
         <LocationModal />
@@ -529,7 +659,21 @@ const HomePage: React.FC = () => {
   );
 };
 
-// ✅ REMOVED DomainMismatch Component - No longer needed
+// ✅ External Redirect Component
+const ExternalRedirect: React.FC<{ to: string }> = ({ to }) => {
+  React.useEffect(() => {
+    window.location.href = to;
+  }, [to]);
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+        <p className="text-gray-600">Redirecting...</p>
+      </div>
+    </div>
+  );
+};
 
 // User Routes Component
 const UserRoutes: React.FC = () => {
@@ -553,10 +697,10 @@ const UserRoutes: React.FC = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/our-story" element={<OurStoryPage />} />
         
-        {/* ✅ FIXED: Admin routes redirect instead of showing error */}
-        <Route path="/admin/*" element={<Navigate to="http://admin.localhost:5173/admin" replace />} />
-        <Route path="/admin-login" element={<Navigate to="http://admin.localhost:5173/admin-login" replace />} />
-        <Route path="/super-admin/*" element={<Navigate to="http://admin.localhost:5173/super-admin" replace />} />
+        {/* ✅ Admin routes redirect to admin app */}
+        <Route path="/admin/*" element={<ExternalRedirect to={`${ADMIN_APP_URL}/admin`} />} />
+        <Route path="/admin-login" element={<ExternalRedirect to={`${ADMIN_APP_URL}/admin-login`} />} />
+        <Route path="/super-admin/*" element={<ExternalRedirect to={`${ADMIN_APP_URL}/super-admin`} />} />
         
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
@@ -564,7 +708,7 @@ const UserRoutes: React.FC = () => {
   );
 };
 
-// Admin Routes Component - FIXED
+// Admin Routes Component
 const AdminRoutes: React.FC = () => {
   return (
     <Routes>
@@ -597,14 +741,14 @@ const AdminRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
       
-      {/* ✅ FIXED: Remove DomainMismatch, just redirect to user site */}
-      <Route path="/home" element={<Navigate to="http://localhost:5173/home" replace />} />
-      <Route path="/veg-menu" element={<Navigate to="http://localhost:5173/veg-menu" replace />} />
-      <Route path="/non-veg-menu" element={<Navigate to="http://localhost:5173/non-veg-menu" replace />} />
-      <Route path="/my-orders" element={<Navigate to="http://localhost:5173/my-orders" replace />} />
-      <Route path="/about-us" element={<Navigate to="http://localhost:5173/about-us" replace />} />
-      <Route path="/contact" element={<Navigate to="http://localhost:5173/contact" replace />} />
-      <Route path="/our-story" element={<Navigate to="http://localhost:5173/our-story" replace />} />
+      {/* ✅ User routes redirect to user app */}
+      <Route path="/home" element={<ExternalRedirect to={`${USER_APP_URL}/home`} />} />
+      <Route path="/veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/veg-menu`} />} />
+      <Route path="/non-veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/non-veg-menu`} />} />
+      <Route path="/my-orders" element={<ExternalRedirect to={`${USER_APP_URL}/my-orders`} />} />
+      <Route path="/about-us" element={<ExternalRedirect to={`${USER_APP_URL}/about-us`} />} />
+      <Route path="/contact" element={<ExternalRedirect to={`${USER_APP_URL}/contact`} />} />
+      <Route path="/our-story" element={<ExternalRedirect to={`${USER_APP_URL}/our-story`} />} />
       
       {/* Default redirects */}
       <Route path="/" element={<Navigate to="/admin" replace />} />
@@ -613,7 +757,7 @@ const AdminRoutes: React.FC = () => {
   );
 };
 
-// Global Styles Component (keeping your existing styles)
+// Global Styles Component
 const GlobalStyles: React.FC = () => {
   return (
     <style>{`
@@ -810,16 +954,22 @@ const GlobalStyles: React.FC = () => {
   );
 };
 
-// Main App Component - CLEAN & SIMPLE
+// ✅ Main App Component - Environment Based with Auto Detection
 const App: React.FC = () => {
-  const { isAdmin, hostname } = useDomain();
-
-  console.log(`✅ Mama Tiffin App loaded - Domain: ${hostname}, Mode: ${isAdmin ? 'Admin' : 'User'}`);
+  console.log(`✅ Mama Tiffin App - Mode: ${APP_TYPE}`);
+  
+  // ✅ Show warning if admin subdomain but in user mode
+  React.useEffect(() => {
+    const hostname = window.location.hostname;
+    if (hostname.includes('admin') && APP_TYPE === 'user') {
+      console.warn('⚠️ WARNING: Admin subdomain detected but app is in USER mode!');
+    }
+  }, []);
 
   return (
     <AdminAuthProvider>
       <Router>
-        {isAdmin ? (
+        {APP_TYPE === 'admin' ? (
           <AdminRoutes />
         ) : (
           <LocationProvider>

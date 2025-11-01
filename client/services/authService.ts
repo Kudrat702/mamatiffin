@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../src/configapi/api';
 
-const API_BASE_URL_WITH_API = `${API_BASE_URL}/api`;
+const API_BASE_URL_WITH_API = `${API_BASE_URL}/api/admin/auth`;
 
 export interface SignUpData {
   name: string;

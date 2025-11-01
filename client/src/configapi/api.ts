@@ -229,13 +229,17 @@ export const apiEndpoints = {
   signup: `${API_BASE_URL}/api/auth/signup`,
   addressOptions: `${API_BASE_URL}/api/auth/address-options`,
   usersBase: `${API_BASE_URL}/api/auth`,
+  getAllUsers: `${API_BASE_URL}/api/auth/users`,
   
-  // ADMIN AUTH
-  adminAuth: `${API_BASE_URL}/admin-auth`,
-  adminSignin: `${API_BASE_URL}/admin-auth/signin`,
-  adminSignup: `${API_BASE_URL}/admin-auth/signup`,
-  
-  // MAIN MENU DETAILS ENDPOINTS
+// ADMIN AUTH - ✅ FIXED PATHS
+adminAuth: `${API_BASE_URL}/api/admin/auth`,
+adminSignin: `${API_BASE_URL}/api/admin/auth/signin`,
+adminSignup: `${API_BASE_URL}/api/admin/auth/signup`,
+adminProfile: `${API_BASE_URL}/api/admin/auth/profile`,
+adminVerifyToken: `${API_BASE_URL}/api/admin/auth/verify-token`,
+adminLogout: `${API_BASE_URL}/api/admin/auth/logout`,
+adminHashPassword: `${API_BASE_URL}/api/admin/auth/hash-password`,
+// MAIN MENU DETAILS ENDPOINTS
   menuDetails: (diet: string, category: string): string => 
     `${API_BASE_URL}/api/menus/${diet}/${category}`,
   
@@ -257,26 +261,47 @@ export const apiEndpoints = {
   vegMenus: `${API_BASE_URL}/api/veg-menus`,
   vegMenusByCategory: (category: string): string => 
     `${API_BASE_URL}/api/veg-menus/category/${encodeURIComponent(category)}`,
-  vegMenuDetails: `${API_BASE_URL}/api/veg-menu-details`,
+  vegMenuDetails: `${API_BASE_URL}/api/menus/veg-menu-details`,
   
   nonVegMenus: `${API_BASE_URL}/api/non-veg-menus`,
   nonVegMenusByCategory: (category: string): string => 
     `${API_BASE_URL}/api/non-veg-menus/category/${encodeURIComponent(category)}`,
-  nonVegMenuDetails: `${API_BASE_URL}/api/non-veg-menu-details`,
+  nonVegMenuDetails: `${API_BASE_URL}/api/menus/non-veg-menu-details`,
   
   // CATALOG ENDPOINTS (Time-based Menu Catalog)
-  vegCatalog: `${API_BASE_URL}/api/veg/catalog`,
-  vegCatalogById: (id: string): string => `${API_BASE_URL}/api/veg/catalog/${id}`,
-  vegCatalogByCategory: (category: string): string => 
-    `${API_BASE_URL}/api/veg/catalog/category/${encodeURIComponent(category)}`,
+// ✅ VEG CATALOG
+vegCatalog: `${API_BASE_URL}/api/veg-menus`,
+vegCatalogById: (id: string): string => `${API_BASE_URL}/api/veg-menus/${id}`,
+vegCatalogByCategory: (category: string): string => 
+  `${API_BASE_URL}/api/veg-menus/category/${encodeURIComponent(category)}`,
+vegCatalogSearch: (searchTerm: string): string => 
+  `${API_BASE_URL}/api/veg-menus/search/${encodeURIComponent(searchTerm)}`,
+vegCatalogBulk: (category: string): string => 
+  `${API_BASE_URL}/api/veg-menus/bulk/${encodeURIComponent(category)}`,
+vegCatalogSummary: `${API_BASE_URL}/api/veg-menus/categories/summary`,
+vegCatalogHealth: `${API_BASE_URL}/api/veg-menus/health`,
+
+// ✅ NON-VEG CATALOG
+nonVegCatalog: `${API_BASE_URL}/api/non-veg-menus`,
+nonVegCatalogById: (id: string): string => `${API_BASE_URL}/api/non-veg-menus/${id}`,
+nonVegCatalogByCategory: (category: string): string => 
+  `${API_BASE_URL}/api/non-veg-menus/category/${encodeURIComponent(category)}`,
+nonVegCatalogSearch: (searchTerm: string): string => 
+  `${API_BASE_URL}/api/non-veg-menus/search/${encodeURIComponent(searchTerm)}`,
+nonVegCatalogBulk: (category: string): string => 
+  `${API_BASE_URL}/api/non-veg-menus/bulk/${encodeURIComponent(category)}`,
+nonVegCatalogSummary: `${API_BASE_URL}/api/non-veg-menus/categories/summary`,
+nonVegCatalogHealth: `${API_BASE_URL}/api/non-veg-menus/health`,
   
-  nonVegCatalog: `${API_BASE_URL}/api/non-veg/catalog`,
-  nonVegCatalogById: (id: string): string => `${API_BASE_URL}/api/non-veg/catalog/${id}`,
-  nonVegCatalogByCategory: (category: string): string => 
-    `${API_BASE_URL}/api/non-veg/catalog/category/${encodeURIComponent(category)}`,
-  
-  // IMAGE UPLOAD
-  uploadImage: `${API_BASE_URL}/api/upload`,
+  // IMAGE UPLOAD ENDPOINTS
+uploadImage: `${API_BASE_URL}/api/upload/image`,
+uploadMultipleImages: `${API_BASE_URL}/api/upload/images`,
+deleteImage: (filename: string): string => 
+  `${API_BASE_URL}/api/upload/image/${filename}`,
+getImageInfo: (filename: string): string => 
+  `${API_BASE_URL}/api/upload/info/${filename}`,
+listUploadedImages: `${API_BASE_URL}/api/upload/list`,
+uploadHealth: `${API_BASE_URL}/api/upload/health`,
   
   // HEALTH CHECK
   health: `${API_BASE_URL}/api/health`,
@@ -342,30 +367,21 @@ export const apiEndpoints = {
   createPayment: `${API_BASE_URL}/api/payments/create-order`,
   verifyPayment: `${API_BASE_URL}/api/payments/verify`,
   paymentStatus: (orderId: string): string => `${API_BASE_URL}/api/payments/status/${orderId}`,
-  paymentHistory: (userId: string): string => `${API_BASE_URL}/api/payments/history/${userId}`,
-  paymentRefund: (paymentId: string): string => `${API_BASE_URL}/api/payments/refund/${paymentId}`,
-  paymentWebhook: `${API_BASE_URL}/api/payments/webhook`,
-  paymentMethods: `${API_BASE_URL}/api/payments/methods`,
-  paymentSettings: `${API_BASE_URL}/api/payments/settings`,
-  subscriptionPayments: `${API_BASE_URL}/api/payments/subscriptions`,
-  subscriptionCancel: (subscriptionId: string): string => 
-    `${API_BASE_URL}/api/payments/subscriptions/${subscriptionId}/cancel`,
-  subscriptionRenew: (subscriptionId: string): string => 
-    `${API_BASE_URL}/api/payments/subscriptions/${subscriptionId}/renew`,
-  paymentAnalytics: `${API_BASE_URL}/api/payments/analytics`,
-  paymentReports: (type: string): string => `${API_BASE_URL}/api/payments/reports/${type}`,
-  paymentExport: (format: string): string => `${API_BASE_URL}/api/payments/export/${format}`,
   
-  // MESSAGES
-  messages: `${API_BASE_URL}/api/messages`,
-  messageById: (id: string): string => `${API_BASE_URL}/api/messages/${id}`,
-  messageReply: (id: string): string => `${API_BASE_URL}/api/messages/${id}/reply`,
-  messageStatus: (id: string): string => `${API_BASE_URL}/api/messages/${id}/status`,
-  messageStats: `${API_BASE_URL}/api/messages/stats/summary`,
-  
-  // USER
-  userFoodPreferences: (phone: string): string => `${API_BASE_URL}/api/user/food-preferences/${phone}`,
-  userFoodSelection: `${API_BASE_URL}/api/user/food-selection`,
+// MESSAGES SECTION
+messages: `${API_BASE_URL}/api/messages`,
+messageById: (id: string): string => `${API_BASE_URL}/api/messages/${id}`,
+messageReply: (id: string): string => `${API_BASE_URL}/api/messages/${id}/reply`,
+messageStatus: (id: string): string => `${API_BASE_URL}/api/messages/${id}/status`,
+messageStats: `${API_BASE_URL}/api/messages/stats/summary`,
+messageDelete: (id: string): string => `${API_BASE_URL}/api/messages/${id}`,  // ✅ ADD THIS
+messageHealth: `${API_BASE_URL}/api/messages/health`,  // ✅ OPTIONAL: Add this too
+  // USER - ✅ COMPLETE
+userFoodPreferences: (phone: string): string => 
+  `${API_BASE_URL}/api/user/food-preferences/${phone}`,
+userFoodSelection: `${API_BASE_URL}/api/user/food-selection`,
+userDashboard: (phone: string): string => 
+  `${API_BASE_URL}/api/user/dashboard/${phone}`,
   
   // SLIDER
   slider: `${API_BASE_URL}/api/slider`,

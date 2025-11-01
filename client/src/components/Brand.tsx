@@ -1,12 +1,12 @@
 import React from 'react';
 import { Heart, Clock, Wallet, Zap, Shield } from 'lucide-react';
 
-const MamaTiffin: React.FC = () => {
+const mamatiffin: React.FC = () => {
   const features = [
     {
       icon: <Shield className="w-8 h-8 text-white" />,
       title: "Healthy & Hygienic Ghar Jaisa Khana",
-      description: "Students ko hostel/mess ka oily khana pasand nahi aata. MamaTiffin har tiffin ghar ke standard se hygienic aur nutritious banata hai."
+      description: "Students ko hostel/mess ka oily khana pasand nahi aata. mamatiffin har tiffin ghar ke standard se hygienic aur nutritious banata hai."
     },
     {
       icon: <Wallet className="w-8 h-8 text-white" />,
@@ -39,7 +39,7 @@ const MamaTiffin: React.FC = () => {
             className="text-4xl md:text-5xl font-normal text-center mb-12"
             style={{ color: 'rgb(50, 140, 129)' }}
           >
-            Why Order Food from MamaTiffin?
+            Why Order Food from mamatiffin?
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -82,14 +82,14 @@ const MamaTiffin: React.FC = () => {
             </h2>
             
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
-              Hostel/Room me rehne wale students ko ghar jaisa khana nahi milta. Exam preparation ke pressure me unko healthy aur tasty food ki zarurat hoti hai. Isi need ko pura karne ke liye MamaTiffin bana hai – taaki har student ko ghar ka pyar aur sehatmand khana mil sake.
+              Hostel/Room me rehne wale students ko ghar jaisa khana nahi milta. Exam preparation ke pressure me unko healthy aur tasty food ki zarurat hoti hai. Isi need ko pura karne ke liye mamatiffin bana hai – taaki har student ko ghar ka pyar aur sehatmand khana mil sake.
             </p>
             
             <p 
               className="text-xl font-semibold italic"
               style={{ color: 'rgb(50, 140, 129)' }}
             >
-              "Jab aap apne exams ki tyari me busy ho, MamaTiffin aapke liye maa ki tarah khayal rakhta hai."
+              "Jab aap apne exams ki tyari me busy ho, mamatiffin aapke liye maa ki tarah khayal rakhta hai."
             </p>
           </div>
         </div>
@@ -98,4 +98,4 @@ const MamaTiffin: React.FC = () => {
   );
 };
 
-export default MamaTiffin;
+export default mamatiffin;

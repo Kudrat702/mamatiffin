@@ -9,11 +9,14 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "dev": "vite --port 5173 --host",
-    "build": "tsc -b && vite build",
+    "dev": "vite --mode development --port 5173 --host",
+    "dev:admin": "vite --mode development.admin --port 3001 --host",
+    "build": "tsc -b && vite build --mode production",
+    "build:admin": "tsc -b && vite build --mode production.admin",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview --port 4173",
+    "preview:admin": "vite preview --port 3002",
     "test": "echo 'Tests not configured yet' && exit 0",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist node_modules/.vite"
@@ -22,6 +25,7 @@
     "@emotion/babel-plugin": "11.13.5",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
+    "@types/react-helmet": "^6.1.11",
     "axios": "1.7.7",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -31,6 +35,8 @@
     "react": "18.3.1",
     "react-calendar": "5.1.0",
     "react-dom": "18.3.1",
+    "react-helmet": "^6.1.0",
+    "react-hook-form": "^7.65.0",
     "react-hot-toast": "2.6.0",
     "react-router-dom": "6.30.1"
   },

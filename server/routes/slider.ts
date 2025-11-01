@@ -39,11 +39,17 @@ const router = express.Router();
 // Public routes - Active sliders only
 router.get('/', getSliderImages);
 
-// Admin routes - Full CRUD operations
+// Admin routes - Get all sliders
 router.get('/admin', getAllSliderImages);
+
+// Admin routes - Create slider
 router.post('/admin', uploadSlider.single('image'), createSliderImage);
+
+// ⚠️ CRITICAL: Toggle route MUST come BEFORE /admin/:id routes
+router.patch('/admin/:id/toggle', toggleSliderImageStatus);
+
+// Admin routes - Update and Delete (AFTER toggle route)
 router.put('/admin/:id', uploadSlider.single('image'), updateSliderImage);
 router.delete('/admin/:id', deleteSliderImage);
-router.patch('/admin/:id/toggle', toggleSliderImageStatus);
 
 export default router;

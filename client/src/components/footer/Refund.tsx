@@ -27,7 +27,7 @@ const RefundCancellationPolicy: React.FC = () => {
               <div className="border-l-4 border-orange-500 pl-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">2. Perishable Items Policy</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  <strong>Mamatiffin</strong> does not accept cancellation requests for perishable items like flowers, 
+                  <strong>mamatiffin</strong> does not accept cancellation requests for perishable items like flowers, 
                   eatables, etc. However, refund/replacement can be made if the user establishes that the quality of 
                   the product delivered is not good.
                 </p>
@@ -59,7 +59,7 @@ const RefundCancellationPolicy: React.FC = () => {
               <div className="border-l-4 border-green-500 pl-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">5. Refund Processing</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  In case of any refunds approved by <strong>Mamatiffin</strong>, it will take <strong>1 day</strong> 
+                  In case of any refunds approved by <strong>mamatiffin</strong>, it will take <strong>1 day</strong> 
                   for the refund to be processed to you.
                 </p>
               </div>

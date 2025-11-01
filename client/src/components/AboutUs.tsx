@@ -16,7 +16,7 @@ const AboutUs = () => {
           <div className="order-2 lg:order-1">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-xl border border-white/20">
               <p className="text-lg lg:text-xl leading-relaxed text-gray-700 mb-6">
-                <span className="font-bold text-purple-600">MamaTiffin</span> is a trusted Student Tiffin Service provider that delivers hot, homemade-style and delicious food right to your hostel or room, sourced only from hygienic and <span className="font-semibold text-orange-600">FSSAI-approved kitchens</span> across the city.
+                <span className="font-bold text-purple-600">mamatiffin</span> is a trusted Student Tiffin Service provider that delivers hot, homemade-style and delicious food right to your hostel or room, sourced only from hygienic and <span className="font-semibold text-orange-600">FSSAI-approved kitchens</span> across the city.
               </p>
               
               <p className="text-lg lg:text-xl leading-relaxed text-gray-700 mb-6">
@@ -34,7 +34,7 @@ const AboutUs = () => {
             <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-pink-100 to-purple-100 p-8">
               <img
                 src="/about.jpg"
-                alt="MamaTiffin Kitchen"
+                alt="mamatiffin Kitchen"
                 className="w-full h-auto object-cover rounded-2xl transform hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;

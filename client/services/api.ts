@@ -487,7 +487,7 @@ export const adminLogin = async (
     console.log('- To Backend:', getApiBaseUrl());
     
     const response = await api.post<ApiResponse<{ token: string }>>(
-      '/admin-auth', 
+      '/api/admin/auth/signin', 
       { password }
     );
     

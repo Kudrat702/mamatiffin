@@ -30,7 +30,7 @@ const TermsConditions: React.FC = () => {
               
               <li>
                 <p className="text-gray-700 leading-relaxed">
-                  The Platform is owned by <span className="font-semibold">Mamatiffin</span>, a company incorporated 
+                  The Platform is owned by <span className="font-semibold">mamatiffin</span>, a company incorporated 
                   under the Companies Act, 1956 with its registered office at Kolghatit, Hazaribagh, Jharkhand, 
                   Hazaribagh, India (hereinafter referred to as 'Platform Owner', 'we', 'us', 'our').
                 </p>

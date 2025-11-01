@@ -14,6 +14,7 @@
     "dev": "cross-env NODE_ENV=development nodemon --exec ts-node server.ts",
     "dev:watch": "cross-env NODE_ENV=development nodemon --watch . --exec ts-node server.ts",
     "build": "npm run clean && tsc",
+    "migrate:cloudinary": "tsx  server/scripts/migrateToCloudinary.ts",
     "build:railway": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf dist",

@@ -120,7 +120,7 @@ const OurStory: React.FC = () => {
                   <div className="text-center mb-10">
                     <p className="text-2xl font-semibold">
                       <span className="text-4xl">🙏</span> <strong style={{ color: 'rgb(50, 140, 129)' }}>Namaste!</strong> 
-                      Mera naam <strong>Kudrat</strong> hai.
+                      Mera naam <strong>Millennium</strong> hai.
                     </p>
                     <p className="text-lg mt-4 text-gray-600">
                       Yeh kahani tab shuru hoti hai jab main 10th pass kar ke science lene ka decision liya tha...
@@ -135,7 +135,7 @@ const OurStory: React.FC = () => {
                       <span style={{ color: 'rgb(50, 140, 129)' }}>Hazaribagh ka Safar</span>
                     </h3>
                     <p className="text-lg">
-                      Padhne ke liye mujhe ghar chhor ke <strong>Hazaribagh</strong> aana pada. Matwari mein lodge mein ek room mein teen dost rehte the - sab apne hi gaon ke. Hum log <strong>Babu Gaon Coaching</strong> ke liye subah-shaam jaate the.
+                      Padhne ke liye mujhe ghar chhor ke <strong>Hazaribagh</strong> aana pada. Matwari ke ek lodge ke ek room me humare gaon ke teen dost rehte the. Hum log subah-shaam <strong>Babu Gaon coaching</strong> jaaya karte the.
                     </p>
                   </div>
 
@@ -143,7 +143,7 @@ const OurStory: React.FC = () => {
                   <div className="flex items-center space-x-4 text-lg">
                     <span className="text-3xl">⏰</span>
                     <p>
-                      Subah uthke <strong>6 baje khana banate</strong>, kabhi kabhi nahi banate the. Coaching se aane ke baad <strong>10 baje banate</strong> the. Yahan se problems shuru hui...
+                      Subah uthke <strong>6 baje khana banate</strong>, kabhi kabhi nahi bana pate the. Coaching se aane ke baad <strong>10 baje banate</strong> the. Yahan se problems shuru hui...
                     </p>
                   </div>
 
@@ -214,7 +214,7 @@ const OurStory: React.FC = () => {
                       </h3>
                       <div className="max-w-2xl mx-auto">
                         <p className="text-xl md:text-2xl leading-relaxed">
-                          <strong>Iss story se yahi batana chahta hun:</strong> Khana ke wajah se <span className="text-red-600 font-bold">bhai-chara mein ladayi</span> ho jaati hai, <span className="text-red-600 font-bold">dost mein ladayi</span> ho jaati hai.
+                          <strong>Iss story se yahi batana chahta hoon:</strong> Khana ke wajah se <span className="text-red-600 font-bold">bhai-chara mein ladayi</span> ho jaati hai, <span className="text-red-600 font-bold">dost mein ladayi</span> ho jaati hai.
                         </p>
                         <div className="my-6">
                           <div className="text-4xl">🤝</div>

@@ -16,6 +16,7 @@ import nonVegCatalogRoutes from './routes/nonVegCatalogRoutes';
 import menuRoutes from './routes/menuDetailsRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import orderRoutes from './routes/orderRoutes';
 import adminOrderRoutes from './routes/adminOrderRoutes';
 import userRoutes from './routes/userRoutes';
 import messageRoutes from './routes/messageRoutes';
@@ -201,13 +202,37 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // ============================================
 // STATIC FILES - ONLY IN DEVELOPMENT OR IF EXPLICITLY ENABLED
 // ============================================
-const uploadsDir = path.join(__dirname, 'uploads');
+// ✅ ABSOLUTE PATH to uploads directory
+const uploadsDir = path.join(process.cwd(), 'server', 'uploads');
+
+// Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Created uploads directory:', uploadsDir);
 }
 
 if (isDevelopment || process.env.SERVE_STATIC_FILES === 'true') {
-  app.use('/uploads', express.static(uploadsDir));
+  app.use('/uploads', express.static(uploadsDir, {
+    setHeaders: (res, filePath) => {
+      // Image के लिए proper Content-Type
+      if (filePath.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else if (filePath.endsWith('.gif')) {
+        res.setHeader('Content-Type', 'image/gif');
+      } else if (filePath.endsWith('.webp')) {
+        res.setHeader('Content-Type', 'image/webp');
+      }
+      
+      // CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  }));
+  
+  console.log('✅ Static files serving from:', uploadsDir);
 }
 
 // ============================================
@@ -298,6 +323,7 @@ app.use('/api/non-veg-menus', domainMiddleware, nonVegCatalogRoutes);
 app.use('/api/menus', domainMiddleware, menuRoutes);
 app.use('/api/upload', domainMiddleware, uploadRoutes);
 app.use('/api/payments', domainMiddleware, paymentRoutes);
+app.use('/api/orders', domainMiddleware, orderRoutes);
 app.use('/api/admin/orders', domainMiddleware, adminOnly, adminOrderRoutes);
 app.use('/api/user', domainMiddleware, userRoutes);
 app.use('/api/messages', domainMiddleware, messageRoutes);
@@ -409,7 +435,7 @@ try {
   const server = app.listen(port, HOST, (): void => {
     console.clear();
     console.log('\n🚀 SERVER STARTED');
-    console.log('📱 User:  http://localhost:3000');
+    console.log('📱 User:  http://localhost:5173');
     console.log('🔧 Admin: http://admin.localhost:5173');
     console.log('💚 Health: http://localhost:3000/health\n');
   });

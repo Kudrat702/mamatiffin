@@ -10,18 +10,18 @@ const Footer: React.FC = () => {
           <div className="mb-6 md:mb-0 md:w-1/2">
             <div className="mb-4">
               <img
-                src="/logo1.png"
-                alt="MamaTiffin Logo"
+                src="/logo.ico"
+                alt="mamatiffin Logo"
                 className="h-12 w-auto"
                 onError={(e) => {
                   // Fallback to png if ico fails to load
                   const target = e.target as HTMLImageElement;
-                  target.src = "/logo1.png";
+                  target.src = "/logo.ico";
                 }}
               />
             </div>
             <p className="text-white text-sm leading-relaxed max-w-md">
-              MamaTiffin is a trusted Student Tiffin Service provider that delivers hot,
+              mamatiffin is a trusted Student Tiffin Service provider that delivers hot,
               homemade-style and delicious food right to your hostel or room, sourced only
               from hygienic and FSSAI-approved kitchens across the city.
             </p>
@@ -127,7 +127,7 @@ const Footer: React.FC = () => {
               
               {/* YouTube Icon */}
               <a
-                href="https://www.youtube.com/@Mamatiffin"
+                href="https://www.youtube.com/@mamatiffin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-teal-600 transition-all duration-300 hover:scale-110"
@@ -159,3 +159,5 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
+

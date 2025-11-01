@@ -11,8 +11,8 @@ const PrivacyPolicy: React.FC = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">Introduction</h2>
               <p className="text-gray-700 leading-relaxed">
-                This Privacy Policy describes how <span className="font-semibold">Mamatiffin</span> and its affiliates 
-                (collectively "Mamatiffin, we, our, us") collect, use, share, protect or otherwise process your 
+                This Privacy Policy describes how <span className="font-semibold">mamatiffin</span> and its affiliates 
+                (collectively "mamatiffin, we, our, us") collect, use, share, protect or otherwise process your 
                 information/personal data through our website <span className="font-semibold">mamatiffin.com</span> 
                 (hereinafter referred to as Platform). Please note that you may be able to browse certain sections 
                 of the Platform without registering with us. We do not offer any product/service under this Platform 
@@ -37,7 +37,7 @@ const PrivacyPolicy: React.FC = () => {
               
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
                 <p className="text-gray-700">
-                  <strong>Important:</strong> If you receive an email or call from someone claiming to be Mamatiffin 
+                  <strong>Important:</strong> If you receive an email or call from someone claiming to be mamatiffin 
                   seeking personal data like debit/credit card PIN, net-banking or mobile banking password, never 
                   provide such information. Report it immediately to appropriate law enforcement agencies.
                 </p>
@@ -118,7 +118,7 @@ const PrivacyPolicy: React.FC = () => {
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">Contact Information</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700 mb-2">
-                  <strong>Company:</strong> Mamatiffin<br />
+                  <strong>Company:</strong> mamatiffin<br />
                   <strong>Address:</strong> Kolghatit, Hazaribagh, Jharkhand, India<br />
                   <strong>Email:</strong> mdkudratullah55@gmail.com
                 </p>

@@ -30,7 +30,7 @@ export const useDomain = (): DomainInfo => {
       domain = hostname.replace('admin.', '');
       document.title = 'Admin Dashboard - Mama Tiffin';
     } else {
-      document.title = 'MamaTiffin - Home Food Delivery';
+      document.title = 'mamatiffin - Home Food Delivery';
     }
    
     // For local testing - additional check

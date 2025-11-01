@@ -103,7 +103,7 @@ const OrderSkip: React.FC = () => {
           breakfast: false,
           lunch: false,
           dinner: false
-        };
+        }; 
 
         data.data.forEach((order: UserOrder) => {
           const category = order.menuCategory.toLowerCase();
@@ -624,14 +624,14 @@ const OrderSkip: React.FC = () => {
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Inform Restaurant ({selectedDates.length} date{selectedDates.length > 1 ? 's' : ''})
+                      Inform Mamatiffin ({selectedDates.length} date{selectedDates.length > 1 ? 's' : ''})
                     </>
                   )}
                 </button>
 
                 {allInformed && (
                   <div className="text-center text-sm text-green-600 mt-2">
-                    All selected dates have been informed to the restaurant
+                    All selected dates have been informed to the mamatiffin
                   </div>
                 )}
               </div>

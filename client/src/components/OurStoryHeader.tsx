@@ -215,7 +215,7 @@ const OurStoryPage: React.FC = () => {
           {/* Story Introduction */}
           <div className="text-center mb-24 lg:mb-32">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold gradient-text mb-8 lg:mb-10">
-              Kudrat ki kahani
+              Student ki kahani
             </h2>
             <p className="text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Ek sapne, sangharsh aur samadhaan ki yaatra
@@ -236,12 +236,12 @@ const OurStoryPage: React.FC = () => {
                     </div>
                     <div className="space-y-6">
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
-                        <span className="font-semibold teal-accent">Hi! Mera naam Kudrat hai.</span> Jab main 10th pass kar ke science lene ka decision liya, 
+                        <span className="font-semibold teal-accent">Hi! Mera naam Millennium hai.</span> Jab main 10th pass kar ke science lene ka decision liya, 
                         tab mujhe ghar chhod ke <span className="font-semibold teal-accent">Hazaribagh</span> aana pada.
                       </p>
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
-                        <span className="font-semibold teal-accent">Matwari mein lodge</span> mein ek room mein teen dost rehte the jo apne hi gaon ke the. 
-                        Hum log <span className="font-semibold teal-accent">Babu Gaon Coaching</span> ke liye subah-sham jaate the.
+                        <span className="font-semibold teal-accent">Matwari ke ek lodge</span> ke ek room me humare gaon ke teen dost rehte the. Hum log subah-shaam
+                        Hum log <span className="font-semibold teal-accent">Babu Gaon coaching</span> jaaya karte the.
                       </p>
                     </div>
                   </div>
@@ -265,11 +265,11 @@ const OurStoryPage: React.FC = () => {
                     </div>
                     <div className="space-y-6">
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
-                        <span className="font-semibold teal-accent">Subah 6 baje uth kar khana banate</span>, kabhi kabhi nahi banate the. 
+                        <span className="font-semibold teal-accent">Subah 6 baje uth kar khana banate</span>, kabhi kabhi nahi bana pate the. 
                         Coaching se aane ke baad 10 baje banate the.
                       </p>
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
-                        Phir kuch deeno ke liye main <span className="font-semibold teal-accent">Ghumne ke liye chala gaya tha</span> 
+                        Phir kuch deeno ke liye main <span className="font-semibold teal-accent">Ghumne ke liye chala gaya tha.</span> 
                         <span className="font-semibold teal-accent">1 month ke liye</span> phir wapis aaya Matwari mein rehne ke liye.
                       </p>
                     </div>
@@ -377,7 +377,7 @@ const OurStoryPage: React.FC = () => {
                   <div className="story-card p-8 lg:p-12 xl:p-16 rounded-3xl border-4 border-[rgb(50,140,129)] border-opacity-30">
                     <div className="flex items-center mb-8">
                       <Star className="text-[rgb(50,140,129)] mr-4 lg:mr-6" size={32} />
-                      <h3 className="text-2xl lg:text-3xl xl:text-4xl font-bold gradient-text">Mamatiffin ka janam</h3>
+                      <h3 className="text-2xl lg:text-3xl xl:text-4xl font-bold gradient-text">mamatiffin ka Arambh</h3>
                     </div>
                     <div className="space-y-6">
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
@@ -389,7 +389,7 @@ const OurStoryPage: React.FC = () => {
                       </p>
                       <p className="text-gray-700 text-lg lg:text-xl leading-relaxed">
                         Toh <span className="font-semibold teal-accent">bhai-chara bane rahe, dosti acche se bane rahe</span>, 
-                        isliye <span className="font-bold gradient-text text-xl lg:text-2xl">Mamatiffin</span> ek tiffin service le kar aaya hai.
+                        isliye <span className="font-bold gradient-text text-xl lg:text-2xl">mamatiffin</span> ek tiffin service le kar aaya hai.
                       </p>
                     </div>
                   </div>
@@ -415,7 +415,7 @@ const OurStoryPage: React.FC = () => {
               </h3>
               
               <p className="text-2xl lg:text-3xl xl:text-4xl text-gray-700 leading-relaxed max-w-5xl mx-auto mb-10 lg:mb-12 font-medium">
-                "Rishte bachana, khushiyaan baantna"
+                "Rishte bachana, khushiyaan baatna"
               </p>
               
               <p className="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">

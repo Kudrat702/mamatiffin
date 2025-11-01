@@ -109,7 +109,7 @@ const ReturnPolicy: React.FC = () => {
               </p>
               <div className="text-gray-700">
                 <p><strong>Email:</strong> mdkudratullah55@gmail.com</p>
-                <p><strong>Company:</strong> Mamatiffin</p>
+                <p><strong>Company:</strong> mamatiffin</p>
                 <p><strong>Address:</strong> Kolghatit, Hazaribagh, Jharkhand, India</p>
                 <p><strong>Business Hours:</strong> Monday - Friday (9:00 AM - 6:00 PM)</p>
               </div>

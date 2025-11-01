@@ -823,7 +823,7 @@
 //           <div className="flex justify-between items-center">
 //             <div>
 //               <h1 className="text-2xl font-bold text-gray-900">Menu Catalog Management</h1>
-//               <p className="text-gray-600 text-sm mt-1">Manage your restaurant menu items</p>
+//               <p className="text-gray-600 text-sm mt-1">Manage your mamatiffin menu items</p>
 //             </div>
 //             <div className="flex items-center space-x-4">
 //               <div className="flex items-center text-gray-600">
@@ -1911,7 +1911,7 @@ const MenuTimeCatalogManager: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Menu Catalog Management</h1>
-              <p className="text-gray-600 text-sm mt-1">Manage your restaurant menu items with Cloudinary storage</p>
+              <p className="text-gray-600 text-sm mt-1">Manage your mamatiffin menu items with Cloudinary storage</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-gray-600">
