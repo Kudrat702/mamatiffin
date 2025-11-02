@@ -1,4 +1,4 @@
-// frontend/src/App.tsx - PRODUCTION READY WITH FIXED OG IMAGES
+// frontend/src/App.tsx - PRODUCTION READY WITH JPG IMAGE
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { LocationProvider } from './context/LocationContext';
@@ -67,14 +67,14 @@ const APP_TYPE = getAppType();
 
 // ✅ Get URLs from environment
 const USER_APP_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
-const ADMIN_APP_URL = import.meta.env.ADMIN_URL || 'http://admin.localhost:5173';
+const ADMIN_APP_URL = import.meta.env.VITE_ADMIN_URL || 'http://admin.localhost:5173';
 
 // ✅ API URL from environment
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// ✅ PRODUCTION URLs - ABSOLUTE PATHS FOR SOCIAL MEDIA
+// ✅ PRODUCTION URLs - UPDATED FOR JPG IMAGE
 const PRODUCTION_URL = 'https://www.mamatiffin.com';
-const OG_IMAGE_URL = 'https://www.mamatiffin.com/og-image.png';
+const OG_IMAGE_URL = 'https://www.mamatiffin.com/og-image.jpg'; // ✅ CHANGED TO .jpg
 
 // Log configuration on startup
 console.log('🔧 App Configuration:', {
@@ -101,11 +101,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
 };
 
-// ✅ UPDATED: Customer Layout Component with Fixed Helmet
+// ✅ UPDATED: Customer Layout Component - JPG IMAGE
 const CustomerLayout: React.FC = () => {
   return (
     <AuthProvider>
-      {/* ✅ HELMET WITH ABSOLUTE URLs FOR WHATSAPP/FACEBOOK */}
+      {/* ✅ HELMET WITH ABSOLUTE URLs - JPG FORMAT */}
       <Helmet>
         {/* Basic Meta Tags */}
         <title>mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery</title>
@@ -113,25 +113,26 @@ const CustomerLayout: React.FC = () => {
         <meta name="author" content="mamatiffin" />
         <meta name="robots" content="index, follow" />
         
-        {/* ✅ Open Graph Tags (Facebook, WhatsApp, Instagram) - FIXED */}
+        {/* ✅ Open Graph Tags (Facebook, WhatsApp, Instagram) */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={PRODUCTION_URL} />
         <meta property="og:site_name" content="mamatiffin" />
-        <meta property="og:title" content="mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery" />
-        <meta property="og:description" content="mamatiffin delivers hot, homemade-style delicious food right to your hostel or room from FSSAI-approved kitchens. Order fresh tiffin service today!" />
+        <meta property="og:title" content="mamatiffin - Fresh Home-Style Food Delivery" />
+        <meta property="og:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with hygienic FSSAI-approved kitchens. Hot food delivered to your hostel daily!" />
         
-        {/* ✅ Image Tags - ABSOLUTE URLs */}
+        {/* ✅ Image Tags - JPG FORMAT */}
         <meta property="og:image" content={OG_IMAGE_URL} />
         <meta property="og:image:secure_url" content={OG_IMAGE_URL} />
-        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:type" content="image/jpeg" /> {/* ✅ CHANGED TO jpeg */}
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="mamatiffin - Fresh Homemade Food Delivery Service" />
+        <meta property="og:image:alt" content="mamatiffin - Fresh Homemade Food Delivery Service for Students" />
         
-        {/* ✅ Twitter Card Tags */}
+        {/* ✅ Twitter Card Tags - MOST IMPORTANT FOR LARGE PREVIEW */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="mamatiffin - Student Tiffin Service" />
-        <meta name="twitter:description" content="mamatiffin delivers hot, homemade food to your hostel from FSSAI-approved kitchens." />
+        <meta name="twitter:site" content="@mamatiffin" />
+        <meta name="twitter:title" content="mamatiffin - Fresh Home-Style Food Delivery" />
+        <meta name="twitter:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service delivered to your hostel!" />
         <meta name="twitter:image" content={OG_IMAGE_URL} />
         <meta name="twitter:image:alt" content="mamatiffin - Fresh Homemade Food" />
         
