@@ -86,8 +86,8 @@ const getAllowedOrigins = (): string[] => {
     if (process.env.FRONTEND_URL) {
       origins.push(process.env.FRONTEND_URL);
     }
-    if (process.env.ADMIN_FRONTEND_URL) {
-      origins.push(process.env.ADMIN_FRONTEND_URL);
+    if (process.env.ADMIN_URL) {
+      origins.push(process.env.ADMIN_URL);
     }
 
     return origins;
