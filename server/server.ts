@@ -344,7 +344,7 @@
   
 //   res.json({
 //     success: true,
-//     message: 'Mama Tiffin API',
+//     message: 'MamaTiffin API',
 //     version: '1.0.0',
 //     interface: INTERFACE_TYPE,
 //     server: {
@@ -834,7 +834,7 @@ app.get('/api', (req: Request, res: Response) => {
   
   res.json({
     success: true,
-    message: 'Mama Tiffin API',
+    message: 'MamaTiffin API',
     version: '1.0.0',
     interface: INTERFACE_TYPE,
     server: {
@@ -934,7 +934,7 @@ try {
   const server = app.listen(port, HOST, (): void => {
     console.clear();
     console.log('\n🚀 ============================================');
-    console.log('   MAMA TIFFIN SERVER - PRODUCTION READY');
+    console.log('   MamaTiffin SERVER - PRODUCTION READY');
     console.log('============================================');
     console.log(`📱 User Interface:  http://localhost:5173`);
     console.log(`🔧 Admin Interface: http://admin.localhost:5173`);

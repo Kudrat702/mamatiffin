@@ -214,7 +214,7 @@
 //   // ✅ API VERSIONING AND SERVICE HEADERS
 //   app.use('/api', (req: Request, res: Response, next: NextFunction): void => {
 //     res.setHeader('API-Version', '2.0.0');
-//     res.setHeader('Service', 'Mama Tiffin API');
+//     res.setHeader('Service', 'MamaTiffin API');
     
 //     // Different caching strategies for development vs production
 //     if (isDevelopment) {
@@ -493,7 +493,7 @@ export const configureMiddleware = (app: Express): void => {
   // ✅ API VERSIONING AND SERVICE HEADERS
   app.use('/api', (req: Request, res: Response, next: NextFunction): void => {
     res.setHeader('API-Version', '2.0.0');
-    res.setHeader('Service', 'Mama Tiffin API');
+    res.setHeader('Service', 'MamaTiffin API');
     res.setHeader('Cache-Control', 'no-cache');
     
     next();

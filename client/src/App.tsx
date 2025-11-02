@@ -1,6 +1,5 @@
-// frontend/src/App.tsx - PRODUCTION READY WITH JPG IMAGE
+// frontend/src/App.tsx - PRODUCTION READY WITHOUT HELMET
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import { LocationProvider } from './context/LocationContext';
 import { AuthProvider as AdminAuthProvider } from './context/AdminAuthContext';
 import { AuthProvider } from './context/AuthContext';
@@ -67,14 +66,10 @@ const APP_TYPE = getAppType();
 
 // ✅ Get URLs from environment
 const USER_APP_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
-const ADMIN_APP_URL = import.meta.env.VITE_ADMIN_URL || 'http://admin.localhost:5173';
+const ADMIN_APP_URL = import.meta.env.ADMIN_URL || 'http://admin.localhost:5173';
 
 // ✅ API URL from environment
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-// ✅ PRODUCTION URLs - UPDATED FOR JPG IMAGE
-const PRODUCTION_URL = 'https://www.mamatiffin.com';
-const OG_IMAGE_URL = 'https://www.mamatiffin.com/og-image.jpg'; // ✅ CHANGED TO .jpg
 
 // Log configuration on startup
 console.log('🔧 App Configuration:', {
@@ -84,8 +79,6 @@ console.log('🔧 App Configuration:', {
   USER_APP_URL,
   ADMIN_APP_URL,
   API_URL,
-  PRODUCTION_URL,
-  OG_IMAGE_URL,
   NODE_ENV: import.meta.env.MODE
 });
 
@@ -101,45 +94,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
 };
 
-// ✅ UPDATED: Customer Layout Component - JPG IMAGE
+// ✅ UPDATED: Customer Layout Component - NO HELMET
 const CustomerLayout: React.FC = () => {
   return (
     <AuthProvider>
-      {/* ✅ HELMET WITH ABSOLUTE URLs - JPG FORMAT */}
-      <Helmet>
-        {/* Basic Meta Tags */}
-        <title>mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery</title>
-        <meta name="description" content="mamatiffin is a trusted Student Tiffin Service provider that delivers hot, homemade-style and delicious food right to your hostel or room, sourced only from hygienic and FSSAI-approved kitchens across the city." />
-        <meta name="author" content="mamatiffin" />
-        <meta name="robots" content="index, follow" />
-        
-        {/* ✅ Open Graph Tags (Facebook, WhatsApp, Instagram) */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={PRODUCTION_URL} />
-        <meta property="og:site_name" content="mamatiffin" />
-        <meta property="og:title" content="mamatiffin - Fresh Home-Style Food Delivery" />
-        <meta property="og:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with hygienic FSSAI-approved kitchens. Hot food delivered to your hostel daily!" />
-        
-        {/* ✅ Image Tags - JPG FORMAT */}
-        <meta property="og:image" content={OG_IMAGE_URL} />
-        <meta property="og:image:secure_url" content={OG_IMAGE_URL} />
-        <meta property="og:image:type" content="image/jpeg" /> {/* ✅ CHANGED TO jpeg */}
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="mamatiffin - Fresh Homemade Food Delivery Service for Students" />
-        
-        {/* ✅ Twitter Card Tags - MOST IMPORTANT FOR LARGE PREVIEW */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@mamatiffin" />
-        <meta name="twitter:title" content="mamatiffin - Fresh Home-Style Food Delivery" />
-        <meta name="twitter:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service delivered to your hostel!" />
-        <meta name="twitter:image" content={OG_IMAGE_URL} />
-        <meta name="twitter:image:alt" content="mamatiffin - Fresh Homemade Food" />
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href={PRODUCTION_URL} />
-      </Helmet>
-
       <div className="App flex flex-col min-h-screen dark:bg-gray-900">
         <Header />
         <LocationModal />
@@ -478,7 +436,7 @@ const GlobalStyles: React.FC = () => {
 
 // ✅ Main App Component
 const App: React.FC = () => {
-  console.log(`✅ Mama Tiffin App - Mode: ${APP_TYPE}`);
+  console.log(`✅ MamaTiffin App - Mode: ${APP_TYPE}`);
   
   // Show warning if admin subdomain but in user mode
   React.useEffect(() => {

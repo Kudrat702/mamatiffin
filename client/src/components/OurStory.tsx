@@ -24,7 +24,7 @@ const OurStory: React.FC = () => {
           <div className="relative inline-block">
             <img 
               src="/story.png" 
-              alt="Mama Tiffin Story - From Kitchen Conflicts to Food Solutions" 
+              alt="MamaTiffin Story - From Kitchen Conflicts to Food Solutions" 
               className="mx-auto w-full max-w-4xl h-80 object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
               style={{ 
                 filter: 'brightness(0.95) contrast(1.1)',
@@ -210,7 +210,7 @@ const OurStory: React.FC = () => {
                     <div className="text-center">
                       <div className="text-6xl mb-6">💡</div>
                       <h3 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: 'rgb(50, 140, 129)' }}>
-                        The Solution - Mama Tiffin
+                        The Solution - MamaTiffin
                       </h3>
                       <div className="max-w-2xl mx-auto">
                         <p className="text-xl md:text-2xl leading-relaxed">
@@ -220,7 +220,7 @@ const OurStory: React.FC = () => {
                           <div className="text-4xl">🤝</div>
                         </div>
                         <p className="text-xl md:text-2xl font-bold" style={{ color: 'rgb(50, 140, 129)' }}>
-                          Toh bhai-chara bane rahe, dosti achhi se bane rahe - isiliye <span className="underline">Mama Tiffin ek ghar jaisa tiffin service</span> le kar aaya hai!
+                          Toh bhai-chara bane rahe, dosti achhi se bane rahe - isiliye <span className="underline">MamaTiffin ek ghar jaisa tiffin service</span> le kar aaya hai!
                         </p>
                       </div>
                     </div>

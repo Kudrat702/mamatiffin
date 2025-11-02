@@ -28,7 +28,7 @@ export const useDomain = (): DomainInfo => {
     if (hostname.startsWith('admin.')) {
       isAdmin = true;
       domain = hostname.replace('admin.', '');
-      document.title = 'Admin Dashboard - Mama Tiffin';
+      document.title = 'Admin Dashboard - MamaTiffin';
     } else {
       document.title = 'mamatiffin - Home Food Delivery';
     }

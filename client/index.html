@@ -1,271 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     
-    <!-- Favicon Setup -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <!-- ✅ BASIC META -->
+    <title>mamatiffin - Student Tiffin Service | Hot Homemade Food Delivery</title>
+    <meta name="description" content="mamatiffin is a trusted Student Tiffin Service provider that delivers hot, homemade-style and delicious food right to your hostel or room, sourced only from hygienic and FSSAI-approved kitchens across the city." />
     
-    <!-- Viewport & Mobile Optimization -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#16a34a" />
+    <!-- ✅ FAVICON -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     
-    <!-- SEO Meta Tags - PROTECTED FROM BACKEND OVERRIDE -->
-    <title id="page-title">mamatiffin - Fresh Home-Style Meals Delivered | Order Online Tiffin Service</title>
-    <meta name="description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with vegetarian and non-vegetarian options. Daily delivery of healthy, tasty food in your area." />
-    <meta name="keywords" content="tiffin service, home food delivery, vegetarian meals, non-vegetarian meals, fresh food delivery, healthy meals, daily tiffin, mama tiffin, online food order" />
-    <meta name="author" content="Mama Tiffin" />
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://mamatiffin.com/" />
-    
-    <!-- Open Graph Tags (Facebook/WhatsApp Sharing) -->
+    <!-- ========================================== -->
+    <!-- ✅ OPEN GRAPH TAGS (Facebook, WhatsApp)   -->
+    <!-- ========================================== -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Mama Tiffin - Fresh Home-Style Meals Delivered" />
-    <meta property="og:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with healthy, tasty food delivered daily." />
-    <meta property="og:image" content="https://mamatiffin.com/og-image.png" />
-    <meta property="og:url" content="https://mamatiffin.com/" />
-    <meta property="og:site_name" content="Mama Tiffin" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://www.mamatiffin.com/" />
+    <meta property="og:site_name" content="mamatiffin" />
+    <meta property="og:title" content="Mama Tiffin - Fresh Home-Style Food Delivery" />
+    <meta property="og:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with hygienic FSSAI-approved kitchens. Hot food delivered to your hostel daily!" />
     
-    <!-- Twitter Card Tags -->
+    <!-- ✅ IMAGE TAGS - JPG FORMAT (FIXED!) -->
+    <meta property="og:image" content="https://www.mamatiffin.com/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://www.mamatiffin.com/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mama Tiffin - Fresh Homemade Food Delivery Service for Students" />
+    
+    <!-- ========================================== -->
+    <!-- ✅ TWITTER CARD - FOR LARGE PREVIEW        -->
+    <!-- ========================================== -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Mama Tiffin - Fresh Home-Style Meals Delivered" />
-    <meta name="twitter:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with healthy, tasty food delivered daily." />
-    <meta name="twitter:image" content="https://mamatiffin.com/twitter-image.jpg" />
     <meta name="twitter:site" content="@mamatiffin" />
+    <meta name="twitter:creator" content="@mamatiffin" />
+    <meta name="twitter:title" content="Mama Tiffin - Fresh Home-Style Food Delivery" />
+    <meta name="twitter:description" content="Order fresh, home-cooked meals from Mama Tiffin. Best tiffin service with healthy, tasty food delivered daily!" />
+    <meta name="twitter:image" content="https://www.mamatiffin.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Mama Tiffin - Fresh Homemade Food" />
     
-    <!-- Local Business Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Online Order Food Delivery",
-      "name": "mamatiffin",
-      "description": "Fresh home-cooked meal delivery service offering vegetarian and non-vegetarian tiffin options",
-      "url": "https://mamatiffin.com",
-      "logo": "https://mamatiffin.com/logo1.png",
-      "image": "https://mamatiffin.com/og-image.jpg",
-      "priceRange": "₹₹",
-      "servesCuisine": ["Indian", "Vegetarian", "Non-Vegetarian"],
-      "acceptsReservations": false,
-      "hasDeliveryService": true,
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Hazaribagh",
-        "addressRegion": "Jharkhand",
-        "postalCode": "825301",
-        "addressCountry": "IN"
-      },
-      <!-- "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "YOUR_LATITUDE",
-        "longitude": "YOUR_LONGITUDE"
-      }, -->
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+91-7903528149",
-        "contactType": "customer service",
-        "availableLanguage": ["Hindi", "English"]
-      },
-      "openingHours": [
-        "Mo-Su 08:00-22:00"
-      ],
-      "paymentAccepted": ["UPI"],
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "150"
-      }
-    }
-    </script>
-
-    <!-- Website Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "mamatiffin",
-      "url": "https://mamatiffin.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://mamatiffin.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-
-    <!-- Food Service Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FoodService",
-      "name": "mamatiffin",
-      "description": "Home-cooked meal delivery service",
-      "hasMenu": {
-        "@type": "Menu",
-        "name": "Daily Tiffin Menu",
-        "hasMenuSection": [
-          {
-            "@type": "MenuSection",
-            "name": "Vegetarian Meals",
-            "description": "Fresh vegetarian home-cooked meals"
-          },
-          {
-            "@type": "MenuSection", 
-            "name": "Non-Vegetarian Meals",
-            "description": "Delicious non-vegetarian home-cooked meals"
-          }
-        ]
-      },
-      "serviceType": "Food Delivery"
-    }
-    </script>
-
-    <!-- Preconnect for Performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://checkout.razorpay.com" />
-    
-    <!-- DNS Prefetch -->
-    <link rel="dns-prefetch" href="//api.mamatiffin.com" />
-    <link rel="dns-prefetch" href="//images.mamatiffin.com" />
-    
-    <!-- Permissions Policy -->
-    <meta http-equiv="Permissions-Policy" content="
-      payment=(self https://checkout.razorpay.com),
-      clipboard-write=(self),
-      otp-credentials=(self),
-      geolocation=(self)
-    ">
-   
-    <!-- Feature Policy (fallback for older browsers) -->
-    <meta http-equiv="Feature-Policy" content="
-      payment 'self' https://checkout.razorpay.com;
-      clipboard-write 'self';
-      otp-credentials 'self';
-      geolocation 'self'
-    ">
-
-    <!-- Sitemap -->
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-    
-    <!-- RSS Feed (Optional) -->
-    <link rel="alternate" type="application/rss+xml" title="Mama Tiffin Updates" href="/rss.xml" />
-    
-    <!-- Manifest for PWA -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- TITLE PROTECTION SCRIPT - PREVENTS BACKEND OVERRIDE -->
-    <script>
-      // Define correct titles for different interfaces
-      const TITLES = {
-        user: "Mama Tiffin - Fresh Home-Style Meals Delivered | Order Online Tiffin Service",
-        admin: "Admin Panel - Mama Tiffin | Manage Orders & Deliveries"
-      };
-      
-      // Detect interface type
-      function getInterfaceType() {
-        const hostname = window.location.hostname;
-        const pathname = window.location.pathname;
-        
-        return (hostname.includes('admin') || pathname.startsWith('/admin')) ? 'admin' : 'user';
-      }
-      
-      // Set correct title based on interface
-      function setCorrectTitle() {
-        const interfaceType = getInterfaceType();
-        const correctTitle = TITLES[interfaceType];
-        
-        if (document.title !== correctTitle) {
-          document.title = correctTitle;
-          console.log(`🔧 Title corrected to: ${correctTitle}`);
-        }
-      }
-      
-      // Protect title from being overridden
-      function protectTitle() {
-        const titleElement = document.getElementById('page-title');
-        const interfaceType = getInterfaceType();
-        const correctTitle = TITLES[interfaceType];
-        
-        // Set initial title
-        document.title = correctTitle;
-        if (titleElement) titleElement.textContent = correctTitle;
-        
-        // Create observer to watch for title changes
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList' && document.title !== correctTitle) {
-              console.warn('⚠️ Title was overridden, restoring correct title');
-              document.title = correctTitle;
-            }
-          });
-        });
-        
-        // Start observing
-        observer.observe(document, { childList: true, subtree: true });
-        
-        // Also check periodically (fallback)
-        setInterval(function() {
-          if (document.title !== correctTitle) {
-            document.title = correctTitle;
-          }
-        }, 1000);
-      }
-      
-      // Initialize protection when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', protectTitle);
-      } else {
-        protectTitle();
-      }
-      
-      // Also protect on window load
-      window.addEventListener('load', setCorrectTitle);
-    </script>
+    <!-- ✅ ADDITIONAL META -->
+    <meta name="author" content="mamatiffin" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.mamatiffin.com/" />
+    <meta name="theme-color" content="#16a34a" />
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-
+    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    
-    <!-- Scripts -->
-    <script type="module" src="/src/main.tsx"></script>
-    <!-- <script src="https://checkout.razorpay.com/v1/checkout.js"></script> -->
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID');
-    </script>
-
-    <!-- ADDITIONAL TITLE PROTECTION (BACKUP) -->
-    <script>
-      // Final backup protection after all scripts load
-      setTimeout(function() {
-        const interfaceType = window.location.hostname.includes('admin') ? 'admin' : 'user';
-        const correctTitle = interfaceType === 'admin' 
-          ? "Admin Panel - Mama Tiffin | Manage Orders & Deliveries"
-          : "Mama Tiffin - Fresh Home-Style Meals Delivered | Order Online Tiffin Service";
-        
-        if (document.title !== correctTitle) {
-          document.title = correctTitle;
-          console.log('🔒 Final title protection applied');
-        }
-      }, 2000);
-    </script>
   </body>
 </html>
