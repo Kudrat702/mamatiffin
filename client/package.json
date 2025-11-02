@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite --mode development --port 5173 --host",
     "dev:admin": "vite --mode development.admin --port 3001 --host",
-    "build": "npm install typescript --no-save && vite build --mode production",
+    "build": "vite build --mode production",
     "build:admin": "vite build --mode production.admin",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
