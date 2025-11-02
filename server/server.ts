@@ -69,12 +69,20 @@ const getAllowedOrigins = (): string[] => {
     ];
   } else {
     const origins = [
+      // ✅ Custom live domains
+      'https://mamatiffin.com',
+      'https://www.mamatiffin.com',
+      'https://admin.mamatiffin.com',
+      'https://www.admin.mamatiffin.com',
+
+      // ✅ Vercel fallback (in case preview builds)
       'https://mamatiffin.vercel.app',
       'https://www.mamatiffin.vercel.app',
       'https://admin-mamatiffin.vercel.app',
       'https://www.admin-mamatiffin.vercel.app',
     ];
 
+    // Optional .env values (for flexibility)
     if (process.env.FRONTEND_URL) {
       origins.push(process.env.FRONTEND_URL);
     }
@@ -85,6 +93,7 @@ const getAllowedOrigins = (): string[] => {
     return origins;
   }
 };
+
 
 // ✅ CORS OPTIONS
 const corsOptions = {
