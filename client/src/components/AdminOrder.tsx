@@ -147,45 +147,56 @@
 //     return mealTypes.join(' + ');
 //   };
 
-//   // Fetch order statistics
+//   // ✅ FIXED: Fetch order statistics using admin endpoint
 //   const fetchStats = useCallback(async () => {
 //     try {
-//       const response = await fetch(apiEndpoints.orderStatistics);
+//       console.log('📊 Fetching admin order statistics...');
+//       const response = await fetch(apiEndpoints.adminOrderStatistics);
 //       if (response.ok) {
 //         const data = await response.json();
+//         console.log('✅ Admin statistics loaded:', data);
 //         setStats(data.data);
+//       } else {
+//         console.error('❌ Failed to fetch admin statistics:', response.status);
 //       }
 //     } catch (error) {
-//       console.error('Error fetching stats:', error);
+//       console.error('❌ Error fetching admin stats:', error);
 //     }
 //   }, []);
 
-//   // Fetch orders based on active tab
+//   // ✅ FIXED: Fetch orders based on active tab using admin endpoints
 //   const fetchOrders = useCallback(async () => {
 //     try {
 //       setLoading(true);
-//       let url = apiEndpoints.orders;
+//       let url = apiEndpoints.adminOrders; // ✅ Default to admin orders
 
 //       if (activeTab === 'new') {
-//         url = apiEndpoints.ordersByType('new');
+//         console.log('📥 Fetching new admin orders...');
+//         url = apiEndpoints.adminNewOrders; // ✅ Use admin new orders
 //       } else if (activeTab === 'old') {
-//         url = apiEndpoints.ordersByType('old');
+//         console.log('📥 Fetching old admin orders...');
+//         url = apiEndpoints.adminOldOrders; // ✅ Use admin old orders
 //       } else if (activeTab === 'skip') {
-//         // Fetch skip orders
+//         console.log('📥 Fetching admin skip orders...');
+//         // ✅ Fetch skip orders using admin endpoint
 //         const params = new URLSearchParams();
 //         if (selectedDate) params.append('date', selectedDate);
 //         if (searchTerm) params.append('customerPhone', searchTerm);
 
-//         url = `${apiEndpoints.skipOrders}${params.toString() ? '?' + params.toString() : ''}`;
+//         url = `${apiEndpoints.adminSkipOrders}${params.toString() ? '?' + params.toString() : ''}`;
 
 //         const response = await fetch(url);
 //         if (response.ok) {
 //           const data = await response.json();
+//           console.log('✅ Admin skip orders loaded:', data.data?.length || 0);
 //           setSkipOrders(data.data || []);
+//         } else {
+//           console.error('❌ Failed to fetch admin skip orders:', response.status);
 //         }
 //         return;
 //       } else if (activeTab === 'delivery') {
-//         // Fetch final delivery orders
+//         console.log('📥 Fetching admin final delivery orders...');
+//         // ✅ Fetch final delivery orders using admin endpoint
 //         const params = new URLSearchParams();
 //         if (selectedDate) params.append('date', selectedDate);
 //         if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
@@ -194,17 +205,21 @@
 //         if (filters.customerName) params.append('customerName', filters.customerName);
 //         if (mealFilter) params.append('mealFilter', mealFilter);
 
-//         url = `${apiEndpoints.finalDelivery}${params.toString() ? '?' + params.toString() : ''}`;
+//         url = `${apiEndpoints.adminFinalDelivery}${params.toString() ? '?' + params.toString() : ''}`;
 
 //         const response = await fetch(url);
 //         if (response.ok) {
 //           const data = await response.json();
+//           console.log('✅ Admin final delivery orders loaded:', data.data?.length || 0);
 //           setFinalDeliveryOrders(data.data || []);
 //           setDeliverySummary(data.summary || null);
+//         } else {
+//           console.error('❌ Failed to fetch admin final delivery orders:', response.status);
 //         }
 //         return;
 //       } else {
-//         // All orders with filters
+//         console.log('📥 Fetching all admin orders with filters...');
+//         // ✅ All orders with filters using admin endpoint
 //         const params = new URLSearchParams();
 //         Object.entries(filters).forEach(([key, value]) => {
 //           if (value) params.append(key, value);
@@ -218,21 +233,23 @@
 //       const response = await fetch(url);
 //       if (response.ok) {
 //         const data = await response.json();
+//         console.log('✅ Admin orders loaded:', data.data?.length || 0);
 //         setOrders(data.data || []);
 //       } else {
-//         console.error('Failed to fetch orders');
+//         console.error('❌ Failed to fetch admin orders:', response.status);
 //       }
 //     } catch (error) {
-//       console.error('Error fetching orders:', error);
+//       console.error('❌ Error fetching admin orders:', error);
 //     } finally {
 //       setLoading(false);
 //     }
 //   }, [activeTab, filters, selectedDate, searchTerm, mealFilter]);
 
-//   // Update order status
+//   // ✅ FIXED: Update order status using admin endpoint
 //   const updateOrderStatus = async (orderId: string, newStatus: string) => {
 //     try {
-//       const response = await fetch(apiEndpoints.orderStatus(orderId), {
+//       console.log('🔄 Updating admin order status:', orderId, newStatus);
+//       const response = await fetch(apiEndpoints.adminOrderStatus(orderId), {
 //         method: 'PATCH',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -243,13 +260,15 @@
 //       });
 
 //       if (response.ok) {
+//         console.log('✅ Admin order status updated successfully');
 //         fetchOrders();
 //         fetchStats();
 //       } else {
+//         console.error('❌ Failed to update admin order status:', response.status);
 //         alert('Failed to update order status');
 //       }
 //     } catch (error) {
-//       console.error('Error updating order status:', error);
+//       console.error('❌ Error updating admin order status:', error);
 //       alert('Error updating order status');
 //     }
 //   };
@@ -311,10 +330,12 @@
 //     }
 //   };
 
-//   // Enhanced export function with loading states
+//   // ✅ FIXED: Enhanced export function with admin endpoint
 //   const handleExport = async (format: 'excel' | 'csv' | 'pdf') => {
 //     try {
 //       setExporting(true);
+//       console.log(`📤 Exporting admin final delivery orders as ${format}...`);
+      
 //       const params = new URLSearchParams();
 //       if (selectedDate) params.append('date', selectedDate);
 //       if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
@@ -325,13 +346,14 @@
 //       params.append('format', format);
 
 //       const response = await fetch(
-//         `${apiEndpoints.exportFinalDelivery}?${params.toString()}`,
+//         `${apiEndpoints.adminExportFinalDelivery}?${params.toString()}`,
 //         {
 //           method: 'GET',
 //         }
 //       );
 
 //       if (response.ok) {
+//         console.log('✅ Export successful');
 //         if (format === 'pdf') {
 //           // For PDF, we get HTML content that we can print or save
 //           const htmlContent = await response.text();
@@ -369,10 +391,11 @@
 //           document.body.removeChild(a);
 //         }
 //       } else {
+//         console.error('❌ Failed to export admin data:', response.status);
 //         alert('Failed to export data');
 //       }
 //     } catch (error) {
-//       console.error('Export error:', error);
+//       console.error('❌ Export error:', error);
 //       alert('Error exporting data');
 //     } finally {
 //       setExporting(false);
@@ -451,12 +474,14 @@
 //   };
 
 //   useEffect(() => {
+//     console.log('🔄 Active tab changed to:', activeTab);
 //     fetchOrders();
 //     fetchStats();
 //   }, [activeTab, fetchOrders, fetchStats]);
 
 //   useEffect(() => {
 //     if (activeTab === 'all' || activeTab === 'delivery') {
+//       console.log('🔄 Filters or date changed, refetching...');
 //       fetchOrders();
 //     }
 //   }, [filters, selectedDate, activeTab, fetchOrders, mealFilter]);
@@ -472,6 +497,7 @@
 //           </div>
 //           <button
 //             onClick={() => {
+//               console.log('🔄 Manual refresh triggered');
 //               fetchOrders();
 //               fetchStats();
 //             }}
@@ -1127,11 +1153,17 @@
 
 // export default AdminOrderDashboard;
 
-// AdminOrder.tsx - COMPLETE FIXED VERSION
-// ✅ Fixed: All endpoints now use admin routes (/api/admin/orders/*)
-// ✅ Fixed: Statistics, skip orders, final delivery all use correct admin endpoints
+// AdminOrder.tsx - COMPLETE PRODUCTION-READY VERSION
+// ✅ Full authentication implemented
+// ✅ All features included
+// ✅ Error handling
+// ✅ Loading states
+// ✅ Export functionality
+// ✅ Print functionality
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AdminAuthContext';
 import {
   Search,
   Calendar,
@@ -1149,9 +1181,14 @@ import {
   Printer,
   Download,
   FileSpreadsheet,
-  FileText
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { apiEndpoints } from '../configapi/api';
+
+// ═══════════════════════════════════════════════════════════════════════
+// INTERFACES
+// ═══════════════════════════════════════════════════════════════════════
 
 interface Order {
   _id: string;
@@ -1238,7 +1275,80 @@ interface DeliverySummary {
   date: string;
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════
+
 const AdminOrderDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // AUTHENTICATION HELPER
+  // ═══════════════════════════════════════════════════════════════════════
+  
+  const getAuthToken = (): string | null => {
+    if (authContext?.token) {
+      return authContext.token;
+    }
+    return localStorage.getItem('ADMIN_TOKEN');
+  };
+
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    const token = getAuthToken();
+    
+    if (!token) {
+      console.error('❌ No authentication token found');
+      setAuthError('Authentication required. Please log in again.');
+      navigate('/admin-login');
+      throw new Error('No authentication token');
+    }
+
+    console.log('🔐 Making authenticated request to:', url);
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-auth-token': token,
+      ...options.headers,
+    };
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+
+      console.log('📊 Response status:', response.status);
+
+      if (response.status === 401 || response.status === 403) {
+        console.error('❌ Authentication failed:', response.status);
+        setAuthError('Session expired. Please log in again.');
+        localStorage.removeItem('ADMIN_TOKEN');
+        if (authContext?.logout) {
+          authContext.logout();
+        }
+        navigate('/admin-login');
+        throw new Error('Authentication failed');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('❌ Fetch error:', error);
+      throw error;
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // STATE MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════
+
   const [activeTab, setActiveTab] = useState<'new' | 'old' | 'all' | 'skip' | 'delivery'>('new');
   const [orders, setOrders] = useState<Order[]>([]);
   const [skipOrders, setSkipOrders] = useState<SkipOrder[]>([]);
@@ -1258,19 +1368,21 @@ const AdminOrderDashboard: React.FC = () => {
   });
   const [selectedDate, setSelectedDate] = useState('');
   const [mealFilter, setMealFilter] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // Helper function to determine which meals are in a menu category
+  // ═══════════════════════════════════════════════════════════════════════
+  // HELPER FUNCTIONS
+  // ═══════════════════════════════════════════════════════════════════════
+
   const getMealsFromCategory = (category: string) => {
     const categoryLower = category.toLowerCase();
-    const meals = {
+    return {
       breakfast: categoryLower.includes('breakfast'),
       lunch: categoryLower.includes('lunch'),
       dinner: categoryLower.includes('dinner'),
     };
-    return meals;
   };
 
-  // Helper function to get meal type display name
   const getMealTypeDisplay = (category: string) => {
     const meals = getMealsFromCategory(category);
     const mealTypes = [];
@@ -1279,290 +1391,6 @@ const AdminOrderDashboard: React.FC = () => {
     if (meals.dinner) mealTypes.push('Dinner');
     return mealTypes.join(' + ');
   };
-
-  // ✅ FIXED: Fetch order statistics using admin endpoint
-  const fetchStats = useCallback(async () => {
-    try {
-      console.log('📊 Fetching admin order statistics...');
-      const response = await fetch(apiEndpoints.adminOrderStatistics);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Admin statistics loaded:', data);
-        setStats(data.data);
-      } else {
-        console.error('❌ Failed to fetch admin statistics:', response.status);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching admin stats:', error);
-    }
-  }, []);
-
-  // ✅ FIXED: Fetch orders based on active tab using admin endpoints
-  const fetchOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      let url = apiEndpoints.adminOrders; // ✅ Default to admin orders
-
-      if (activeTab === 'new') {
-        console.log('📥 Fetching new admin orders...');
-        url = apiEndpoints.adminNewOrders; // ✅ Use admin new orders
-      } else if (activeTab === 'old') {
-        console.log('📥 Fetching old admin orders...');
-        url = apiEndpoints.adminOldOrders; // ✅ Use admin old orders
-      } else if (activeTab === 'skip') {
-        console.log('📥 Fetching admin skip orders...');
-        // ✅ Fetch skip orders using admin endpoint
-        const params = new URLSearchParams();
-        if (selectedDate) params.append('date', selectedDate);
-        if (searchTerm) params.append('customerPhone', searchTerm);
-
-        url = `${apiEndpoints.adminSkipOrders}${params.toString() ? '?' + params.toString() : ''}`;
-
-        const response = await fetch(url);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Admin skip orders loaded:', data.data?.length || 0);
-          setSkipOrders(data.data || []);
-        } else {
-          console.error('❌ Failed to fetch admin skip orders:', response.status);
-        }
-        return;
-      } else if (activeTab === 'delivery') {
-        console.log('📥 Fetching admin final delivery orders...');
-        // ✅ Fetch final delivery orders using admin endpoint
-        const params = new URLSearchParams();
-        if (selectedDate) params.append('date', selectedDate);
-        if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
-        if (filters.city) params.append('city', filters.city);
-        if (filters.addressType) params.append('addressType', filters.addressType);
-        if (filters.customerName) params.append('customerName', filters.customerName);
-        if (mealFilter) params.append('mealFilter', mealFilter);
-
-        url = `${apiEndpoints.adminFinalDelivery}${params.toString() ? '?' + params.toString() : ''}`;
-
-        const response = await fetch(url);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Admin final delivery orders loaded:', data.data?.length || 0);
-          setFinalDeliveryOrders(data.data || []);
-          setDeliverySummary(data.summary || null);
-        } else {
-          console.error('❌ Failed to fetch admin final delivery orders:', response.status);
-        }
-        return;
-      } else {
-        console.log('📥 Fetching all admin orders with filters...');
-        // ✅ All orders with filters using admin endpoint
-        const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value) params.append(key, value);
-        });
-        if (selectedDate) params.append('date', selectedDate);
-        if (params.toString()) {
-          url += `?${params.toString()}`;
-        }
-      }
-
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Admin orders loaded:', data.data?.length || 0);
-        setOrders(data.data || []);
-      } else {
-        console.error('❌ Failed to fetch admin orders:', response.status);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching admin orders:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, filters, selectedDate, searchTerm, mealFilter]);
-
-  // ✅ FIXED: Update order status using admin endpoint
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      console.log('🔄 Updating admin order status:', orderId, newStatus);
-      const response = await fetch(apiEndpoints.adminOrderStatus(orderId), {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderStatus: newStatus,
-        }),
-      });
-
-      if (response.ok) {
-        console.log('✅ Admin order status updated successfully');
-        fetchOrders();
-        fetchStats();
-      } else {
-        console.error('❌ Failed to update admin order status:', response.status);
-        alert('Failed to update order status');
-      }
-    } catch (error) {
-      console.error('❌ Error updating admin order status:', error);
-      alert('Error updating order status');
-    }
-  };
-
-  // Enhanced print function for delivery orders
-  const handlePrint = () => {
-    const printContent = document.getElementById('print-content');
-    if (printContent) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Delivery Orders - ${selectedDate || 'Today'}</title>
-              <style>
-                body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; font-weight: bold; }
-                .header { text-align: center; margin-bottom: 20px; }
-                .summary { background-color: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-                .meal-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 1px; }
-                .breakfast { background-color: #fef3c7; }
-                .lunch { background-color: #fef9e7; }
-                .dinner { background-color: #e0e7ff; }
-                .veg { color: #059669; }
-                .non-veg { color: #dc2626; }
-                @media print {
-                  body { margin: 0; }
-                  .no-print { display: none; }
-                }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h2>Final Delivery Orders</h2>
-                <p>Date: ${selectedDate || new Date().toDateString()}</p>
-                <p>Generated: ${new Date().toLocaleString('en-IN')}</p>
-              </div>
-              ${deliverySummary ? `
-                <div class="summary">
-                  <h3>Summary</h3>
-                  <p><strong>Total Active Orders:</strong> ${deliverySummary.totalActiveOrders}</p>
-                  <p><strong>Orders with Deliveries:</strong> ${deliverySummary.totalWithDeliveries}</p>
-                  <p><strong>Breakfast Deliveries:</strong> ${deliverySummary.deliveryBreakdown.breakfast}</p>
-                  <p><strong>Lunch Deliveries:</strong> ${deliverySummary.deliveryBreakdown.lunch}</p>
-                  <p><strong>Dinner Deliveries:</strong> ${deliverySummary.deliveryBreakdown.dinner}</p>
-                </div>
-              ` : ''}
-              ${printContent.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-      }
-    }
-  };
-
-  // ✅ FIXED: Enhanced export function with admin endpoint
-  const handleExport = async (format: 'excel' | 'csv' | 'pdf') => {
-    try {
-      setExporting(true);
-      console.log(`📤 Exporting admin final delivery orders as ${format}...`);
-      
-      const params = new URLSearchParams();
-      if (selectedDate) params.append('date', selectedDate);
-      if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
-      if (filters.city) params.append('city', filters.city);
-      if (filters.addressType) params.append('addressType', filters.addressType);
-      if (filters.customerName) params.append('customerName', filters.customerName);
-      if (mealFilter) params.append('mealFilter', mealFilter);
-      params.append('format', format);
-
-      const response = await fetch(
-        `${apiEndpoints.adminExportFinalDelivery}?${params.toString()}`,
-        {
-          method: 'GET',
-        }
-      );
-
-      if (response.ok) {
-        console.log('✅ Export successful');
-        if (format === 'pdf') {
-          // For PDF, we get HTML content that we can print or save
-          const htmlContent = await response.text();
-          const printWindow = window.open('', '_blank');
-          if (printWindow) {
-            printWindow.document.write(htmlContent);
-            printWindow.document.close();
-            printWindow.focus();
-
-            // Auto-print the PDF (user can choose "Save as PDF" in print dialog)
-            setTimeout(() => {
-              printWindow.print();
-            }, 1000);
-          }
-        } else {
-          // For Excel and CSV, download the file
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-
-          // Get filename from response headers or create default
-          const contentDisposition = response.headers.get('content-disposition');
-          let filename = `Final_Delivery_Orders_${selectedDate || new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`;
-
-          if (contentDisposition && contentDisposition.includes('filename=')) {
-            filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
-          }
-
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        }
-      } else {
-        console.error('❌ Failed to export admin data:', response.status);
-        alert('Failed to export data');
-      }
-    } catch (error) {
-      console.error('❌ Export error:', error);
-      alert('Error exporting data');
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  // Filter logic for different tabs
-  const getFilteredData = () => {
-    if (activeTab === 'skip') {
-      return skipOrders.filter(
-        (order) =>
-          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customerPhone?.includes(searchTerm)
-      );
-    } else if (activeTab === 'delivery') {
-      return finalDeliveryOrders.filter(
-        (order) =>
-          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customerPhone?.includes(searchTerm) ||
-          order.menuTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.address?.city?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    } else {
-      return orders.filter(
-        (order) =>
-          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customerPhone?.includes(searchTerm) ||
-          order.menuTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.address?.city?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-  };
-
-  const filteredData = getFilteredData();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -1606,6 +1434,291 @@ const AdminOrderDashboard: React.FC = () => {
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // API FUNCTIONS
+  // ═══════════════════════════════════════════════════════════════════════
+
+  const fetchStats = useCallback(async () => {
+    try {
+      console.log('📊 Fetching admin order statistics...');
+      const response = await authenticatedFetch(apiEndpoints.adminOrderStatistics);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Admin statistics loaded:', data);
+        setStats(data.data);
+        setAuthError(null);
+      } else {
+        console.error('❌ Failed to fetch admin statistics:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching admin stats:', error);
+      if (error instanceof Error && error.message !== 'No authentication token' && error.message !== 'Authentication failed') {
+        setAuthError('Failed to load statistics. Please try again.');
+      }
+    }
+  }, [navigate, authContext]);
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      let url = apiEndpoints.adminOrders;
+
+      if (activeTab === 'new') {
+        console.log('📥 Fetching new admin orders...');
+        url = apiEndpoints.adminNewOrders;
+      } else if (activeTab === 'old') {
+        console.log('📥 Fetching old admin orders...');
+        url = apiEndpoints.adminOldOrders;
+      } else if (activeTab === 'skip') {
+        console.log('📥 Fetching admin skip orders...');
+        const params = new URLSearchParams();
+        if (selectedDate) params.append('date', selectedDate);
+        if (searchTerm) params.append('customerPhone', searchTerm);
+
+        url = `${apiEndpoints.adminSkipOrders}${params.toString() ? '?' + params.toString() : ''}`;
+
+        const response = await authenticatedFetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Admin skip orders loaded:', data.data?.length || 0);
+          setSkipOrders(data.data || []);
+        } else {
+          console.error('❌ Failed to fetch admin skip orders:', response.status);
+        }
+        return;
+      } else if (activeTab === 'delivery') {
+        console.log('📥 Fetching admin final delivery orders...');
+        const params = new URLSearchParams();
+        if (selectedDate) params.append('date', selectedDate);
+        if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
+        if (filters.city) params.append('city', filters.city);
+        if (filters.addressType) params.append('addressType', filters.addressType);
+        if (filters.customerName) params.append('customerName', filters.customerName);
+        if (mealFilter) params.append('mealFilter', mealFilter);
+
+        url = `${apiEndpoints.adminFinalDelivery}${params.toString() ? '?' + params.toString() : ''}`;
+
+        const response = await authenticatedFetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Admin final delivery orders loaded:', data.data?.length || 0);
+          setFinalDeliveryOrders(data.data || []);
+          setDeliverySummary(data.summary || null);
+        } else {
+          console.error('❌ Failed to fetch admin final delivery orders:', response.status);
+        }
+        return;
+      } else {
+        console.log('📥 Fetching all admin orders with filters...');
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) params.append(key, value);
+        });
+        if (selectedDate) params.append('date', selectedDate);
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
+      }
+
+      const response = await authenticatedFetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Admin orders loaded:', data.data?.length || 0);
+        setOrders(data.data || []);
+      } else {
+        console.error('❌ Failed to fetch admin orders:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching admin orders:', error);
+      if (error instanceof Error && error.message !== 'No authentication token' && error.message !== 'Authentication failed') {
+        setAuthError('Failed to load orders. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, filters, selectedDate, searchTerm, mealFilter, navigate, authContext]);
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      console.log('🔄 Updating admin order status:', orderId, newStatus);
+      const response = await authenticatedFetch(apiEndpoints.adminOrderStatus(orderId), {
+        method: 'PATCH',
+        body: JSON.stringify({
+          orderStatus: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('✅ Admin order status updated successfully');
+        fetchOrders();
+        fetchStats();
+      } else {
+        console.error('❌ Failed to update admin order status:', response.status);
+        alert('Failed to update order status');
+      }
+    } catch (error) {
+      console.error('❌ Error updating admin order status:', error);
+      alert('Error updating order status');
+    }
+  };
+
+  const handlePrint = () => {
+    const printContent = document.getElementById('print-content');
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Delivery Orders - ${selectedDate || 'Today'}</title>
+              <style>
+                body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                .header { text-align: center; margin-bottom: 20px; }
+                .summary { background-color: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+                .meal-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 1px; display: inline-block; }
+                .breakfast { background-color: #fef3c7; }
+                .lunch { background-color: #fef9e7; }
+                .dinner { background-color: #e0e7ff; }
+                .veg { color: #059669; font-weight: bold; }
+                .non-veg { color: #dc2626; font-weight: bold; }
+                @media print {
+                  body { margin: 0; }
+                  .no-print { display: none; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>Final Delivery Orders</h2>
+                <p>Date: ${selectedDate || new Date().toDateString()}</p>
+                <p>Generated: ${new Date().toLocaleString('en-IN')}</p>
+              </div>
+              ${deliverySummary ? `
+                <div class="summary">
+                  <h3>Summary</h3>
+                  <p><strong>Total Active Orders:</strong> ${deliverySummary.totalActiveOrders}</p>
+                  <p><strong>Orders with Deliveries:</strong> ${deliverySummary.totalWithDeliveries}</p>
+                  <p><strong>Breakfast Deliveries:</strong> ${deliverySummary.deliveryBreakdown.breakfast}</p>
+                  <p><strong>Lunch Deliveries:</strong> ${deliverySummary.deliveryBreakdown.lunch}</p>
+                  <p><strong>Dinner Deliveries:</strong> ${deliverySummary.deliveryBreakdown.dinner}</p>
+                </div>
+              ` : ''}
+              ${printContent.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      }
+    }
+  };
+
+  const handleExport = async (format: 'excel' | 'csv' | 'pdf') => {
+    try {
+      setExporting(true);
+      console.log(`📤 Exporting admin final delivery orders as ${format}...`);
+      
+      const params = new URLSearchParams();
+      if (selectedDate) params.append('date', selectedDate);
+      if (filters.dietaryPreference) params.append('dietaryPreference', filters.dietaryPreference);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.addressType) params.append('addressType', filters.addressType);
+      if (filters.customerName) params.append('customerName', filters.customerName);
+      if (mealFilter) params.append('mealFilter', mealFilter);
+      params.append('format', format);
+
+      const response = await authenticatedFetch(
+        `${apiEndpoints.adminExportFinalDelivery}?${params.toString()}`
+      );
+
+      if (response.ok) {
+        console.log('✅ Export successful');
+        if (format === 'pdf') {
+          const htmlContent = await response.text();
+          const printWindow = window.open('', '_blank');
+          if (printWindow) {
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+              printWindow.print();
+            }, 1000);
+          }
+        } else {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+
+          const contentDisposition = response.headers.get('content-disposition');
+          let filename = `Final_Delivery_Orders_${selectedDate || new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+
+          if (contentDisposition && contentDisposition.includes('filename=')) {
+            filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+          }
+
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }
+      } else {
+        console.error('❌ Failed to export admin data:', response.status);
+        alert('Failed to export data');
+      }
+    } catch (error) {
+      console.error('❌ Export error:', error);
+      alert('Error exporting data');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // FILTER LOGIC
+  // ═══════════════════════════════════════════════════════════════════════
+
+  const getFilteredData = () => {
+    if (activeTab === 'skip') {
+      return skipOrders.filter(
+        (order) =>
+          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.customerPhone?.includes(searchTerm)
+      );
+    } else if (activeTab === 'delivery') {
+      return finalDeliveryOrders.filter(
+        (order) =>
+          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.customerPhone?.includes(searchTerm) ||
+          order.menuTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.address?.city?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } else {
+      return orders.filter(
+        (order) =>
+          order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.customerPhone?.includes(searchTerm) ||
+          order.menuTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.address?.city?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+  };
+
+  const filteredData = getFilteredData();
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // EFFECTS
+  // ═══════════════════════════════════════════════════════════════════════
+
   useEffect(() => {
     console.log('🔄 Active tab changed to:', activeTab);
     fetchOrders();
@@ -1619,9 +1732,30 @@ const AdminOrderDashboard: React.FC = () => {
     }
   }, [filters, selectedDate, activeTab, fetchOrders, mealFilter]);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        
+        {/* Auth Error Alert */}
+        {authError && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
+              <p className="text-red-700">{authError}</p>
+              <button
+                onClick={() => setAuthError(null)}
+                className="ml-auto text-red-500 hover:text-red-700"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -1897,6 +2031,7 @@ const AdminOrderDashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
+                  
                   {/* Final Delivery Orders Table with Print Content */}
                   {activeTab === 'delivery' && (
                     <>
@@ -2248,7 +2383,7 @@ const AdminOrderDashboard: React.FC = () => {
               </div>
             )}
 
-            {activeTab !== 'skip' && activeTab !== 'delivery' && (
+            {activeTab !== 'skip' && activeTab !== 'delivery' && filteredData.length > 0 && (
               <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Summary</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

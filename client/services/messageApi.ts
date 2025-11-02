@@ -1,5 +1,5 @@
-// services/messageService.ts - FIXED VERSION
-import { API_BASE_URL } from '../src/configapi/api'; // Fixed path - remove src/
+// services/messageService.ts - WITH AUTHENTICATION SUPPORT
+import { API_BASE_URL } from '../src/configapi/api';
 
 const API_URL = API_BASE_URL;
 
@@ -40,7 +40,6 @@ export interface MessageResponse {
   errors?: string[] | Record<string, string>[];
 }
 
-// FIXED: Match backend response structure
 export interface MessagesListResponse {
   success: boolean;
   data: {
@@ -85,46 +84,126 @@ export interface ApiResponse {
   errors?: string[] | Record<string, string>[];
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// MESSAGE SERVICE CLASS WITH AUTHENTICATION
+// ═══════════════════════════════════════════════════════════════════════
+
 class MessageService {
+  private authToken: string | null = null;
+  private onAuthError?: () => void;
+
+  // Set authentication token
+  setAuthToken(token: string | null) {
+    this.authToken = token;
+    console.log('🔐 Auth token set:', token ? 'Token present' : 'No token');
+  }
+
+  // Set auth error callback
+  setAuthErrorCallback(callback: () => void) {
+    this.onAuthError = callback;
+  }
+
+  // Get auth token from multiple sources
+  private getAuthToken(): string | null {
+    if (this.authToken) {
+      return this.authToken;
+    }
+    
+    const localToken = localStorage.getItem('ADMIN_TOKEN');
+    if (localToken) {
+      this.authToken = localToken;
+      return localToken;
+    }
+    
+    return null;
+  }
+
+  // Make authenticated request
   private async makeRequest<T = ApiResponse>(
     endpoint: string, 
-    options: RequestInit = {}
+    options: RequestInit = {},
+    requireAuth: boolean = false
   ): Promise<T> {
     try {
-      console.log('Making API request to:', `${API_URL}${endpoint}`);
+      console.log('📡 Making API request to:', `${API_URL}${endpoint}`);
       
+      const headersInit: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...((options.headers as HeadersInit) || {}),
+      };
+
+      // Use a Headers instance so we can safely set header values
+      const headers = new Headers(headersInit);
+
+      // Add authentication headers if required
+      if (requireAuth) {
+        const token = this.getAuthToken();
+        
+        if (!token) {
+          console.error('❌ No authentication token found');
+          if (this.onAuthError) {
+            this.onAuthError();
+          }
+          throw new Error('Authentication required');
+        }
+
+        headers.set('Authorization', `Bearer ${token}`);
+        headers.set('x-auth-token', token);
+        console.log('🔐 Auth headers added');
+      }
+
       const response = await fetch(`${API_URL}${endpoint}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
         ...options,
+        headers,
+        credentials: 'include',
       });
 
+      console.log('📊 Response status:', response.status);
+
+      // Handle authentication errors
+      if (response.status === 401 || response.status === 403) {
+        console.error('❌ Authentication failed:', response.status);
+        localStorage.removeItem('ADMIN_TOKEN');
+        this.authToken = null;
+        
+        if (this.onAuthError) {
+          this.onAuthError();
+        }
+        
+        throw new Error('Authentication failed');
+      }
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json() as T;
-      console.log('API response:', data);
+      console.log('✅ API response received');
 
       return data;
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error('❌ API Request failed:', error);
       console.error('Endpoint:', `${API_URL}${endpoint}`);
       throw error;
     }
   }
 
-  // Submit contact form (public)
+  // ═══════════════════════════════════════════════════════════════════════
+  // PUBLIC ENDPOINTS (No Auth Required)
+  // ═══════════════════════════════════════════════════════════════════════
+
   async submitContactForm(formData: ContactFormData): Promise<MessageResponse> {
     return this.makeRequest<MessageResponse>('/api/messages', {
       method: 'POST',
       body: JSON.stringify(formData),
-    });
+    }, false);
   }
 
-  // FIXED: Get all messages with proper response handling
+  // ═══════════════════════════════════════════════════════════════════════
+  // ADMIN ENDPOINTS (Auth Required)
+  // ═══════════════════════════════════════════════════════════════════════
+
   async getMessages(filters: MessageFilters = {}): Promise<MessagesListResponse> {
     try {
       const queryParams = new URLSearchParams();
@@ -138,11 +217,10 @@ class MessageService {
       const queryString = queryParams.toString();
       const endpoint = `/api/messages${queryString ? `?${queryString}` : ''}`;
       
-      const response = await this.makeRequest<MessagesListResponse>(endpoint);
+      const response = await this.makeRequest<MessagesListResponse>(endpoint, {}, true);
       
-      // Handle backend response structure - normalize if needed
+      // Normalize response structure
       if (response.data && response.pagination) {
-        // Backend returns pagination outside data object
         return {
           ...response,
           data: {
@@ -159,15 +237,13 @@ class MessageService {
     }
   }
 
-  // Get single message by ID (admin)
   async getMessageById(id: string): Promise<MessageResponse> {
     try {
-      const response = await this.makeRequest<MessageResponse>(`/api/messages/${id}`);
-      
-      // Mark as read when viewed
-      if (response.success && response.data) {
-        await this.updateMessageStatus(id, 'read').catch(console.error);
-      }
+      const response = await this.makeRequest<MessageResponse>(
+        `/api/messages/${id}`, 
+        {}, 
+        true
+      );
       
       return response;
     } catch (error) {
@@ -176,53 +252,57 @@ class MessageService {
     }
   }
 
-  // Update message status (admin)
   async updateMessageStatus(id: string, status: string): Promise<MessageResponse> {
-    return this.makeRequest<MessageResponse>(`/api/messages/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    });
+    return this.makeRequest<MessageResponse>(
+      `/api/messages/${id}/status`, 
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      },
+      true
+    );
   }
 
-  // Reply to message (admin)
   async replyToMessage(id: string, adminReply: string): Promise<MessageResponse> {
-    return this.makeRequest<MessageResponse>(`/api/messages/${id}/reply`, {
-      method: 'PATCH',
-      body: JSON.stringify({ adminReply }),
-    });
+    return this.makeRequest<MessageResponse>(
+      `/api/messages/${id}/reply`, 
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ adminReply }),
+      },
+      true
+    );
   }
 
-  // Delete message (admin)
   async deleteMessage(id: string): Promise<MessageResponse> {
-    return this.makeRequest<MessageResponse>(`/api/messages/${id}`, {
-      method: 'DELETE',
-    });
+    return this.makeRequest<MessageResponse>(
+      `/api/messages/${id}`, 
+      {
+        method: 'DELETE',
+      },
+      true
+    );
   }
 
-  // FIXED: Get message statistics with proper error handling
   async getMessageStats(): Promise<MessageStats> {
     try {
-      // Try dedicated stats endpoint first
       const statsResponse = await this.makeRequest<{
         success: boolean;
         data: MessageStats;
-      }>('/api/messages/stats/summary');
+      }>('/api/messages/stats/summary', {}, true);
       
       if (statsResponse.success && statsResponse.data) {
         return statsResponse.data;
       }
       
-      // Fallback to messages endpoint
       const response = await this.getMessages({ limit: 1 });
       return response.data.stats;
     } catch (error) {
       console.error('Error getting message stats:', error);
-      // Return default stats on error
       return { unread: 0, read: 0, replied: 0, total: 0 };
     }
   }
 
-  // Mark multiple messages as read (admin)
   async markMultipleAsRead(messageIds: string[]): Promise<MessageResponse[]> {
     const promises = messageIds.map(id => 
       this.updateMessageStatus(id, 'read')
@@ -237,7 +317,6 @@ class MessageService {
     );
   }
 
-  // Delete multiple messages (admin)
   async deleteMultipleMessages(messageIds: string[]): Promise<MessageResponse[]> {
     const promises = messageIds.map(id => this.deleteMessage(id));
     return Promise.allSettled(promises).then(results =>
@@ -249,7 +328,6 @@ class MessageService {
     );
   }
 
-  // Search messages by text (admin)
   async searchMessages(searchText: string, filters: Omit<MessageFilters, 'search'> = {}): Promise<MessagesListResponse> {
     return this.getMessages({
       ...filters,
@@ -257,7 +335,6 @@ class MessageService {
     });
   }
 
-  // Get messages by status (admin)
   async getMessagesByStatus(status: string, filters: Omit<MessageFilters, 'status'> = {}): Promise<MessagesListResponse> {
     return this.getMessages({
       ...filters,
@@ -265,7 +342,6 @@ class MessageService {
     });
   }
 
-  // Get messages by subject (admin)
   async getMessagesBySubject(subject: string, filters: Omit<MessageFilters, 'subject'> = {}): Promise<MessagesListResponse> {
     return this.getMessages({
       ...filters,
@@ -273,7 +349,6 @@ class MessageService {
     });
   }
 
-  // Get recent messages (admin)
   async getRecentMessages(limit: number = 10): Promise<MessagesListResponse> {
     return this.getMessages({
       limit,
@@ -281,7 +356,6 @@ class MessageService {
     });
   }
 
-  // FIXED: Get unread count with better error handling
   async getUnreadCount(): Promise<number> {
     try {
       const response = await this.getMessages({ status: 'unread', limit: 1 });
