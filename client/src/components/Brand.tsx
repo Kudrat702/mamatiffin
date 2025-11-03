@@ -16,7 +16,7 @@ const mamatiffin: React.FC = () => {
     {
       icon: <Zap className="w-8 h-8 text-white" />,
       title: "Energy for Studies",
-      description: "Balanced diet (dal, sabzi, roti, rice) unko long study hours ke liye energy deti hai. Fast food ki wajah se thakan aur laziness nahi hoti."
+      description: "Balanced diet (dal, sabzi, roti, rice) unko long study hours ke liye energy deti hai."
     },
     {
       icon: <Clock className="w-8 h-8 text-white" />,

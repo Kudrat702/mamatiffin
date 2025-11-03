@@ -3,7 +3,7 @@ import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import FloatingBubblesFoodBackground from './FloatingBubbleBackground';
 import { apiEndpoints } from '../configapi/api';
-import { useAuth } from '../context/AuthContext'; // ✅ CORRECT IMPORT
+import { useAuth } from '../context/AuthContext';
 
 interface AddressOptions {
   district: string;
@@ -28,16 +28,14 @@ export interface LocalUser {
 export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess?: (user: LocalUser, token: string) => void; // Optional now
+  onLoginSuccess?: (user: LocalUser, token: string) => void;
 }
 
-// Sign In Form Type
 interface SignInFormData {
   phone: string;
   password: string;
 }
 
-// Sign Up Form Type
 interface SignUpFormData {
   name: string;
   phone: string;
@@ -48,15 +46,42 @@ interface SignUpFormData {
   homeLodgeName: string;
 }
 
+// ✅ Optimized Select Component with React.memo
+const OptimizedSelect = React.memo<{
+  label: string;
+  options: string[];
+  register: any;
+  name: string;
+  error?: string;
+  disabled?: boolean;
+  placeholder: string;
+}>(({ label, options, register, name, error, disabled, placeholder }) => (
+  <div>
+    <label className="block text-xs font-bold text-gray-600 mb-2">{label}</label>
+    <select
+      {...register}
+      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(50,140,129)] focus:border-transparent transition-all duration-300 text-sm bg-gray-50 hover:bg-white disabled:opacity-50"
+      disabled={disabled}
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option} value={option}>{option}</option>
+      ))}
+    </select>
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
+));
+
+OptimizedSelect.displayName = 'OptimizedSelect';
+
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
-  const { login } = useAuth(); // ✅ Use correct hook
+  const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [addressOptions, setAddressOptions] = useState<AddressOptions[]>([]);
   const [error, setError] = useState('');
 
-  // React Hook Form for Sign In
   const { 
     register: registerSignIn, 
     handleSubmit: handleSubmitSignIn,
@@ -66,7 +91,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     mode: 'onSubmit',
   });
 
-  // React Hook Form for Sign Up
   const { 
     register: registerSignUp, 
     handleSubmit: handleSubmitSignUp,
@@ -79,31 +103,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const selectedDistrict = watch('district');
 
-  const filteredBlocks = useMemo(() => {
-    if (!selectedDistrict) return [];
+  // ✅ SINGLE OPTIMIZED useMemo - Teen ko ek mein combine kiya
+  const filteredAddressData = useMemo(() => {
+    if (!selectedDistrict) {
+      return {
+        blocks: [],
+        cities: [],
+        homeLodgeNames: [],
+        districts: addressOptions.map(addr => addr.district)
+      };
+    }
+    
     const districtData = addressOptions.find(addr => addr.district === selectedDistrict);
-    return districtData?.blocks || [];
+    
+    return {
+      blocks: districtData?.blocks || [],
+      cities: districtData?.cities || [],
+      homeLodgeNames: districtData?.homeLodgeNames || [],
+      districts: addressOptions.map(addr => addr.district)
+    };
   }, [selectedDistrict, addressOptions]);
 
-  const filteredCities = useMemo(() => {
-    if (!selectedDistrict) return [];
-    const districtData = addressOptions.find(addr => addr.district === selectedDistrict);
-    return districtData?.cities || [];
-  }, [selectedDistrict, addressOptions]);
-
-  const filteredHomeLodgeNames = useMemo(() => {
-    if (!selectedDistrict) return [];
-    const districtData = addressOptions.find(addr => addr.district === selectedDistrict);
-    return districtData?.homeLodgeNames || [];
-  }, [selectedDistrict, addressOptions]);
-
+  // ✅ Only fetch once when modal opens
   useEffect(() => {
-    if (isOpen && activeTab === 'signup') {
+    if (isOpen && activeTab === 'signup' && addressOptions.length === 0) {
       fetchAddressOptions();
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, addressOptions.length]);
 
-  const fetchAddressOptions = async () => {
+  const fetchAddressOptions = useCallback(async () => {
     try {
       const response = await fetch(apiEndpoints.addressOptions);
       const result = await response.json();
@@ -111,9 +139,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     } catch {
       console.error('Error fetching address options');
     }
-  };
+  }, []);
 
-  // ✅ Updated Sign In - Use Context
   const onSignInSubmit = useCallback(async (data: SignInFormData) => {
     setLoading(true);
     setError('');
@@ -128,10 +155,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       const result = await response.json();
 
       if (result.success && result.token && result.user) {
-        // ✅ Save to Context (automatically saves to localStorage)
         login(result.user, result.token);
         
-        // Optional callback if parent needs to know
         if (onLoginSuccess) {
           onLoginSuccess(result.user, result.token);
         }
@@ -148,7 +173,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     }
   }, [login, onLoginSuccess, onClose, resetSignIn]);
 
-  // ✅ Updated Sign Up - Use Context
   const onSignUpSubmit = useCallback(async (data: SignUpFormData) => {
     setLoading(true);
     setError('');
@@ -175,10 +199,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       const result = await response.json();
 
       if (result.success && result.token && result.user) {
-        // ✅ Save to Context (automatically saves to localStorage)
         login(result.user, result.token);
         
-        // Optional callback if parent needs to know
         if (onLoginSuccess) {
           onLoginSuccess(result.user, result.token);
         }
@@ -328,7 +350,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   {signUpErrors.phone && <p className="text-red-500 text-xs mt-1">{signUpErrors.phone.message}</p>}
                 </div>
 
-                {/* Address Section */}
+                {/* ✅ OPTIMIZED Address Section */}
                 <div className="space-y-5">
                   <div className="flex items-center space-x-3">
                     <div className="w-1 h-6 rounded-full" style={{ backgroundColor: 'rgb(50, 140, 129)' }}></div>
@@ -336,66 +358,47 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">District</label>
-                      <select
-                        {...registerSignUp('district', { required: 'District is required' })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(50,140,129)] focus:border-transparent transition-all duration-300 text-sm bg-gray-50 hover:bg-white"
-                      >
-                        <option value="">Select District</option>
-                        {addressOptions.map((addr) => (
-                          <option key={addr.district} value={addr.district}>{addr.district}</option>
-                        ))}
-                      </select>
-                      {signUpErrors.district && <p className="text-red-500 text-xs mt-1">{signUpErrors.district.message}</p>}
-                    </div>
+                    <OptimizedSelect
+                      label="District"
+                      options={filteredAddressData.districts}
+                      register={registerSignUp('district', { required: 'District is required' })}
+                      name="district"
+                      error={signUpErrors.district?.message}
+                      placeholder="Select District"
+                      disabled={false}
+                    />
 
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">Block</label>
-                      <select
-                        {...registerSignUp('block', { required: 'Block is required' })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(50,140,129)] focus:border-transparent transition-all duration-300 text-sm bg-gray-50 hover:bg-white disabled:opacity-50"
-                        disabled={!selectedDistrict}
-                      >
-                        <option value="">Select Block</option>
-                        {filteredBlocks.map((block) => (
-                          <option key={block} value={block}>{block}</option>
-                        ))}
-                      </select>
-                      {signUpErrors.block && <p className="text-red-500 text-xs mt-1">{signUpErrors.block.message}</p>}
-                    </div>
+                    <OptimizedSelect
+                      label="Block"
+                      options={filteredAddressData.blocks}
+                      register={registerSignUp('block', { required: 'Block is required' })}
+                      name="block"
+                      error={signUpErrors.block?.message}
+                      placeholder="Select Block"
+                      disabled={!selectedDistrict}
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">City</label>
-                      <select
-                        {...registerSignUp('city', { required: 'City is required' })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(50,140,129)] focus:border-transparent transition-all duration-300 text-sm bg-gray-50 hover:bg-white disabled:opacity-50"
-                        disabled={!selectedDistrict}
-                      >
-                        <option value="">Select City</option>
-                        {filteredCities.map((city) => (
-                          <option key={city} value={city}>{city}</option>
-                        ))}
-                      </select>
-                      {signUpErrors.city && <p className="text-red-500 text-xs mt-1">{signUpErrors.city.message}</p>}
-                    </div>
+                    <OptimizedSelect
+                      label="City"
+                      options={filteredAddressData.cities}
+                      register={registerSignUp('city', { required: 'City is required' })}
+                      name="city"
+                      error={signUpErrors.city?.message}
+                      placeholder="Select City"
+                      disabled={!selectedDistrict}
+                    />
 
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">Home/Lodge</label>
-                      <select
-                        {...registerSignUp('homeLodgeName', { required: 'Home/Lodge is required' })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(50,140,129)] focus:border-transparent transition-all duration-300 text-sm bg-gray-50 hover:bg-white disabled:opacity-50"
-                        disabled={!selectedDistrict}
-                      >
-                        <option value="">Select Type</option>
-                        {filteredHomeLodgeNames.map((name) => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                      {signUpErrors.homeLodgeName && <p className="text-red-500 text-xs mt-1">{signUpErrors.homeLodgeName.message}</p>}
-                    </div>
+                    <OptimizedSelect
+                      label="Home/Lodge"
+                      options={filteredAddressData.homeLodgeNames}
+                      register={registerSignUp('homeLodgeName', { required: 'Home/Lodge is required' })}
+                      name="homeLodgeName"
+                      error={signUpErrors.homeLodgeName?.message}
+                      placeholder="Select Type"
+                      disabled={!selectedDistrict}
+                    />
                   </div>
                 </div>
 
