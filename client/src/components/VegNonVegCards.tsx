@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Leaf, Drumstick } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-// NEW: More comprehensive User interface ✅
+// User interface matching AuthContext
 interface User {
-  id?: string;
-  name?: string;
-  phone?: string;
-  email?: string;
-  address?: string | {
-    district?: string;
-    block?: string;
-    city?: string;
-    homeLodgeName?: string;
+  id: string;
+  name: string;
+  phone: string;
+  address: {
+    district: string;
+    block: string;
+    city: string;
+    homeLodgeName: string;
   };
-  city?: string;
-  role?: string;
+  role: string;
 }
 
 const VegNonVegCards: React.FC = () => {
   const navigate = useNavigate();
+  const { user: authUser, isAuthenticated } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   
-  // Load user data from sessionStorage on component mount
+  // Load user data from localStorage on component mount
   useEffect(() => {
     const checkUserLogin = () => {
-      const savedUser = sessionStorage.getItem('user');
-      const savedToken = sessionStorage.getItem('token');
+      // First priority: Check AuthContext
+      if (authUser && isAuthenticated) {
+        setUser(authUser as User);
+        return;
+      }
+
+      // Second priority: Check localStorage
+      const savedUser = localStorage.getItem('user');
+      const savedToken = localStorage.getItem('token');
       
       if (savedUser && savedToken) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser) as User;
+          setUser(parsedUser);
         } catch (error) {
-          console.error('Error parsing user data:', error);
+          console.error('Error parsing user data from localStorage:', error);
+          // Clear corrupted data
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
           setUser(null);
         }
       } else {
@@ -43,14 +54,14 @@ const VegNonVegCards: React.FC = () => {
     // Check on mount
     checkUserLogin();
 
-    // Listen for storage changes (when user logs in/out from header)
+    // Listen for storage changes (when user logs in/out from another tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'user' || e.key === 'token') {
         checkUserLogin();
       }
     };
 
-    // Listen for custom events (for same-tab login/logout)
+    // Listen for custom events (for same-tab login/logout from header)
     const handleAuthChange = () => {
       checkUserLogin();
     };
@@ -62,16 +73,16 @@ const VegNonVegCards: React.FC = () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('userAuthChanged', handleAuthChange);
     };
-  }, []);
+  }, [authUser, isAuthenticated]);
   
-  // NEW: Updated card click handler with better redirect logic ✅
+  // Card click handler with redirect logic
   const handleCardClick = (menuType: 'veg' | 'non-veg') => {
     if (user) {
       // User is logged in, navigate to respective menu page
       const path = menuType === 'veg' ? '/veg-menu' : '/non-veg-menu';
       navigate(path);
     } else {
-      // NEW: Store redirect data as object (consistent with MenuDetailsPage) ✅
+      // User not logged in, save redirect path and trigger login modal
       const redirectData = {
         path: menuType === 'veg' ? '/veg-menu' : '/non-veg-menu',
         from: 'veg-nonveg-cards',
@@ -79,7 +90,8 @@ const VegNonVegCards: React.FC = () => {
         timestamp: new Date().toISOString()
       };
       
-      sessionStorage.setItem('redirectAfterLogin', JSON.stringify(redirectData));
+      // Store redirect information in localStorage
+      localStorage.setItem('redirectAfterLogin', JSON.stringify(redirectData));
       
       // Dispatch custom event to trigger login modal in header
       window.dispatchEvent(new CustomEvent('triggerLogin'));
@@ -114,7 +126,7 @@ const VegNonVegCards: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-6">
-      {/* NEW: Login status indicator (optional) ✅ */}
+      {/* Login status indicator - Only show if user is NOT logged in */}
       {!user && (
         <div className="mb-6 max-w-4xl w-full">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
@@ -131,7 +143,7 @@ const VegNonVegCards: React.FC = () => {
           onClick={() => handleCardClick('veg')}
           className="group relative bg-transparent rounded-3xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden border-2 border-gray-200 hover:border-green-200"
         >
-          {/* Background gradient - removed opacity for transparent effect */}
+          {/* Background gradient */}
           <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           
           {/* Content */}
@@ -151,7 +163,7 @@ const VegNonVegCards: React.FC = () => {
               Fresh, healthy aur tasty plant-based khane
             </p>
             
-            {/* Explore Button with Teal Color */}
+            {/* Explore Button */}
             <button 
               className="text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform group-hover:scale-105 shadow-lg hover:shadow-xl"
               style={vegButtonStyle}
@@ -162,7 +174,7 @@ const VegNonVegCards: React.FC = () => {
             </button>
           </div>
           
-          {/* Hover effect overlay - made transparent */}
+          {/* Hover effect overlay */}
           <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
         </div>
 
@@ -171,7 +183,7 @@ const VegNonVegCards: React.FC = () => {
           onClick={() => handleCardClick('non-veg')}
           className="group relative bg-transparent rounded-3xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden border-2 border-gray-200 hover:border-red-200"
         >
-          {/* Background gradient - removed opacity for transparent effect */}
+          {/* Background gradient */}
           <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           
           {/* Content */}
@@ -191,7 +203,7 @@ const VegNonVegCards: React.FC = () => {
               Perfectly banaye gaye meats, taste mein kamaal
             </p>
             
-            {/* Explore Button with Light Red Color */}
+            {/* Explore Button */}
             <button 
               className="text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform group-hover:scale-105 shadow-lg hover:shadow-xl"
               style={nonVegButtonStyle}
@@ -202,12 +214,12 @@ const VegNonVegCards: React.FC = () => {
             </button>
           </div>
           
-          {/* Hover effect overlay - made transparent */}
+          {/* Hover effect overlay */}
           <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
         </div>
       </div>
 
-      {/* NEW: User greeting (optional) ✅ */}
+      {/* User greeting - Only show if user is logged in */}
       {user && (
         <div className="mt-6 max-w-4xl w-full">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
