@@ -59,7 +59,7 @@ const OurStory: React.FC = () => {
             <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed font-medium">
               <span className="italic" style={{ color: 'rgb(50, 140, 129)' }}>
                 "Khana ki wajah se bhai-chara aur dosti toot jaati hai,<br/>
-                isiliye ek ghar jaisa tiffin solution aaya hi"
+                isiliye ek ghar jaisa tiffin solution aaya hai"
               </span>
             </p>
           </div>
