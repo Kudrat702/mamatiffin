@@ -525,7 +525,7 @@ if (isProduction) {
 }
 
 // ✅ COOKIE PARSER - MUST BE BEFORE OTHER MIDDLEWARE
-app.use(cookieParser());
+app.use((cookieParser as any)());
 console.log('✅ Cookie parser enabled');
 
 // ✅ BODY PARSERS - EXPLICIT SETUP
@@ -784,7 +784,7 @@ app.get('/api/debug-cors', (req: Request, res: Response) => {
     headers: req.headers,
     timestamp: new Date().toISOString()
   });
-});
+}); 
 
 // Storage info endpoint
 app.get('/api/storage-info', (req: Request, res: Response) => {

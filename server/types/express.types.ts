@@ -189,7 +189,7 @@ export interface CreateCatalogBody {
   items: Array<{
     name: string;
     description: string;
-    price: number;
+    price: number; 
     preparationTime: string;
     tags: string[];
   }>;

@@ -62,16 +62,19 @@
     "postinstall": "echo '\n✅ Root dependencies installed!\n💡 Run: npm run install:all (to install client & server deps)\n🚀 Then: npm run dev (to start development)\n'"
   },
   "devDependencies": {
-    "@types/node": "24.6.2",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.6.2",
     "concurrently": "8.2.2",
     "prettier": "3.6.2",
     "tsx": "^4.20.6",
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "multer": "^2.0.2",
     "rimraf": "5.0.10"
   },
   "repository": {
