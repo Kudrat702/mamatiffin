@@ -75,7 +75,8 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "multer": "^2.0.2",
-    "rimraf": "5.0.10"
+    "rimraf": "^6.1.2",
+    "uuid": "^13.0.0"
   },
   "repository": {
     "type": "git",
