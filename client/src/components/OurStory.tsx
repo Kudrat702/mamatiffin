@@ -58,8 +58,8 @@ const OurStory: React.FC = () => {
           <div className="max-w-3xl mx-auto">
             <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed font-medium">
               <span className="italic" style={{ color: 'rgb(50, 140, 129)' }}>
-                "Khana ki wajah se bhai-chara aur dosti toot jaati hai,<br/>
-                isiliye ek ghar jaisa tiffin solution aaya hai"
+                "Khana Ki Wajah Se Bhai-Chara Aur Dosti Toot Jaati Hai,<br/>
+                Isiliye Ek Ghar Jaisa Tiffin Solution Aaya Hai"
               </span>
             </p>
           </div>
@@ -84,7 +84,7 @@ const OurStory: React.FC = () => {
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-green-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <span className="relative z-10">
-              {isExpanded ? '📖 Story Collapse Kariye' : '👆 Puri Story Padiye'}
+              {isExpanded ? '📖 Story Collapse Kariye' : '👆 PURI STORY PADHIYE'}
             </span>
             
             <span className="relative z-10 ml-3 transition-transform duration-300 group-hover:scale-125">

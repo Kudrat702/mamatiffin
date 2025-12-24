@@ -5,8 +5,8 @@ const mamatiffin: React.FC = () => {
   const features = [
     {
       icon: <Shield className="w-8 h-8 text-white" />,
-      title: "Healthy & Hygienic Ghar Jaisa Khana",
-      description: "Students ko hostel/mess ka oily khana pasand nahi aata. mamatiffin har tiffin ghar ke standard se hygienic aur nutritious banata hai."
+      title: "HEALTHY & HYGIENIC GHAR JAISA KHANA",
+      description: "Students Ko Hostel/Mess Ka Oily Khana Pasand Nahi Aata. Mamatiffin Har Tiffin Ghar Ke Standard Se Hygienic Aur Nutritious Banata Hai."
     },
     {
       icon: <Wallet className="w-8 h-8 text-white" />,
@@ -36,10 +36,10 @@ const mamatiffin: React.FC = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <h1 
-            className="text-4xl md:text-5xl font-normal text-center mb-12"
+            className="text-4xl md:text-5xl font-semibold text-center mb-12"
             style={{ color: 'rgb(50, 140, 129)' }}
           >
-            Why Order Food from mamatiffin?
+            Why Food Order From Mamatiffin?
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -82,7 +82,7 @@ const mamatiffin: React.FC = () => {
             </h2>
             
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
-              Hostel/Room me rehne wale students ko ghar jaisa khana nahi milta. Exam preparation ke pressure me unko healthy aur tasty food ki zarurat hoti hai. Isi need ko pura karne ke liye mamatiffin bana hai – taaki har student ko ghar ka pyar aur sehatmand khana mil sake.
+              Hostel/Room Me rehne wale students ko ghar jaisa khana nahi milta. Exam preparation ke pressure me unko healthy aur tasty food ki zarurat hoti hai. Isi need ko pura karne ke liye mamatiffin bana hai – taaki har student ko ghar ka pyar aur sehatmand khana mil sake.
             </p>
             
             <p 

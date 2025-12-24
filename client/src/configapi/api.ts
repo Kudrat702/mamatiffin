@@ -10,7 +10,7 @@ export interface MenuDetail {
   createdAt?: string;
   updatedAt?: string;
 }
-
+ 
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
@@ -552,3 +552,6 @@ export const API_BASE = `${API_BASE_URL}/api`;
 
 // ✅ EXPORT DEFAULT
 export default apiEndpoints;
+
+
+
