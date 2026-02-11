@@ -84,7 +84,7 @@ const OurStory: React.FC = () => {
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-green-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <span className="relative z-10">
-              {isExpanded ? '📖 Story Collapse Kariye' : '👆 PURI STORY PADHIYE'}
+              {isExpanded ? '📖 Close Story ' : '👆 Read Our Story'}
             </span>
             
             <span className="relative z-10 ml-3 transition-transform duration-300 group-hover:scale-125">

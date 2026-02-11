@@ -127,7 +127,8 @@ export interface IMenuDetails extends Document {
   imageUrl: string;
   imagePublicId?: string;                // NEW: Cloudinary public ID
   deliveryTime: string;
-  priceMonthly: number;                  
+  priceMonthly: number; 
+  priceWeekly: number;                 
   priceTrial: number;                    
   weeklyMenu: IWeeklyMenuDay[];
   catalogItemId?: string;                

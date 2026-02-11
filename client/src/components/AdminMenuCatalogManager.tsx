@@ -1143,4 +1143,4 @@ const AdminMenuCatalogManager: React.FC = () => {
   );
 };
 
-export default AdminMenuCatalogManager;
+export default AdminMenuCatalogManager; 

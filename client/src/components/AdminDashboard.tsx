@@ -597,7 +597,7 @@ const AdminDashboard: React.FC = () => {
       'slider-management': 'Image Slider Management',
       'menu-details': 'Menu Details Management',
       locations: 'Location Management',
-      users: 'User Management',
+      users: 'User Management', 
       orders: 'Order Management',
       messages: 'Contact Messages Management',
       analytics: 'Analytics & Reports',
@@ -651,7 +651,7 @@ const AdminDashboard: React.FC = () => {
       return (
         <div className="py-12 text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Loading menus...</p>
+          <p className="text-gray-600">Loading menu...</p>
         </div>
       );
     }
@@ -660,7 +660,7 @@ const AdminDashboard: React.FC = () => {
       return (
         <div className="py-12 text-center">
           <div className="mb-4 text-6xl">⚠️</div>
-          <h3 className="mb-2 text-xl font-semibold text-gray-900">Error Loading Menus</h3>
+          <h3 className="mb-2 text-xl font-semibold text-gray-900">Error Loading Menu</h3>
           <p className="mb-4 text-gray-600">{error}</p>
           <button
             onClick={fetchMenus}
@@ -938,9 +938,9 @@ const AdminDashboard: React.FC = () => {
       <div className="rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="mb-2 text-3xl font-bold">Welcome back, Admin!</h1>
+            <h1 className="mb-2 text-3xl font-bold">Welcome Back, MAMATIFFIN </h1>
             <p className="text-lg text-blue-100">
-              Here's what's happening with your mamatiffin today.
+              Har Din Students Ke Liye Sehatmand Khana.
             </p>
           </div>
           <div className="hidden md:block">
@@ -985,10 +985,15 @@ const AdminDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
-          <p className="text-gray-500">Manage your mamatiffin efficiently</p>
-        </div>
+        <div className="mb-6 text-center">
+  <h2 className="text-2xl font-bold text-gray-900">
+    Daily Operations
+  </h2>
+  <p className="text-gray-500 mt-1">
+    Manage Orders, Menu Aur Delivery Areas
+  </p>
+</div>
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
           <Button
             onClick={() => setCurrentView('orders')}
@@ -1313,7 +1318,7 @@ const AdminDashboard: React.FC = () => {
               <span className="text-2xl">🍽️</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">mamatiffin</h1>
+              <h1 className="text-xl font-bold text-white">MAMATIFFIN</h1>
               <p className="text-xs text-blue-100">Admin Panel</p>
             </div>
           </div>
@@ -1449,9 +1454,15 @@ const AdminDashboard: React.FC = () => {
                   <span className="absolute -top-1 -right-1 h-3 w-3 animate-pulse rounded-full bg-red-500"></span>
                 )}
               </button>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-sm font-semibold text-white">
-                A
-              </div>
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden border-2 border-teal-600 rounded-md">
+  <img
+    src="/favicon.ico"
+    alt="Mamatiffin Logo"
+    className="h-full w-full object-cover"
+  />
+</div>
+
+
             </div>
           </div>
         </header>

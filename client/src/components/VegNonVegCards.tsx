@@ -127,7 +127,7 @@ const VegNonVegCards: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center p-6">
       {/* Login status indicator - Only show if user is NOT logged in */}
-      {!user && (
+      {/* {!user && (
         <div className="mb-6 max-w-4xl w-full">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
             <p className="text-blue-800 text-sm">
@@ -135,7 +135,9 @@ const VegNonVegCards: React.FC = () => {
             </p>
           </div>
         </div>
-      )}
+      )} */}
+
+      
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
         {/* Veg Card */}
@@ -160,7 +162,8 @@ const VegNonVegCards: React.FC = () => {
             
             {/* Description */}
             <p className="text-gray-600 text-lg mb-6 group-hover:text-gray-700 transition-colors duration-300">
-              Fresh, healthy aur tasty plant-based khane
+              Fresh, Healthy Aur Tasty Plant-Based Khane
+
             </p>
             
             {/* Explore Button */}
@@ -200,7 +203,8 @@ const VegNonVegCards: React.FC = () => {
             
             {/* Description */}
             <p className="text-gray-600 text-lg mb-6 group-hover:text-gray-700 transition-colors duration-300">
-              Perfectly banaye gaye meats, taste mein kamaal
+              Perfectly Banaye Gaye Meats, Taste Mein Kamaal
+
             </p>
             
             {/* Explore Button */}

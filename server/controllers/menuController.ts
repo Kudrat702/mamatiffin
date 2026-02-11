@@ -229,6 +229,7 @@ export const createOrUpdateVegMenu = async (req: Request, res: Response): Promis
       imageUrl: imageData.imageUrl,
       deliveryTime,
       priceMonthly: parseFloat(priceMonthly.toString()),
+      priceWeekly: parseFloat(req.body.priceWeekly?.toString() || '0'), // ✅ ADD THIS
       priceTrial: parseFloat(priceTrial.toString()),
       weeklyMenu: weeklyMenuValidation.data!
     };
@@ -357,6 +358,7 @@ export const createOrUpdateNonVegMenu = async (req: Request, res: Response): Pro
       imageUrl: imageData.imageUrl,
       deliveryTime,
       priceMonthly: parseFloat(priceMonthly.toString()),
+      priceWeekly: parseFloat(req.body.priceWeekly?.toString() || '0'), // ✅ ADD THIS
       priceTrial: parseFloat(priceTrial.toString()),
       weeklyMenu: weeklyMenuValidation.data!
     };

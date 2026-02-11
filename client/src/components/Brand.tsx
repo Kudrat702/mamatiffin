@@ -11,22 +11,22 @@ const mamatiffin: React.FC = () => {
     {
       icon: <Wallet className="w-8 h-8 text-white" />,
       title: "Pocket-Friendly Prices",
-      description: "IIT/NEET/Board Exam aur govt job aspirants mostly budget conscious hote hain. Affordable monthly plans unke liye perfect rahenge."
+      description: "IIT/NEET/Board Exam Aur Govt Job Aspirants Mostly Budget Conscious Hote Hain. Affordable Monthly Plans Unke Liye Perfect Rahenge."
     },
     {
       icon: <Zap className="w-8 h-8 text-white" />,
       title: "Energy for Studies",
-      description: "Balanced diet (dal, sabzi, roti, rice) unko long study hours ke liye energy deti hai."
+      description: "Balanced Diet (Dal, Sabzi, Roti, Rice) Unko Long Study Hours Ke Liye Energy Deti Hai."
     },
     {
       icon: <Clock className="w-8 h-8 text-white" />,
       title: "On-Time Delivery",
-      description: "Exam preparation ke time students ke liye punctuality bohot important hai. Tiffin daily fix time pe deliver hoga."
+      description: "Exam Preparation Ke Time Students Ke Liye Punctuality Bohot Important Hai. Tiffin Daily Fix Time Pe Deliver Hoga."
     },
     {
       icon: <Heart className="w-8 h-8 text-white" />,
       title: "Mama's Care & Love ❤️",
-      description: "Har plate khane me maa ka touch, taaki student ko apna gaon/ghar yaad aaye aur wo emotionally comfortable feel karein."
+      description: "Har Plate Khane Me Maa Ka Touch, Taaki Student Ko Apna Gaon/Ghar Yaad Aaye Aur Wo Emotionally Comfortable Feel Karein."
     }
   ];
 
@@ -82,7 +82,8 @@ const mamatiffin: React.FC = () => {
             </h2>
             
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
-              Hostel/Room Me rehne wale students ko ghar jaisa khana nahi milta. Exam preparation ke pressure me unko healthy aur tasty food ki zarurat hoti hai. Isi need ko pura karne ke liye mamatiffin bana hai – taaki har student ko ghar ka pyar aur sehatmand khana mil sake.
+              Hostel/Room Me Rehne Wale Students Ko Ghar Jaisa Khana Nahi Milta. Exam Preparation Ke Pressure Me Unko Healthy Aur Tasty Food Ki Zarurat Hoti Hai. Isi Need Ko Pura Karne Ke Liye Mamatiffin Bana Hai – Taaki Har Student Ko Ghar Ka Pyar Aur Sehatmand Khana Mil Sake.
+
             </p>
             
             <p 

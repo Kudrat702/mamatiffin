@@ -754,6 +754,7 @@ interface MenuDetails {
   imagePublicId?: string; // NEW: Cloudinary support ✅
   price: number;
   priceMonthly: number;
+  priceWeekly: number; // ✅ ADD THIS
   priceTrial: number;
   weeklyMenu: WeeklyMenuItem[]; // Always array format
 }
@@ -883,6 +884,7 @@ const MenuDetailsPage: React.FC = () => {
               imagePublicId: rawMenuData.imagePublicId, // NEW: Store Cloudinary publicId ✅
               price: rawMenuData.price || rawMenuData.priceMonthly || 0,
               priceMonthly: rawMenuData.priceMonthly || rawMenuData.price || 0,
+              priceWeekly: rawMenuData.priceWeekly || Math.round((rawMenuData.priceMonthly || rawMenuData.price || 0) * 0.35) || 0, // ✅ ADDED
               priceTrial: extractTrialPrice(rawMenuData.priceTrial) || Math.round((rawMenuData.priceMonthly || rawMenuData.price || 0) * 0.6) || 49,
               weeklyMenu: normalizedWeeklyMenu
             };
@@ -892,6 +894,7 @@ const MenuDetailsPage: React.FC = () => {
             if (process.env.NODE_ENV === 'development') {
               console.log('Image storage:', normalizedMenuData.imagePublicId ? 'Cloudinary' : 'Local');
               console.log('ImagePublicId:', normalizedMenuData.imagePublicId || 'null');
+              console.log('Weekly Price:', normalizedMenuData.priceWeekly); // ✅ ADDED
             }
             
             setMenuData(normalizedMenuData);
@@ -1002,6 +1005,7 @@ const MenuDetailsPage: React.FC = () => {
                 imagePublicId: rawMenuData.imagePublicId, // NEW: Include imagePublicId ✅
                 price: rawMenuData.price || rawMenuData.priceMonthly || 0,
                 priceMonthly: rawMenuData.priceMonthly || rawMenuData.price || 0,
+                priceWeekly: rawMenuData.priceWeekly || Math.round((rawMenuData.priceMonthly || rawMenuData.price || 0) * 0.35) || 0, // ✅ ADDED
                 priceTrial: extractTrialPrice(rawMenuData.priceTrial) || Math.round((rawMenuData.priceMonthly || rawMenuData.price || 0) * 0.6) || 49,
                 weeklyMenu: normalizedWeeklyMenu
               };
@@ -1031,6 +1035,12 @@ const MenuDetailsPage: React.FC = () => {
       
       fetchMenuData();
     }
+  };
+
+  // ✅ NEW: Helper function for weekly price
+  const getWeeklyPrice = () => {
+    if (!menuData) return 0;
+    return menuData.priceWeekly || Math.round(menuData.priceMonthly * 0.35) || 0;
   };
 
   // Subscribe Monthly Navigation
@@ -1098,6 +1108,73 @@ const MenuDetailsPage: React.FC = () => {
       replace: false
     });
   };
+
+  const handleSubscribeWeekly = () => {
+    if (!diet || !category || !menuData) {
+      alert('Menu data not available. Please try refreshing the page.');
+      return;
+    }
+
+    if (!user) {
+      const redirectData = {
+        path: `/payment`,
+        menuData: {
+          menuId: menuData._id,
+          diet,
+          category,
+          menuTitle: getMenuTitle(),
+          menuCategory: menuData.menuType,
+          dietaryPreference: menuData.category,
+          price: getWeeklyPrice(),
+          duration: 7,
+          totalAmount: getWeeklyPrice(),
+          deliveryTime: menuData.deliveryTime,
+          description: menuData.description,
+          imageUrl: menuData.imageUrl,
+          weeklyMenu: menuData.weeklyMenu,
+          subscriptionType: 'weekly'
+        }
+      };
+      
+      sessionStorage.setItem('redirectAfterLogin', JSON.stringify(redirectData));
+      window.dispatchEvent(new CustomEvent('triggerLogin'));
+      return;
+    }
+
+    const paymentData = {
+      menuId: menuData._id,
+      menuTitle: `${getMenuTitle()} - Weekly Plan`,
+      menuCategory: menuData.menuType,
+      dietaryPreference: menuData.category,
+      price: getWeeklyPrice(),
+      duration: 7,
+      totalAmount: getWeeklyPrice(),
+      deliveryTime: menuData.deliveryTime,
+      description: menuData.description,
+      imageUrl: menuData.imageUrl,
+      weeklyMenu: menuData.weeklyMenu,
+      urlParams: { diet, category },
+      customerInfo: {
+        name: user.name || '',
+        phone: user.phone || '',
+        email: user.email || '',
+        address: user.address || '',
+        city: user.city || ''
+      },
+      subscriptionType: 'weekly',
+      startDate: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
+      source: 'menu-details-weekly'
+    };
+
+    console.log('Navigating to weekly payment with data:', paymentData);
+
+    navigate('/payment', {
+      state: paymentData,
+      replace: false
+    });
+  };
+
 
   // Try One Day Navigation
   const handleTryOneDay = () => {
@@ -1459,6 +1536,13 @@ const MenuDetailsPage: React.FC = () => {
                   }
                 </span>
               </button>
+              {/* ✅ NEW: Weekly Button */}
+              <button onClick={handleSubscribeWeekly} className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2 text-sm sm:text-base">
+                 {!user ? <LogIn className="w-4 h-4 sm:w-5 sm:h-5" /> : <span>📅</span>}
+                 <span>
+                {!user ? 'Login & Subscribe Weekly' : `Subscribe Weekly - ₹${getWeeklyPrice()}`}
+                </span>
+               </button>
               
               <button 
                 onClick={handleTryOneDay}

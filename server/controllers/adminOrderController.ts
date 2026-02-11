@@ -851,6 +851,9 @@ export const getOrderStatistics = async (req: Request, res: Response, next: Next
           monthlySubscriptions: {
             $sum: { $cond: [{ $eq: ['$subscriptionType', 'monthly'] }, 1, 0] }
           },
+          weeklySubscriptions: { 
+            $sum: { $cond: [{ $eq: ['$subscriptionType', 'weekly'] }, 1, 0] }
+           }, 
           trialOrders: {
             $sum: { $cond: [{ $eq: ['$subscriptionType', 'trial'] }, 1, 0] }
           }
@@ -1092,6 +1095,7 @@ export const getOrderAnalytics = async (req: Request, res: Response, next: NextF
           vegOrders: { $sum: { $cond: [{ $eq: ['$dietaryPreference', 'veg'] }, 1, 0] } },
           nonVegOrders: { $sum: { $cond: [{ $eq: ['$dietaryPreference', 'non-veg'] }, 1, 0] } },
           monthlySubscriptions: { $sum: { $cond: [{ $eq: ['$subscriptionType', 'monthly'] }, 1, 0] } },
+          weeklySubscriptions: { $sum: { $cond: [{ $eq: ['$subscriptionType', 'weekly'] }, 1, 0] } },
           trialOrders: { $sum: { $cond: [{ $eq: ['$subscriptionType', 'trial'] }, 1, 0] } },
           activeOrders: { $sum: { $cond: [{ $eq: ['$orderStatus', 'active'] }, 1, 0] } },
           completedOrders: { $sum: { $cond: [{ $eq: ['$orderStatus', 'completed'] }, 1, 0] } },
@@ -1140,6 +1144,43 @@ export const getOrderAnalytics = async (req: Request, res: Response, next: NextF
           averageOrderValue: analytics.length > 0 
             ? analytics.reduce((sum, item) => sum + item.avgOrderValue, 0) / analytics.length 
             : 0
+        }
+      }
+    });
+
+  // ✅ ADDED: Get subscription type distribution
+    const subscriptionTypeDistribution = await Order.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: '$subscriptionType',
+          count: { $sum: 1 },
+          revenue: { $sum: '$totalAmount' },
+          avgOrderValue: { $avg: '$totalAmount' }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        timeSeriesData: analytics,
+        topCities,
+        mealTypeDistribution,
+        subscriptionTypeDistribution, // ✅ ADDED
+        summary: {
+          totalAnalyzedOrders: analytics.reduce((sum, item) => sum + item.totalOrders, 0),
+          totalAnalyzedRevenue: analytics.reduce((sum, item) => sum + item.totalRevenue, 0),
+          averageOrderValue: analytics.length > 0 
+            ? analytics.reduce((sum, item) => sum + item.avgOrderValue, 0) / analytics.length 
+            : 0,
+          // ✅ ADDED: Subscription type summary
+          subscriptionBreakdown: {
+            monthly: analytics.reduce((sum, item) => sum + (item.monthlySubscriptions || 0), 0),
+            weekly: analytics.reduce((sum, item) => sum + (item.weeklySubscriptions || 0), 0),
+            trial: analytics.reduce((sum, item) => sum + (item.trialOrders || 0), 0)
+          }
         }
       }
     });
@@ -1577,116 +1618,146 @@ export const exportFinalDeliveryOrders = async (req: Request, res: Response, nex
 
     // Prepare data for export
     const exportData = finalDeliveryOrders.map((order, index) => {
-      const mealsToDeliver = [];
-      if (order.deliveryStatus.breakfast) mealsToDeliver.push('Breakfast');
-      if (order.deliveryStatus.lunch) mealsToDeliver.push('Lunch');
-      if (order.deliveryStatus.dinner) mealsToDeliver.push('Dinner');
+  const mealsToDeliver = [];
+  if (order.deliveryStatus.breakfast) mealsToDeliver.push('Breakfast');
+  if (order.deliveryStatus.lunch) mealsToDeliver.push('Lunch');
+  if (order.deliveryStatus.dinner) mealsToDeliver.push('Dinner');
 
-      const menuDetails = order.menuId as any; // Type assertion for populated field
+  const menuDetails = order.menuId as any; // Type assertion for populated field
 
-      return {
-        'Sr. No.': index + 1,
-        'Customer Name': order.customerName,
-        'Phone': order.customerPhone,
-        'Menu Type': `${order.menuTitle || (menuDetails?.title || 'N/A')} (${order.dietaryPreference.toUpperCase()})`,
-        'Address Type': order.address?.homeLodgeName?.match(/lodge|hotel|hostel|pg/i) ? 'Lodge/PG' : 'Home',
-        'Full Address': `${order.address?.homeLodgeName || ''}, ${order.address?.block || ''}, ${order.address?.district || ''}, ${order.address?.city || ''}`.replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, ''),
-        'City': order.address?.city || 'N/A',
-        'Meals to Deliver': mealsToDeliver.join(', '),
-        'Total Amount': `₹${order.totalAmount}`,
-        'Skip Notes': order.skipInfo?.notes || 'No notes',
-        'Order Date': new Date(order.orderDate).toLocaleDateString('en-IN'),
-        'Subscription Type': order.subscriptionType === 'monthly' ? 'Monthly Plan' : 'Trial',
-        'Delivery Status': mealsToDeliver.length > 0 ? 'To Deliver' : 'No Delivery'
-      };
-    });
+  // ✅ FIXED: Proper subscription type handling
+  let subscriptionTypeDisplay = 'Trial';
+  if (order.subscriptionType === 'monthly') {
+    subscriptionTypeDisplay = 'Monthly Plan';
+  } else if (order.subscriptionType === 'weekly') {
+    subscriptionTypeDisplay = 'Weekly Plan';
+  } else if (order.subscriptionType === 'trial') {
+    subscriptionTypeDisplay = 'Trial';
+  }
 
-    const fileName = `Final_Delivery_Orders_${targetDate.toISOString().split('T')[0]}`;
+  return {
+    'Sr. No.': index + 1,
+    'Customer Name': order.customerName,
+    'Phone': order.customerPhone,
+    'Menu Type': `${order.menuTitle || (menuDetails?.title || 'N/A')} (${order.dietaryPreference.toUpperCase()})`,
+    'Address Type': order.address?.homeLodgeName?.match(/lodge|hotel|hostel|pg/i) ? 'Lodge/PG' : 'Home',
+    'Full Address': `${order.address?.homeLodgeName || ''}, ${order.address?.block || ''}, ${order.address?.district || ''}, ${order.address?.city || ''}`.replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, ''),
+    'City': order.address?.city || 'N/A',
+    'Meals to Deliver': mealsToDeliver.join(', '),
+    'Total Amount': `₹${order.totalAmount}`,
+    'Skip Notes': order.skipInfo?.notes || 'No notes',
+    'Order Date': new Date(order.orderDate).toLocaleDateString('en-IN'),
+    'Subscription Type': subscriptionTypeDisplay, // ✅ FIXED
+    'Delivery Status': mealsToDeliver.length > 0 ? 'To Deliver' : 'No Delivery'
+  };
+});
 
-    if (format === 'excel') {
-      // Create Excel file
-      const wb = XLSX.utils.book_new();
-      
-      // Create summary data
-      const summary = [
-        ['Final Delivery Orders Summary'],
-        ['Date:', targetDate.toDateString()],
-        ['Total Orders with Deliveries:', finalDeliveryOrders.length],
-        ['Total Breakfast Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.breakfast).length],
-        ['Total Lunch Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.lunch).length],
-        ['Total Dinner Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.dinner).length],
-        [''],
-        ['Filters Applied:'],
-        ['Dietary Preference:', dietaryPreference || 'All'],
-        ['City:', city || 'All'],
-        ['Address Type:', addressType || 'All'],
-        ['Customer Name:', customerName || 'All'],
-        ['Meal Filter:', mealFilter || 'All'],
-        ['']
-      ];
+const fileName = `Final_Delivery_Orders_${targetDate.toISOString().split('T')[0]}`;
 
-      // Create summary worksheet
-      const summaryWs = XLSX.utils.aoa_to_sheet(summary);
-      XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
+if (format === 'excel') {
+  // Create Excel file
+  const wb = XLSX.utils.book_new();
+  
+  // ✅ ENHANCED: Add subscription type breakdown to summary
+  const monthlyCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'monthly').length;
+  const weeklyCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'weekly').length;
+  const trialCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'trial').length;
 
-      // Create main data worksheet
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      
-      // Set column widths
-      const colWidths = [
-        { wch: 8 },  // Sr. No.
-        { wch: 20 }, // Customer Name
-        { wch: 15 }, // Phone
-        { wch: 30 }, // Menu Type
-        { wch: 15 }, // Address Type
-        { wch: 50 }, // Full Address
-        { wch: 15 }, // City
-        { wch: 25 }, // Meals to Deliver
-        { wch: 12 }, // Total Amount
-        { wch: 20 }, // Skip Notes
-        { wch: 12 }, // Order Date
-        { wch: 15 }, // Subscription Type
-        { wch: 15 }  // Delivery Status
-      ];
-      ws['!cols'] = colWidths;
+  // Create summary data
+  const summary = [
+    ['Final Delivery Orders Summary'],
+    ['Date:', targetDate.toDateString()],
+    ['Total Orders with Deliveries:', finalDeliveryOrders.length],
+    ['Total Breakfast Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.breakfast).length],
+    ['Total Lunch Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.lunch).length],
+    ['Total Dinner Deliveries:', finalDeliveryOrders.filter(o => o.deliveryStatus.dinner).length],
+    [''],
+    ['Subscription Type Breakdown:'], // ✅ NEW SECTION
+    ['Monthly Plans:', monthlyCount],
+    ['Weekly Plans:', weeklyCount],
+    ['Trial Orders:', trialCount],
+    [''],
+    ['Filters Applied:'],
+    ['Dietary Preference:', dietaryPreference || 'All'],
+    ['City:', city || 'All'],
+    ['Address Type:', addressType || 'All'],
+    ['Customer Name:', customerName || 'All'],
+    ['Meal Filter:', mealFilter || 'All'],
+    ['']
+  ];
 
-      XLSX.utils.book_append_sheet(wb, ws, 'Delivery Orders');
+  // Create summary worksheet
+  const summaryWs = XLSX.utils.aoa_to_sheet(summary);
+  XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
 
-      // Generate Excel buffer
-      const excelBuffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  // Create main data worksheet
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  
+  // Set column widths
+  const colWidths = [
+    { wch: 8 },  // Sr. No.
+    { wch: 20 }, // Customer Name
+    { wch: 15 }, // Phone
+    { wch: 30 }, // Menu Type
+    { wch: 15 }, // Address Type
+    { wch: 50 }, // Full Address
+    { wch: 15 }, // City
+    { wch: 25 }, // Meals to Deliver
+    { wch: 12 }, // Total Amount
+    { wch: 20 }, // Skip Notes
+    { wch: 12 }, // Order Date
+    { wch: 15 }, // Subscription Type
+    { wch: 15 }  // Delivery Status
+  ];
+  ws['!cols'] = colWidths;
 
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}.xlsx"`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.send(excelBuffer);
+  XLSX.utils.book_append_sheet(wb, ws, 'Delivery Orders');
 
-    } else if (format === 'csv') {
-      // Create CSV
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const csvContent = XLSX.utils.sheet_to_csv(ws);
+  // Generate Excel buffer
+  const excelBuffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}.csv"`);
-      res.setHeader('Content-Type', 'text/csv');
-      res.send(csvContent);
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}.xlsx"`);
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.send(excelBuffer);
 
-    } else {
-      // JSON format
-      res.status(200).json({
-        success: true,
-        data: exportData,
-        count: exportData.length,
-        summary: {
-          totalActiveOrders: activeOrders.length,
-          totalWithDeliveries: finalDeliveryOrders.length,
-          deliveryBreakdown: {
-            breakfast: finalDeliveryOrders.filter(o => o.deliveryStatus.breakfast).length,
-            lunch: finalDeliveryOrders.filter(o => o.deliveryStatus.lunch).length,
-            dinner: finalDeliveryOrders.filter(o => o.deliveryStatus.dinner).length
-          },
-          date: targetDate.toDateString()
-        },
-        exportedAt: new Date().toISOString()
-      });
-    }
+} else if (format === 'csv') {
+  // Create CSV
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  const csvContent = XLSX.utils.sheet_to_csv(ws);
+
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}.csv"`);
+  res.setHeader('Content-Type', 'text/csv');
+  res.send(csvContent);
+
+} else {
+  // JSON format
+  // ✅ ENHANCED: Add subscription breakdown to JSON response
+  const monthlyCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'monthly').length;
+  const weeklyCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'weekly').length;
+  const trialCount = finalDeliveryOrders.filter(o => o.subscriptionType === 'trial').length;
+
+  res.status(200).json({
+    success: true,
+    data: exportData,
+    count: exportData.length,
+    summary: {
+      totalActiveOrders: activeOrders.length,
+      totalWithDeliveries: finalDeliveryOrders.length,
+      deliveryBreakdown: {
+        breakfast: finalDeliveryOrders.filter(o => o.deliveryStatus.breakfast).length,
+        lunch: finalDeliveryOrders.filter(o => o.deliveryStatus.lunch).length,
+        dinner: finalDeliveryOrders.filter(o => o.deliveryStatus.dinner).length
+      },
+      subscriptionBreakdown: { // ✅ NEW
+        monthly: monthlyCount,
+        weekly: weeklyCount,
+        trial: trialCount
+      },
+      date: targetDate.toDateString()
+    },
+    exportedAt: new Date().toISOString()
+  });
+}
 
   } catch (error) {
     console.error('Export final delivery orders error:', error);

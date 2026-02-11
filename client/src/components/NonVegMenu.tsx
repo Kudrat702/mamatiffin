@@ -96,7 +96,8 @@ const NonVegMenu: React.FC = () => {
                   {category.name}
                 </h3>
                 <p className="text-gray-600 text-base font-medium">
-                  Click to view menu details
+                  Click To View Menu Details
+
                 </p>
                 <div 
                   className="mt-4 w-16 h-1 mx-auto rounded-full"

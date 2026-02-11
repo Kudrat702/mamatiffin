@@ -29,7 +29,7 @@ export interface IOrder extends Document {
   };
 
   // Order Details
-  subscriptionType: 'monthly' | 'trial';
+  subscriptionType: string; // ✅ CHANGED: Simple string type instead of enum object
   duration: number;
   price: number;
   totalAmount: number;
@@ -108,7 +108,13 @@ const orderSchema = new Schema<IOrder>({
   },
 
   // Order Details
-  subscriptionType: { type: String, enum: ['monthly', 'trial'], required: true, default: 'trial' },
+  // ✅ FIXED: Simple string field with enum validation (no nested type object)
+  subscriptionType: { 
+    type: String, 
+    enum: ['monthly', 'weekly', 'trial'], // ✅ Added 'weekly'
+    required: true, 
+    default: 'trial' 
+  },
   duration: { type: Number, required: true, default: 1 },
   price: { type: Number, required: true, min: 0, default: 0 },
   totalAmount: { type: Number, required: true, min: 0, default: 0 },

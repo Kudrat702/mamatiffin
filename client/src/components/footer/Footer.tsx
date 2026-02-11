@@ -21,9 +21,8 @@ const Footer: React.FC = () => {
               />
             </div>
             <p className="text-white text-sm leading-relaxed max-w-md">
-              mamatiffin is a trusted Student Tiffin Service provider that delivers hot,
-              homemade-style and delicious food right to your hostel or room, sourced only
-              from hygienic and FSSAI-approved kitchens across the city.
+              Mamatiffin Is A Trusted Student Tiffin Service Provider That Delivers Hot, Homemade-Style And Delicious Food Right To Your Hostel Or Room, Sourced Only From Hygienic And FSSAI-Approved Kitchens Across The City.
+
             </p>
           </div>
           

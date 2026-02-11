@@ -875,7 +875,7 @@ app.use((error: any, req: Request, res: Response, _next: NextFunction): void => 
       origin: req.headers.origin
     });
     return;
-  }
+  }  
   
   // Multer File Upload Errors
   if (error instanceof multer.MulterError) {
