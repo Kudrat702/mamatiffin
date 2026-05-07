@@ -2,7 +2,7 @@
 // import {
 //   User, LogOut, Menu, X, ShoppingBag, SkipForward, ChevronDown,
 //   BookOpen, ShoppingCart, Tag, List,
-//   Home, // ✅ ADDED: For Rooms button
+//   Home,
 // } from 'lucide-react';
 // import LocationDropdown from './LocationDropdown';
 // import AuthModal from './AuthModal';
@@ -150,7 +150,6 @@
 //     window.location.href = '/books/my-listings';
 //   };
 
-//   // ✅ ADDED: Rooms navigation handler
 //   const handleRoomsClick = (): void => {
 //     setIsMobileMenuOpen(false);
 //     window.location.href = '/rooms';
@@ -220,7 +219,6 @@
 //         .profile-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
 //         .book-dropdown.open { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-//         /* Mobile Book dropdown - opens to right side */
 //         .mobile-book-dropdown {
 //           position: absolute;
 //           top: calc(100% + 8px);
@@ -287,7 +285,6 @@
 //           color: rgb(50, 140, 129);
 //         }
 
-//         /* Compact Book button for mobile */
 //         .book-nav-button-mobile {
 //           display: flex;
 //           align-items: center;
@@ -307,24 +304,22 @@
 //           color: rgb(50, 140, 129);
 //         }
 
-//         /* ✅ ADDED: Rooms mobile button - distinct orange/amber style */
-//         .rooms-nav-button-mobile {
+//         /* ✅ Simple Rooms link with Home icon — plain text, no box */
+//         .rooms-nav-link-mobile {
 //           display: flex;
 //           align-items: center;
 //           gap: 4px;
 //           color: #374151;
 //           font-weight: 500;
-//           padding: 6px 10px;
-//           border-radius: 10px;
-//           transition: all 0.3s ease;
-//           background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(245, 158, 11, 0.08));
-//           border: 1px solid rgba(249, 115, 22, 0.25);
+//           padding: 6px 8px;
 //           font-size: 14px;
+//           background: transparent;
+//           border: none;
+//           transition: color 0.2s ease;
 //         }
-//         .rooms-nav-button-mobile:hover,
-//         .rooms-nav-button-mobile:active {
-//           background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(245, 158, 11, 0.15));
-//           color: rgb(234, 88, 12);
+//         .rooms-nav-link-mobile:hover,
+//         .rooms-nav-link-mobile:active {
+//           color: rgb(50, 140, 129);
 //         }
 //       `}</style>
 
@@ -338,7 +333,7 @@
 //                 </h1>
 //               </div>
 
-//               {/* Desktop Navigation - Book button placed AFTER Contact */}
+//               {/* Desktop Navigation */}
 //               <nav className="hidden lg:flex items-center space-x-6">
 //                 <a href="/home" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Home</a>
 //                 <button onClick={() => handleNavigation('/veg-menu')} className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Veg Menu</button>
@@ -346,7 +341,7 @@
 //                 <a href="/about-us" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">About Us</a>
 //                 <a href="/contact" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Contact</a>
 
-//                 {/* ✅ ADDED: Rooms link in desktop nav */}
+//                 {/* ✅ Rooms link — simple plain text style with Home icon */}
 //                 <a 
 //                   href="/rooms" 
 //                   className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium flex items-center gap-1"
@@ -442,12 +437,12 @@
 //                 )}
 //               </div>
 
-//               {/* Mobile right side: Rooms button + Book button + Menu icon */}
+//               {/* Mobile right side: Rooms (simple text + icon) + Book button + Menu icon */}
 //               <div className="lg:hidden flex items-center gap-2">
-//                 {/* ✅ ADDED: Rooms button on mobile (before Book button) */}
+//                 {/* ✅ Rooms — simple text link with Home icon, no box */}
 //                 <button 
 //                   onClick={handleRoomsClick} 
-//                   className="rooms-nav-button-mobile"
+//                   className="rooms-nav-link-mobile"
 //                   aria-label="Rooms"
 //                 >
 //                   <Home size={16} />
@@ -501,7 +496,6 @@
 //                   <button onClick={() => { handleNavigation('/veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Veg Menu</button>
 //                   <button onClick={() => { handleNavigation('/non-veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Non-Veg Menu</button>
 
-//                   {/* ✅ ADDED: Rooms link in mobile drawer */}
 //                   <button 
 //                     onClick={handleRoomsClick} 
 //                     className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-2"
@@ -740,7 +734,7 @@ const Header: React.FC = () => {
   return (
     <>
       <style>{`
-        body { padding-top: 88px !important; background: none !important; }
+        body { padding-top: 80px !important; background: none !important; }
         .fixed { background: none !important; backdrop-filter: none !important; }
 
         .watercolor-header {
@@ -763,9 +757,16 @@ const Header: React.FC = () => {
           font-size: 32px;
           font-weight: 600;
           letter-spacing: -0.5px;
+          white-space: nowrap;
         }
 
-        @media (max-width: 768px) { .logo-text { font-size: 28px; font-weight: 600; } }
+        /* ✅ Mobile: smaller logo so everything fits */
+        @media (max-width: 768px) {
+          .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+        }
+        @media (max-width: 380px) {
+          .logo-text { font-size: 18px; }
+        }
 
         .profile-icon-3d {
           background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 140, 109));
@@ -806,11 +807,11 @@ const Header: React.FC = () => {
           top: calc(100% + 8px);
           right: 0;
           left: auto;
-          min-width: 200px;
+          min-width: 190px;
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 0.95) 100%);
           backdrop-filter: blur(15px);
           border: 2px solid rgba(50, 140, 129, 0.2);
-          border-radius: 16px;
+          border-radius: 14px;
           box-shadow: 0 10px 40px rgba(50, 140, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
           opacity: 0;
           visibility: hidden;
@@ -834,6 +835,7 @@ const Header: React.FC = () => {
           font-weight: 500;
           width: calc(100% - 8px);
           box-sizing: border-box;
+          font-size: 14px;
         }
         .profile-dropdown-item:hover { background: rgba(50, 140, 129, 0.1); }
         .profile-dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
@@ -867,50 +869,99 @@ const Header: React.FC = () => {
           color: rgb(50, 140, 129);
         }
 
+        /* ✅ Mobile Book button — compact, simple, no heavy box */
         .book-nav-button-mobile {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
           color: #374151;
           font-weight: 500;
-          padding: 6px 10px;
-          border-radius: 10px;
+          padding: 5px 7px;
+          border-radius: 8px;
           transition: all 0.3s ease;
-          background: linear-gradient(135deg, rgba(50, 140, 129, 0.08), rgba(34, 197, 94, 0.08));
-          border: 1px solid rgba(50, 140, 129, 0.2);
-          font-size: 14px;
+          background: transparent;
+          border: none;
+          font-size: 13px;
+          white-space: nowrap;
         }
         .book-nav-button-mobile:hover,
         .book-nav-button-mobile:active {
-          background: linear-gradient(135deg, rgba(50, 140, 129, 0.15), rgba(34, 197, 94, 0.15));
           color: rgb(50, 140, 129);
+          background: rgba(50, 140, 129, 0.08);
         }
 
-        /* ✅ Simple Rooms link with Home icon — plain text, no box */
+        /* ✅ Mobile Rooms link — simple text + icon, no box */
         .rooms-nav-link-mobile {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
           color: #374151;
           font-weight: 500;
-          padding: 6px 8px;
-          font-size: 14px;
+          padding: 5px 6px;
+          font-size: 13px;
           background: transparent;
           border: none;
           transition: color 0.2s ease;
+          white-space: nowrap;
         }
         .rooms-nav-link-mobile:hover,
         .rooms-nav-link-mobile:active {
           color: rgb(50, 140, 129);
         }
+
+        /* ✅ Mobile menu icon button — slimmer so it stays inside */
+        .mobile-menu-toggle {
+          padding: 6px;
+          border-radius: 8px;
+          color: white;
+          background-color: rgb(50, 140, 129);
+          transition: all 0.3s ease;
+          flex-shrink: 0;
+        }
+        .mobile-menu-toggle:hover {
+          background-color: rgb(40, 120, 110);
+        }
+
+        /* ✅ Mobile container row tighter padding so nothing overflows */
+        @media (max-width: 768px) {
+          .header-inner-row {
+            padding-left: 12px;
+            padding-right: 12px;
+            height: 56px;
+          }
+          .mobile-actions {
+            gap: 4px;
+          }
+        }
+        @media (max-width: 380px) {
+          .header-inner-row {
+            padding-left: 8px;
+            padding-right: 8px;
+          }
+          .mobile-actions {
+            gap: 2px;
+          }
+          .rooms-nav-link-mobile {
+            padding: 4px 4px;
+            font-size: 12px;
+          }
+          .book-nav-button-mobile {
+            padding: 4px 5px;
+            font-size: 12px;
+          }
+        }
       `}</style>
 
-      <div className="fixed top-0 left-0 right-0 z-50 p-4" style={{ background: 'transparent' }}>
+      <div className="fixed top-0 left-0 right-0 z-50 p-3 sm:p-4" style={{ background: 'transparent' }}>
         <header className="watercolor-header shadow-lg rounded-2xl transition-all duration-300">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
-                <h1 className="logo-text font-semibold tracking-tight cursor-pointer" onClick={() => (window.location.href = '/home')}>
+          <div className="max-w-7xl mx-auto">
+            <div className="header-inner-row flex items-center justify-between h-16 px-4 sm:px-6 lg:px-10">
+              {/* Logo */}
+              <div className="flex items-center min-w-0 flex-shrink">
+                <h1
+                  className="logo-text font-semibold tracking-tight cursor-pointer truncate"
+                  onClick={() => (window.location.href = '/home')}
+                >
                   mamatiffin
                 </h1>
               </div>
@@ -923,9 +974,8 @@ const Header: React.FC = () => {
                 <a href="/about-us" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">About Us</a>
                 <a href="/contact" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Contact</a>
 
-                {/* ✅ Rooms link — simple plain text style with Home icon */}
-                <a 
-                  href="/rooms" 
+                <a
+                  href="/rooms"
                   className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium flex items-center gap-1"
                 >
                   <Home size={16} />
@@ -963,6 +1013,7 @@ const Header: React.FC = () => {
                 </div>
               </nav>
 
+              {/* Desktop Right Side */}
               <div className="hidden lg:flex items-center space-x-4">
                 <LocationDropdown />
 
@@ -1019,40 +1070,39 @@ const Header: React.FC = () => {
                 )}
               </div>
 
-              {/* Mobile right side: Rooms (simple text + icon) + Book button + Menu icon */}
-              <div className="lg:hidden flex items-center gap-2">
-                {/* ✅ Rooms — simple text link with Home icon, no box */}
-                <button 
-                  onClick={handleRoomsClick} 
+              {/* ✅ Mobile right side: Rooms + Book + Menu — all compact */}
+              <div className="lg:hidden flex items-center mobile-actions flex-shrink-0">
+                <button
+                  onClick={handleRoomsClick}
                   className="rooms-nav-link-mobile"
                   aria-label="Rooms"
                 >
-                  <Home size={16} />
+                  <Home size={14} />
                   <span>Rooms</span>
                 </button>
 
                 <div className="relative" ref={mobileBookDropdownRef}>
                   <button onClick={toggleMobileBookDropdown} className="book-nav-button-mobile" aria-label="Books menu">
-                    <BookOpen size={16} />
+                    <BookOpen size={14} />
                     <span>Book</span>
-                    <ChevronDown size={14} className={`transition-transform duration-300 ${isMobileBookDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={12} className={`transition-transform duration-300 ${isMobileBookDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   <div className={`mobile-book-dropdown ${isMobileBookDropdownOpen ? 'open' : ''}`}>
                     <div className="py-2">
                       <button className="profile-dropdown-item buy" onClick={handleBuyClick}>
-                        <ShoppingCart size={18} />
+                        <ShoppingCart size={16} />
                         <span>Buy Books</span>
                       </button>
                       <button className="profile-dropdown-item sell" onClick={handleSellClick}>
-                        <Tag size={18} />
+                        <Tag size={16} />
                         <span>Sell Book</span>
                       </button>
                       {user && (
                         <>
                           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
                           <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
-                            <List size={18} />
+                            <List size={16} />
                             <span>My Listings</span>
                           </button>
                         </>
@@ -1061,15 +1111,19 @@ const Header: React.FC = () => {
                   </div>
                 </div>
 
-                <button onClick={toggleMobileMenu} className="p-2 rounded-lg text-white hover:bg-white hover:bg-opacity-20 transition-all duration-300" style={{ backgroundColor: 'rgb(50, 140, 129)' }} aria-label="Toggle menu">
-                  {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                <button
+                  onClick={toggleMobileMenu}
+                  className="mobile-menu-toggle"
+                  aria-label="Toggle menu"
+                >
+                  {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
               </div>
             </div>
           </div>
 
           {isMobileMenuOpen && (
-            <div className="lg:hidden watercolor-mobile-menu">
+            <div className="lg:hidden watercolor-mobile-menu rounded-b-2xl">
               <div className="px-6 py-4 space-y-4">
                 <div className="mb-4"><LocationDropdown /></div>
 
@@ -1078,8 +1132,8 @@ const Header: React.FC = () => {
                   <button onClick={() => { handleNavigation('/veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Veg Menu</button>
                   <button onClick={() => { handleNavigation('/non-veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Non-Veg Menu</button>
 
-                  <button 
-                    onClick={handleRoomsClick} 
+                  <button
+                    onClick={handleRoomsClick}
                     className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-2"
                   >
                     <Home size={18} />
