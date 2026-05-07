@@ -1,4 +1,4 @@
-// frontend/src/App.tsx - PRODUCTION READY WITHOUT HELMET
+// frontend/src/App.tsx - PRODUCTION READY WITH BOOK SYSTEM
 import React from 'react';
 import { LocationProvider } from './context/LocationContext';
 import { AuthProvider as AdminAuthProvider } from './context/AdminAuthContext';
@@ -7,7 +7,7 @@ import { useAuth } from './hooks/AdminAuthHooks';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 
 // Import all components
-import Header from './components/Header';
+import Header from './components/Header'; 
 import LocationModal from './components/LocationModal';
 import Footer from './components/footer/Footer';
 import AdminLogin from './components/AdminLogin';
@@ -34,6 +34,13 @@ import RefundCancellationPolicy from './components/footer/Refund';
 import ReturnPolicy from './components/footer/Return_Policy';
 import OurStory from './components/OurStory';
 import OurStoryPage from './components/OurStoryHeader';
+// import HeroText from './components/HeroText';
+
+// ✅ NEW: Book Buy/Sell System imports
+import BuyBooksPage from './pages/BuyBooksPage';
+import SellBookPage from './pages/SellBookPage';
+import MyListingsPage from './pages/MyListingsPage';
+import RoomsPage from './pages/RoomPage';
 
 import './App.css';
 
@@ -43,14 +50,12 @@ const getAppType = (): 'user' | 'admin' => {
     const hostname = window.location.hostname;
     const port = window.location.port;
     
-    // Check for admin subdomain or admin port
     if (hostname.includes('admin') || port === '5174') {
       console.log('🔧 Detected ADMIN mode from hostname:', hostname);
       return 'admin';
     }
   }
   
-  // Check environment variable
   const envAppType = import.meta.env.VITE_APP_TYPE;
   if (envAppType === 'admin') {
     console.log('🔧 Detected ADMIN mode from environment variable');
@@ -61,21 +66,16 @@ const getAppType = (): 'user' | 'admin' => {
   return 'user';
 };
 
-// ✅ Get app type
 const APP_TYPE = getAppType();
 
-// ✅ Get URLs from environment
 const USER_APP_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
 const ADMIN_APP_URL = import.meta.env.ADMIN_URL || 'http://admin.localhost:5173';
-
-// ✅ API URL from environment
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// Log configuration on startup
 console.log('🔧 App Configuration:', {
   APP_TYPE,
   HOSTNAME: window.location.hostname,
-  PORT: window.location.port,
+  PORT: window.location.port, 
   USER_APP_URL,
   ADMIN_APP_URL,
   API_URL,
@@ -94,7 +94,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
 };
 
-// ✅ UPDATED: Customer Layout Component - NO HELMET
+// Customer Layout Component
 const CustomerLayout: React.FC = () => {
   return (
     <AuthProvider>
@@ -127,6 +127,7 @@ const HomePage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-12">
         <ImageSlider />
+                {/* <HeroText /> */}
       </div>
       <div className="mb-12">
         <VegNonVegCards />
@@ -162,6 +163,7 @@ const UserRoutes: React.FC = () => {
       <Route element={<CustomerLayout />}>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-cancellation-policy" element={<RefundCancellationPolicy />} />
@@ -176,6 +178,11 @@ const UserRoutes: React.FC = () => {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/our-story" element={<OurStoryPage />} />
+        
+        {/* ✅ NEW: Book Buy/Sell Routes */}
+        <Route path="/books/buy" element={<BuyBooksPage />} />
+        <Route path="/books/sell" element={<SellBookPage />} />
+        <Route path="/books/my-listings" element={<MyListingsPage />} />
         
         {/* Admin routes redirect to admin app */}
         <Route path="/admin/*" element={<ExternalRedirect to={`${ADMIN_APP_URL}/admin`} />} />
@@ -223,6 +230,7 @@ const AdminRoutes: React.FC = () => {
       
       {/* User routes redirect to user app */}
       <Route path="/home" element={<ExternalRedirect to={`${USER_APP_URL}/home`} />} />
+      <Route path="/rooms" element={<ExternalRedirect to={`${USER_APP_URL}/rooms`} />} />
       <Route path="/veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/veg-menu`} />} />
       <Route path="/non-veg-menu" element={<ExternalRedirect to={`${USER_APP_URL}/non-veg-menu`} />} />
       <Route path="/my-orders" element={<ExternalRedirect to={`${USER_APP_URL}/my-orders`} />} />
@@ -230,7 +238,11 @@ const AdminRoutes: React.FC = () => {
       <Route path="/contact" element={<ExternalRedirect to={`${USER_APP_URL}/contact`} />} />
       <Route path="/our-story" element={<ExternalRedirect to={`${USER_APP_URL}/our-story`} />} />
       
-      {/* Default redirects */}
+      {/* ✅ Book routes redirect to user app from admin */}
+      <Route path="/books/buy" element={<ExternalRedirect to={`${USER_APP_URL}/books/buy`} />} />
+      <Route path="/books/sell" element={<ExternalRedirect to={`${USER_APP_URL}/books/sell`} />} />
+      <Route path="/books/my-listings" element={<ExternalRedirect to={`${USER_APP_URL}/books/my-listings`} />} />
+      
       <Route path="/" element={<Navigate to="/admin" replace />} />
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
@@ -438,7 +450,6 @@ const GlobalStyles: React.FC = () => {
 const App: React.FC = () => {
   console.log(`✅ MamaTiffin App - Mode: ${APP_TYPE}`);
   
-  // Show warning if admin subdomain but in user mode
   React.useEffect(() => {
     const hostname = window.location.hostname;
     if (hostname.includes('admin') && APP_TYPE === 'user') {
@@ -462,4 +473,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default App; 

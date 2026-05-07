@@ -1,8 +1,12 @@
-// // Header.tsx - UPDATED VERSION with Modern Watercolor Design and Our Story Integration
-// import React, { useState, useEffect } from 'react';
-// import { User, LogOut, Menu, X, ShoppingBag, SkipForward } from 'lucide-react';
+// import React, { useState, useEffect, useRef } from 'react';
+// import {
+//   User, LogOut, Menu, X, ShoppingBag, SkipForward, ChevronDown,
+//   BookOpen, ShoppingCart, Tag, List,
+//   Home, // ✅ ADDED: For Rooms button
+// } from 'lucide-react';
 // import LocationDropdown from './LocationDropdown';
 // import AuthModal from './AuthModal';
+// import { useAuth } from '../context/AuthContext';
 
 // interface LocalUser {
 //   id: string;
@@ -18,46 +22,59 @@
 // }
 
 // const Header: React.FC = () => {
-//   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+//   const { user: authUser, logout: authLogout } = useAuth();
+//   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 //   const [user, setUser] = useState<LocalUser | null>(null);
-//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+//   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
+//   const [isBookDropdownOpen, setIsBookDropdownOpen] = useState<boolean>(false);
+//   const [isMobileBookDropdownOpen, setIsMobileBookDropdownOpen] = useState<boolean>(false);
+//   const profileDropdownRef = useRef<HTMLDivElement>(null);
+//   const bookDropdownRef = useRef<HTMLDivElement>(null);
+//   const mobileBookDropdownRef = useRef<HTMLDivElement>(null);
 
-//   // Load user data from memory on component mount
 //   useEffect(() => {
-//     const loadUserData = () => {
-//       const savedUser = sessionStorage.getItem('user');
-//       const savedToken = sessionStorage.getItem('token');
-      
-//       if (savedUser && savedToken) {
-//         setUser(JSON.parse(savedUser));
+//     const loadUserData = (): void => {
+//       if (authUser) {
+//         setUser(authUser as LocalUser);
 //       } else {
-//         setUser(null);
+//         const savedUser = sessionStorage.getItem('user');
+//         const savedToken = sessionStorage.getItem('token');
+//         if (savedUser && savedToken) {
+//           setUser(JSON.parse(savedUser));
+//         } else {
+//           setUser(null);
+//         }
 //       }
 //     };
-
 //     loadUserData();
 
-//     // Listen for custom login trigger from VegNonVegCards
-//     const handleTriggerLogin = () => {
-//       setIsAuthModalOpen(true);
-//     };
-
+//     const handleTriggerLogin = (): void => setIsAuthModalOpen(true);
 //     window.addEventListener('triggerLogin', handleTriggerLogin);
+//     return () => window.removeEventListener('triggerLogin', handleTriggerLogin);
+//   }, [authUser]);
 
-//     return () => {
-//       window.removeEventListener('triggerLogin', handleTriggerLogin);
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent): void => {
+//       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+//         setIsProfileDropdownOpen(false);
+//       }
+//       if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target as Node)) {
+//         setIsBookDropdownOpen(false);
+//       }
+//       if (mobileBookDropdownRef.current && !mobileBookDropdownRef.current.contains(event.target as Node)) {
+//         setIsMobileBookDropdownOpen(false);
+//       }
 //     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => document.removeEventListener('mousedown', handleClickOutside);
 //   }, []);
 
-//   const handleLoginSuccess = (user: LocalUser, token: string) => {
+//   const handleLoginSuccess = (user: LocalUser, token: string): void => {
 //     setUser(user);
 //     sessionStorage.setItem('user', JSON.stringify(user));
 //     sessionStorage.setItem('token', token);
-    
-//     // Notify other components about auth change
 //     window.dispatchEvent(new CustomEvent('userAuthChanged'));
-    
-//     // Check if there's a redirect path and navigate to it
 //     const redirectPath = sessionStorage.getItem('redirectAfterLogin');
 //     if (redirectPath) {
 //       sessionStorage.removeItem('redirectAfterLogin');
@@ -65,22 +82,22 @@
 //     }
 //   };
 
-//   const handleLogout = () => {
+//   const handleLogout = (): void => {
 //     setUser(null);
+//     if (authLogout) authLogout();
 //     sessionStorage.removeItem('user');
 //     sessionStorage.removeItem('token');
 //     sessionStorage.removeItem('redirectAfterLogin');
-    
-//     // Notify other components about auth change
+//     setIsProfileDropdownOpen(false);
 //     window.dispatchEvent(new CustomEvent('userAuthChanged'));
 //   };
 
-//   const toggleMobileMenu = () => {
-//     setIsMobileMenuOpen((prev) => !prev);
-//   };
+//   const toggleMobileMenu = (): void => setIsMobileMenuOpen((p) => !p);
+//   const toggleProfileDropdown = (): void => setIsProfileDropdownOpen((p) => !p);
+//   const toggleBookDropdown = (): void => setIsBookDropdownOpen((p) => !p);
+//   const toggleMobileBookDropdown = (): void => setIsMobileBookDropdownOpen((p) => !p);
 
-//   const handleNavigation = (path: string) => {
-//     // Check if user is logged in for protected routes
+//   const handleNavigation = (path: string): void => {
 //     if ((path === '/veg-menu' || path === '/non-veg-menu') && !user) {
 //       sessionStorage.setItem('redirectAfterLogin', path);
 //       setIsAuthModalOpen(true);
@@ -89,256 +106,432 @@
 //     window.location.href = path;
 //   };
 
-//   const handleMyOrdersClick = () => {
-//     if (!user) {
-//       setIsAuthModalOpen(true);
-//       return;
-//     }
+//   const handleMyOrdersClick = (): void => {
+//     if (!user) { setIsAuthModalOpen(true); return; }
+//     setIsProfileDropdownOpen(false);
 //     window.location.href = '/my-orders';
 //   };
 
-//   const handleOrderSkipClick = () => {
+//   const handleOrderSkipClick = (): void => {
+//     if (!user) { setIsAuthModalOpen(true); return; }
+//     setIsProfileDropdownOpen(false);
+//     window.location.href = '/order-skip';
+//   };
+
+//   const handleBuyClick = (): void => {
+//     setIsBookDropdownOpen(false);
+//     setIsMobileBookDropdownOpen(false);
+//     setIsMobileMenuOpen(false);
+//     window.location.href = '/books/buy';
+//   };
+
+//   const handleSellClick = (): void => {
+//     setIsBookDropdownOpen(false);
+//     setIsMobileBookDropdownOpen(false);
+//     setIsMobileMenuOpen(false);
 //     if (!user) {
+//       sessionStorage.setItem('redirectAfterLogin', '/books/sell');
 //       setIsAuthModalOpen(true);
 //       return;
 //     }
-//     window.location.href = '/order-skip';
+//     window.location.href = '/books/sell';
+//   };
+
+//   const handleMyListingsClick = (): void => {
+//     setIsBookDropdownOpen(false);
+//     setIsMobileBookDropdownOpen(false);
+//     setIsProfileDropdownOpen(false);
+//     setIsMobileMenuOpen(false);
+//     if (!user) {
+//       sessionStorage.setItem('redirectAfterLogin', '/books/my-listings');
+//       setIsAuthModalOpen(true);
+//       return;
+//     }
+//     window.location.href = '/books/my-listings';
+//   };
+
+//   // ✅ ADDED: Rooms navigation handler
+//   const handleRoomsClick = (): void => {
+//     setIsMobileMenuOpen(false);
+//     window.location.href = '/rooms';
 //   };
 
 //   return (
 //     <>
-//       {/* Body padding to prevent content overlap with fixed header */}
 //       <style>{`
-//         body {
-//           padding-top: 88px !important;
-//           background: none !important;
+//         body { padding-top: 88px !important; background: none !important; }
+//         .fixed { background: none !important; backdrop-filter: none !important; }
+
+//         .watercolor-header {
+//           background: linear-gradient(135deg, 
+//             rgba(255, 255, 255, 0.95) 0%,
+//             rgba(240, 248, 255, 0.9) 25%,
+//             rgba(230, 245, 255, 0.85) 50%,
+//             rgba(220, 240, 250, 0.9) 75%,
+//             rgba(255, 255, 255, 0.95) 100%);
+//           backdrop-filter: blur(10px);
+//           border: 2px solid rgba(50, 140, 129, 0.2);
+//           box-shadow: 0 8px 32px rgba(50, 140, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 //         }
-//         .fixed {
-//           background: none !important;
-//           backdrop-filter: none !important;
+
+//         .logo-text {
+//           background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94));
+//           -webkit-background-clip: text;
+//           -webkit-text-fill-color: transparent;
+//           background-clip: text;
+//           font-size: 32px;
+//           font-weight: 600;
+//           letter-spacing: -0.5px;
+//         }
+
+//         @media (max-width: 768px) { .logo-text { font-size: 28px; font-weight: 600; } }
+
+//         .profile-icon-3d {
+//           background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 140, 109));
+//           box-shadow: 0 4px 15px rgba(50, 140, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+//           transform: perspective(100px) rotateX(5deg);
+//           transition: all 0.3s ease;
+//         }
+//         .profile-icon-3d:hover {
+//           transform: perspective(100px) rotateX(0deg) translateY(-2px);
+//           box-shadow: 0 6px 20px rgba(50, 140, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+//         }
+
+//         .profile-dropdown, .book-dropdown {
+//           position: absolute;
+//           top: calc(100% + 8px);
+//           right: 0;
+//           min-width: 240px;
+//           background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 0.95) 100%);
+//           backdrop-filter: blur(15px);
+//           border: 2px solid rgba(50, 140, 129, 0.2);
+//           border-radius: 16px;
+//           box-shadow: 0 10px 40px rgba(50, 140, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+//           opacity: 0;
+//           visibility: hidden;
+//           transform: translateY(-10px);
+//           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//           z-index: 1000;
+//           overflow: hidden;
+//           padding: 4px;
+//         }
+//         .profile-dropdown { min-width: 280px; }
+//         .book-dropdown { left: 50%; right: auto; transform: translateX(-50%) translateY(-10px); }
+//         .profile-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+//         .book-dropdown.open { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+//         /* Mobile Book dropdown - opens to right side */
+//         .mobile-book-dropdown {
+//           position: absolute;
+//           top: calc(100% + 8px);
+//           right: 0;
+//           left: auto;
+//           min-width: 200px;
+//           background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 0.95) 100%);
+//           backdrop-filter: blur(15px);
+//           border: 2px solid rgba(50, 140, 129, 0.2);
+//           border-radius: 16px;
+//           box-shadow: 0 10px 40px rgba(50, 140, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+//           opacity: 0;
+//           visibility: hidden;
+//           transform: translateY(-10px);
+//           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//           z-index: 1000;
+//           overflow: hidden;
+//           padding: 4px;
+//         }
+//         .mobile-book-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+
+//         .profile-dropdown-item {
+//           padding: 12px 16px;
+//           display: flex;
+//           align-items: center;
+//           gap: 12px;
+//           color: #374151;
+//           transition: background-color 0.2s ease, color 0.2s ease;
+//           border-radius: 8px;
+//           margin: 4px 4px;
+//           font-weight: 500;
+//           width: calc(100% - 8px);
+//           box-sizing: border-box;
+//         }
+//         .profile-dropdown-item:hover { background: rgba(50, 140, 129, 0.1); }
+//         .profile-dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+//         .profile-dropdown-item.admin:hover { background: rgba(234, 179, 8, 0.1); color: #ca8a04; }
+//         .profile-dropdown-item.buy:hover { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+//         .profile-dropdown-item.sell:hover { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+
+//         .watercolor-mobile-menu {
+//           background: linear-gradient(180deg, rgba(50, 140, 129, 0.95) 0%, rgba(34, 120, 109, 0.9) 100%);
+//           backdrop-filter: blur(15px);
+//           border-top: 2px solid rgba(255, 255, 255, 0.2);
+//         }
+//         .menu-item-hover { transition: all 0.3s ease; }
+//         .menu-item-hover:hover { background: rgba(255, 255, 255, 0.15); transform: translateX(4px); }
+
+//         .book-nav-button {
+//           display: flex;
+//           align-items: center;
+//           gap: 6px;
+//           color: #374151;
+//           font-weight: 500;
+//           padding: 6px 12px;
+//           border-radius: 10px;
+//           transition: all 0.3s ease;
+//           background: linear-gradient(135deg, rgba(50, 140, 129, 0.08), rgba(34, 197, 94, 0.08));
+//           border: 1px solid rgba(50, 140, 129, 0.2);
+//         }
+//         .book-nav-button:hover {
+//           background: linear-gradient(135deg, rgba(50, 140, 129, 0.15), rgba(34, 197, 94, 0.15));
+//           transform: translateY(-1px);
+//           color: rgb(50, 140, 129);
+//         }
+
+//         /* Compact Book button for mobile */
+//         .book-nav-button-mobile {
+//           display: flex;
+//           align-items: center;
+//           gap: 4px;
+//           color: #374151;
+//           font-weight: 500;
+//           padding: 6px 10px;
+//           border-radius: 10px;
+//           transition: all 0.3s ease;
+//           background: linear-gradient(135deg, rgba(50, 140, 129, 0.08), rgba(34, 197, 94, 0.08));
+//           border: 1px solid rgba(50, 140, 129, 0.2);
+//           font-size: 14px;
+//         }
+//         .book-nav-button-mobile:hover,
+//         .book-nav-button-mobile:active {
+//           background: linear-gradient(135deg, rgba(50, 140, 129, 0.15), rgba(34, 197, 94, 0.15));
+//           color: rgb(50, 140, 129);
+//         }
+
+//         /* ✅ ADDED: Rooms mobile button - distinct orange/amber style */
+//         .rooms-nav-button-mobile {
+//           display: flex;
+//           align-items: center;
+//           gap: 4px;
+//           color: #374151;
+//           font-weight: 500;
+//           padding: 6px 10px;
+//           border-radius: 10px;
+//           transition: all 0.3s ease;
+//           background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(245, 158, 11, 0.08));
+//           border: 1px solid rgba(249, 115, 22, 0.25);
+//           font-size: 14px;
+//         }
+//         .rooms-nav-button-mobile:hover,
+//         .rooms-nav-button-mobile:active {
+//           background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(245, 158, 11, 0.15));
+//           color: rgb(234, 88, 12);
 //         }
 //       `}</style>
-      
+
 //       <div className="fixed top-0 left-0 right-0 z-50 p-4" style={{ background: 'transparent' }}>
-//         {/* Custom Styles for Watercolor Effect */}
-//         <style>{`
-//           .watercolor-header {
-//             background: linear-gradient(135deg, 
-//               rgba(255, 255, 255, 0.95) 0%,
-//               rgba(240, 248, 255, 0.9) 25%,
-//               rgba(230, 245, 255, 0.85) 50%,
-//               rgba(220, 240, 250, 0.9) 75%,
-//               rgba(255, 255, 255, 0.95) 100%
-//             );
-//             backdrop-filter: blur(10px);
-//             border: 2px solid rgba(50, 140, 129, 0.2);
-//             box-shadow: 
-//               0 8px 32px rgba(50, 140, 129, 0.15),
-//               inset 0 1px 0 rgba(255, 255, 255, 0.8);
-//           }
-          
-//           .dark .watercolor-header {
-//             background: transparent;
-//             border: 2px solid rgba(50, 140, 129, 0.3);
-//             box-shadow: 
-//               0 8px 32px rgba(50, 140, 129, 0.2),
-//               inset 0 1px 0 rgba(255, 255, 255, 0.05);
-//           }
-
-//           .logo-text {
-//             background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94));
-//             -webkit-background-clip: text;
-//             -webkit-text-fill-color: transparent;
-//             background-clip: text;
-//             font-size: 32px;
-//             font-weight: 600;
-//             letter-spacing: -0.5px;
-//           }
-
-//           @media (max-width: 768px) {
-//             .logo-text {
-//               font-size: 28px;
-//               font-weight: 600;
-//             }
-//           }
-
-//           .profile-icon-3d {
-//             background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 140, 109));
-//             box-shadow: 
-//               0 4px 15px rgba(50, 140, 129, 0.4),
-//               inset 0 1px 0 rgba(255, 255, 255, 0.2),
-//               inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-//             transform: perspective(100px) rotateX(5deg);
-//             transition: all 0.3s ease;
-//           }
-
-//           .profile-icon-3d:hover {
-//             transform: perspective(100px) rotateX(0deg) translateY(-2px);
-//             box-shadow: 
-//               0 6px 20px rgba(50, 140, 129, 0.5),
-//               inset 0 1px 0 rgba(255, 255, 255, 0.3),
-//               inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-//           }
-
-//           .menu-background {
-//             background: linear-gradient(135deg, 
-//               rgba(50, 140, 129, 0.95) 0%,
-//               rgba(34, 120, 109, 0.9) 50%,
-//               rgba(50, 140, 129, 0.95) 100%
-//             );
-//             backdrop-filter: blur(15px);
-//             border: 1px solid rgba(255, 255, 255, 0.2);
-//           }
-
-//           .menu-item-hover {
-//             transition: all 0.3s ease;
-//           }
-
-//           .menu-item-hover:hover {
-//             background: rgba(255, 255, 255, 0.15);
-//             transform: translateX(4px);
-//           }
-
-//           .watercolor-mobile-menu {
-//             background: linear-gradient(180deg, 
-//               rgba(50, 140, 129, 0.95) 0%,
-//               rgba(34, 120, 109, 0.9) 100%
-//             );
-//             backdrop-filter: blur(15px);
-//             border-top: 2px solid rgba(255, 255, 255, 0.2);
-//           }
-//         `}</style>
-
 //         <header className="watercolor-header shadow-lg rounded-2xl transition-all duration-300">
 //           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
 //             <div className="flex items-center justify-between h-16">
-//               {/* Left side - Logo */}
 //               <div className="flex items-center">
-//                 <div className="flex-shrink-0">
-//                   <h1 className="logo-text font-semibold tracking-tight">
-//                     mamatiffin
-//                   </h1>
-//                 </div>
+//                 <h1 className="logo-text font-semibold tracking-tight cursor-pointer" onClick={() => (window.location.href = '/home')}>
+//                   mamatiffin
+//                 </h1>
 //               </div>
-              
-//               {/* Right side - Navigation, Location and Mobile Menu */}
-//               <div className="flex items-center space-x-6">
-//                 {/* Navigation Menu - Desktop */}
-//                 <nav className="hidden md:flex space-x-6">
-//                   <a 
-//                     href="/home" 
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     Home
-//                   </a>
-//                   <button
-//                     onClick={() => handleNavigation('/veg-menu')}
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     Veg Menu
-//                   </button>
-//                   <button
-//                     onClick={() => handleNavigation('/non-veg-menu')}
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     Non-Veg Menu
-//                   </button>
-//                   <a 
-//                     href="/about-us" 
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     About Us
-//                   </a>
-//                   <a 
-//                     href="/contact" 
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     Contact
-//                   </a>
-//                   <a 
-//                     href="/our-story" 
-//                     className="text-gray-700 dark:text-gray-300 hover:text-[rgb(50,140,129)] dark:hover:text-[rgb(50,140,129)] transition-colors font-medium"
-//                   >
-//                     Our Story
-//                   </a>
-//                 </nav>
 
-//                 {/* Location Dropdown - Desktop */}
-//                 <div className="hidden md:block">
-//                   <LocationDropdown />
+//               {/* Desktop Navigation - Book button placed AFTER Contact */}
+//               <nav className="hidden lg:flex items-center space-x-6">
+//                 <a href="/home" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Home</a>
+//                 <button onClick={() => handleNavigation('/veg-menu')} className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Veg Menu</button>
+//                 <button onClick={() => handleNavigation('/non-veg-menu')} className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Non-Veg Menu</button>
+//                 <a href="/about-us" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">About Us</a>
+//                 <a href="/contact" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Contact</a>
+
+//                 {/* ✅ ADDED: Rooms link in desktop nav */}
+//                 <a 
+//                   href="/rooms" 
+//                   className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium flex items-center gap-1"
+//                 >
+//                   <Home size={16} />
+//                   Rooms
+//                 </a>
+
+//                 <div className="relative" ref={bookDropdownRef}>
+//                   <button onClick={toggleBookDropdown} className="book-nav-button">
+//                     <BookOpen size={18} />
+//                     <span>Book</span>
+//                     <ChevronDown size={16} className={`transition-transform duration-300 ${isBookDropdownOpen ? 'rotate-180' : ''}`} />
+//                   </button>
+
+//                   <div className={`book-dropdown ${isBookDropdownOpen ? 'open' : ''}`}>
+//                     <div className="py-2">
+//                       <button className="profile-dropdown-item buy" onClick={handleBuyClick}>
+//                         <ShoppingCart size={18} />
+//                         <span>Buy Books</span>
+//                       </button>
+//                       <button className="profile-dropdown-item sell" onClick={handleSellClick}>
+//                         <Tag size={18} />
+//                         <span>Sell Book</span>
+//                       </button>
+//                       {user && (
+//                         <>
+//                           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+//                           <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+//                             <List size={18} />
+//                             <span>My Listings</span>
+//                           </button>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
+//                 </div>
+//               </nav>
+
+//               <div className="hidden lg:flex items-center space-x-4">
+//                 <LocationDropdown />
+
+//                 {user ? (
+//                   <div className="relative" ref={profileDropdownRef}>
+//                     <button onClick={toggleProfileDropdown} className="profile-button flex items-center space-x-3 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-300 border border-gray-200">
+//                       <div className="profile-icon-3d w-9 h-9 rounded-full flex items-center justify-center">
+//                         <User size={18} className="text-white" />
+//                       </div>
+//                       <div className="text-left">
+//                         <p className="text-sm font-semibold text-gray-800 leading-tight">{user.name}</p>
+//                         <p className="text-xs text-gray-500">{user.phone}</p>
+//                       </div>
+//                       <ChevronDown size={18} className={`text-gray-600 transition-transform duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+//                     </button>
+
+//                     <div className={`profile-dropdown ${isProfileDropdownOpen ? 'open' : ''}`}>
+//                       <div className="py-2">
+//                         <button className="profile-dropdown-item" onClick={handleMyOrdersClick}>
+//                           <ShoppingBag size={18} />
+//                           <span>My Orders</span>
+//                         </button>
+//                         <button className="profile-dropdown-item" onClick={handleOrderSkipClick}>
+//                           <SkipForward size={18} />
+//                           <span>Order Skip</span>
+//                         </button>
+//                         <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+//                           <BookOpen size={18} />
+//                           <span>My Book Listings</span>
+//                         </button>
+
+//                         {(user.role === 'admin' || user.role === 'moderator') && (
+//                           <>
+//                             <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+//                             <button className="profile-dropdown-item admin" onClick={() => { setIsProfileDropdownOpen(false); window.location.href = '/admin-dashboard'; }}>
+//                               <User size={18} />
+//                               <span>Admin Dashboard</span>
+//                             </button>
+//                           </>
+//                         )}
+
+//                         <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+//                         <button className="profile-dropdown-item logout" onClick={handleLogout}>
+//                           <LogOut size={18} />
+//                           <span>Logout</span>
+//                         </button>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ) : (
+//                   <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2.5 rounded-xl font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94))' }}>
+//                     Sign In
+//                   </button>
+//                 )}
+//               </div>
+
+//               {/* Mobile right side: Rooms button + Book button + Menu icon */}
+//               <div className="lg:hidden flex items-center gap-2">
+//                 {/* ✅ ADDED: Rooms button on mobile (before Book button) */}
+//                 <button 
+//                   onClick={handleRoomsClick} 
+//                   className="rooms-nav-button-mobile"
+//                   aria-label="Rooms"
+//                 >
+//                   <Home size={16} />
+//                   <span>Rooms</span>
+//                 </button>
+
+//                 <div className="relative" ref={mobileBookDropdownRef}>
+//                   <button onClick={toggleMobileBookDropdown} className="book-nav-button-mobile" aria-label="Books menu">
+//                     <BookOpen size={16} />
+//                     <span>Book</span>
+//                     <ChevronDown size={14} className={`transition-transform duration-300 ${isMobileBookDropdownOpen ? 'rotate-180' : ''}`} />
+//                   </button>
+
+//                   <div className={`mobile-book-dropdown ${isMobileBookDropdownOpen ? 'open' : ''}`}>
+//                     <div className="py-2">
+//                       <button className="profile-dropdown-item buy" onClick={handleBuyClick}>
+//                         <ShoppingCart size={18} />
+//                         <span>Buy Books</span>
+//                       </button>
+//                       <button className="profile-dropdown-item sell" onClick={handleSellClick}>
+//                         <Tag size={18} />
+//                         <span>Sell Book</span>
+//                       </button>
+//                       {user && (
+//                         <>
+//                           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+//                           <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+//                             <List size={18} />
+//                             <span>My Listings</span>
+//                           </button>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
 //                 </div>
 
-//                 {/* Mobile menu button - Right side */}
-//                 <button
-//                   onClick={toggleMobileMenu}
-//                   className="md:hidden p-2 rounded-lg text-white hover:bg-white hover:bg-opacity-20 transition-all duration-300"
-//                   style={{ backgroundColor: 'rgb(50, 140, 129)' }}
-//                   aria-label="Toggle menu"
-//                 >
+//                 <button onClick={toggleMobileMenu} className="p-2 rounded-lg text-white hover:bg-white hover:bg-opacity-20 transition-all duration-300" style={{ backgroundColor: 'rgb(50, 140, 129)' }} aria-label="Toggle menu">
 //                   {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
 //                 </button>
 //               </div>
 //             </div>
 //           </div>
 
-//           {/* Mobile menu with watercolor background */}
 //           {isMobileMenuOpen && (
-//             <div className="md:hidden watercolor-mobile-menu">
+//             <div className="lg:hidden watercolor-mobile-menu">
 //               <div className="px-6 py-4 space-y-4">
-//                 <div className="mb-4">
-//                   <LocationDropdown />
-//                 </div>
-                
+//                 <div className="mb-4"><LocationDropdown /></div>
+
 //                 <nav className="flex flex-col space-y-3">
-//                   <a 
-//                     href="/home" 
-//                     className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                     onClick={() => setIsMobileMenuOpen(false)}
+//                   <a href="/home" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
+//                   <button onClick={() => { handleNavigation('/veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Veg Menu</button>
+//                   <button onClick={() => { handleNavigation('/non-veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Non-Veg Menu</button>
+
+//                   {/* ✅ ADDED: Rooms link in mobile drawer */}
+//                   <button 
+//                     onClick={handleRoomsClick} 
+//                     className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-2"
 //                   >
-//                     Home
-//                   </a>
-//                   <button
-//                     onClick={() => {
-//                       handleNavigation('/veg-menu');
-//                       setIsMobileMenuOpen(false);
-//                     }}
-//                     className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                   >
-//                     Veg Menu
+//                     <Home size={18} />
+//                     <span>Rooms</span>
 //                   </button>
-//                   <button
-//                     onClick={() => {
-//                       handleNavigation('/non-veg-menu');
-//                       setIsMobileMenuOpen(false);
-//                     }}
-//                     className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                   >
-//                     Non-Veg Menu
-//                   </button>
-//                   <a 
-//                     href="/about-us" 
-//                     className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                     onClick={() => setIsMobileMenuOpen(false)}
-//                   >
-//                     About Us
-//                   </a>
-//                   <a 
-//                     href="/contact" 
-//                     className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                     onClick={() => setIsMobileMenuOpen(false)}
-//                   >
-//                     Contact
-//                   </a>
-//                   <a 
-//                     href="/our-story" 
-//                     className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-//                     onClick={() => setIsMobileMenuOpen(false)}
-//                   >
-//                     Our Story
-//                   </a>
+
+//                   <div className="border-t border-white border-opacity-20 pt-3">
+//                     <p className="text-white text-xs uppercase tracking-wider mb-2 px-2 opacity-70">Books</p>
+//                     <button onClick={handleBuyClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+//                       <ShoppingCart size={18} />
+//                       <span>Buy Books</span>
+//                     </button>
+//                     <button onClick={handleSellClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+//                       <Tag size={18} />
+//                       <span>Sell Book</span>
+//                     </button>
+//                     {user && (
+//                       <button onClick={handleMyListingsClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+//                         <List size={18} />
+//                         <span>My Listings</span>
+//                       </button>
+//                     )}
+//                   </div>
+
+//                   <a href="/about-us" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>About Us</a>
+//                   <a href="/contact" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
 //                 </nav>
 
-//                 {/* Mobile user section */}
 //                 {user ? (
 //                   <div className="pt-4 border-t border-white border-opacity-20">
 //                     <div className="flex items-center space-x-3 mb-4">
@@ -351,62 +544,25 @@
 //                       </div>
 //                     </div>
 //                     <div className="space-y-2">
-//                       <button
-//                         className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3"
-//                         onClick={() => {
-//                           setIsMobileMenuOpen(false);
-//                           handleMyOrdersClick();
-//                         }}
-//                       >
-//                         <ShoppingBag size={16} />
-//                         <span>My Orders</span>
+//                       <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); handleMyOrdersClick(); }}>
+//                         <ShoppingBag size={16} /><span>My Orders</span>
 //                       </button>
-                      
-//                       <button
-//                         className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3"
-//                         onClick={() => {
-//                           setIsMobileMenuOpen(false);
-//                           handleOrderSkipClick();
-//                         }}
-//                       >
-//                         <SkipForward size={16} />
-//                         <span>Order Skip</span>
+//                       <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); handleOrderSkipClick(); }}>
+//                         <SkipForward size={16} /><span>Order Skip</span>
 //                       </button>
-                      
 //                       {(user.role === 'admin' || user.role === 'moderator') && (
-//                         <button
-//                           className="menu-item-hover w-full text-left px-4 py-3 text-sm text-yellow-300 rounded-lg transition-colors flex items-center space-x-3"
-//                           onClick={() => {
-//                             setIsMobileMenuOpen(false);
-//                             window.location.href = '/admin-dashboard';
-//                           }}
-//                         >
-//                           <User size={16} />
-//                           <span>Admin Dashboard</span>
+//                         <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-yellow-300 rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); window.location.href = '/admin-dashboard'; }}>
+//                           <User size={16} /><span>Admin Dashboard</span>
 //                         </button>
 //                       )}
-                      
-//                       <button
-//                         className="menu-item-hover w-full text-left px-4 py-3 text-sm text-red-300 rounded-lg transition-colors flex items-center space-x-3"
-//                         onClick={() => {
-//                           handleLogout();
-//                           setIsMobileMenuOpen(false);
-//                         }}
-//                       >
-//                         <LogOut size={16} />
-//                         <span>Logout</span>
+//                       <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-red-300 rounded-lg transition-colors flex items-center space-x-3" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>
+//                         <LogOut size={16} /><span>Logout</span>
 //                       </button>
 //                     </div>
 //                   </div>
 //                 ) : (
 //                   <div className="pt-4 border-t border-white border-opacity-20">
-//                     <button
-//                       onClick={() => {
-//                         setIsAuthModalOpen(true);
-//                         setIsMobileMenuOpen(false);
-//                       }}
-//                       className="w-full bg-transparent hover:bg-opacity-10 hover:bg-gray-500 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm border border-white border-opacity-20"
-//                     >
+//                     <button onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }} className="w-full bg-transparent hover:bg-opacity-10 hover:bg-gray-500 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm border border-white border-opacity-20">
 //                       Sign In
 //                     </button>
 //                   </div>
@@ -416,12 +572,7 @@
 //           )}
 //         </header>
 
-//         {/* Auth Modal */}
-//         <AuthModal
-//           isOpen={isAuthModalOpen}
-//           onClose={() => setIsAuthModalOpen(false)}
-//           onLoginSuccess={handleLoginSuccess}
-//         />
+//         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={handleLoginSuccess} />
 //       </div>
 //     </>
 //   );
@@ -429,9 +580,12 @@
 
 // export default Header;
 
-// Header.tsx - FULLY OPTIMIZED with Desktop User Profile
 import React, { useState, useEffect, useRef } from 'react';
-import { User, LogOut, Menu, X, ShoppingBag, SkipForward, ChevronDown } from 'lucide-react';
+import {
+  User, LogOut, Menu, X, ShoppingBag, SkipForward, ChevronDown,
+  BookOpen, ShoppingCart, Tag, List,
+  Home,
+} from 'lucide-react';
 import LocationDropdown from './LocationDropdown';
 import AuthModal from './AuthModal';
 import { useAuth } from '../context/AuthContext';
@@ -451,21 +605,23 @@ interface LocalUser {
 
 const Header: React.FC = () => {
   const { user: authUser, logout: authLogout } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [user, setUser] = useState<LocalUser | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
+  const [isBookDropdownOpen, setIsBookDropdownOpen] = useState<boolean>(false);
+  const [isMobileBookDropdownOpen, setIsMobileBookDropdownOpen] = useState<boolean>(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const bookDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileBookDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load user data from memory on component mount
   useEffect(() => {
-    const loadUserData = () => {
+    const loadUserData = (): void => {
       if (authUser) {
         setUser(authUser as LocalUser);
       } else {
         const savedUser = sessionStorage.getItem('user');
         const savedToken = sessionStorage.getItem('token');
-        
         if (savedUser && savedToken) {
           setUser(JSON.parse(savedUser));
         } else {
@@ -473,40 +629,34 @@ const Header: React.FC = () => {
         }
       }
     };
-
     loadUserData();
 
-    // Listen for custom login trigger from VegNonVegCards
-    const handleTriggerLogin = () => {
-      setIsAuthModalOpen(true);
-    };
-
+    const handleTriggerLogin = (): void => setIsAuthModalOpen(true);
     window.addEventListener('triggerLogin', handleTriggerLogin);
-
-    return () => {
-      window.removeEventListener('triggerLogin', handleTriggerLogin);
-    };
+    return () => window.removeEventListener('triggerLogin', handleTriggerLogin);
   }, [authUser]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false);
       }
+      if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target as Node)) {
+        setIsBookDropdownOpen(false);
+      }
+      if (mobileBookDropdownRef.current && !mobileBookDropdownRef.current.contains(event.target as Node)) {
+        setIsMobileBookDropdownOpen(false);
+      }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLoginSuccess = (user: LocalUser, token: string) => {
+  const handleLoginSuccess = (user: LocalUser, token: string): void => {
     setUser(user);
     sessionStorage.setItem('user', JSON.stringify(user));
     sessionStorage.setItem('token', token);
-    
     window.dispatchEvent(new CustomEvent('userAuthChanged'));
-    
     const redirectPath = sessionStorage.getItem('redirectAfterLogin');
     if (redirectPath) {
       sessionStorage.removeItem('redirectAfterLogin');
@@ -514,26 +664,22 @@ const Header: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     setUser(null);
     if (authLogout) authLogout();
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('redirectAfterLogin');
     setIsProfileDropdownOpen(false);
-    
     window.dispatchEvent(new CustomEvent('userAuthChanged'));
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((prev) => !prev);
-  };
+  const toggleMobileMenu = (): void => setIsMobileMenuOpen((p) => !p);
+  const toggleProfileDropdown = (): void => setIsProfileDropdownOpen((p) => !p);
+  const toggleBookDropdown = (): void => setIsBookDropdownOpen((p) => !p);
+  const toggleMobileBookDropdown = (): void => setIsMobileBookDropdownOpen((p) => !p);
 
-  const toggleProfileDropdown = () => {
-    setIsProfileDropdownOpen((prev) => !prev);
-  };
-
-  const handleNavigation = (path: string) => {
+  const handleNavigation = (path: string): void => {
     if ((path === '/veg-menu' || path === '/non-veg-menu') && !user) {
       sessionStorage.setItem('redirectAfterLogin', path);
       setIsAuthModalOpen(true);
@@ -542,35 +688,60 @@ const Header: React.FC = () => {
     window.location.href = path;
   };
 
-  const handleMyOrdersClick = () => {
-    if (!user) {
-      setIsAuthModalOpen(true);
-      return;
-    }
+  const handleMyOrdersClick = (): void => {
+    if (!user) { setIsAuthModalOpen(true); return; }
     setIsProfileDropdownOpen(false);
     window.location.href = '/my-orders';
   };
 
-  const handleOrderSkipClick = () => {
+  const handleOrderSkipClick = (): void => {
+    if (!user) { setIsAuthModalOpen(true); return; }
+    setIsProfileDropdownOpen(false);
+    window.location.href = '/order-skip';
+  };
+
+  const handleBuyClick = (): void => {
+    setIsBookDropdownOpen(false);
+    setIsMobileBookDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+    window.location.href = '/books/buy';
+  };
+
+  const handleSellClick = (): void => {
+    setIsBookDropdownOpen(false);
+    setIsMobileBookDropdownOpen(false);
+    setIsMobileMenuOpen(false);
     if (!user) {
+      sessionStorage.setItem('redirectAfterLogin', '/books/sell');
       setIsAuthModalOpen(true);
       return;
     }
+    window.location.href = '/books/sell';
+  };
+
+  const handleMyListingsClick = (): void => {
+    setIsBookDropdownOpen(false);
+    setIsMobileBookDropdownOpen(false);
     setIsProfileDropdownOpen(false);
-    window.location.href = '/order-skip';
+    setIsMobileMenuOpen(false);
+    if (!user) {
+      sessionStorage.setItem('redirectAfterLogin', '/books/my-listings');
+      setIsAuthModalOpen(true);
+      return;
+    }
+    window.location.href = '/books/my-listings';
+  };
+
+  const handleRoomsClick = (): void => {
+    setIsMobileMenuOpen(false);
+    window.location.href = '/rooms';
   };
 
   return (
     <>
       <style>{`
-        body {
-          padding-top: 88px !important;
-          background: none !important;
-        }
-        .fixed {
-          background: none !important;
-          backdrop-filter: none !important;
-        }
+        body { padding-top: 88px !important; background: none !important; }
+        .fixed { background: none !important; backdrop-filter: none !important; }
 
         .watercolor-header {
           background: linear-gradient(135deg, 
@@ -578,13 +749,10 @@ const Header: React.FC = () => {
             rgba(240, 248, 255, 0.9) 25%,
             rgba(230, 245, 255, 0.85) 50%,
             rgba(220, 240, 250, 0.9) 75%,
-            rgba(255, 255, 255, 0.95) 100%
-          );
+            rgba(255, 255, 255, 0.95) 100%);
           backdrop-filter: blur(10px);
           border: 2px solid rgba(50, 140, 129, 0.2);
-          box-shadow: 
-            0 8px 32px rgba(50, 140, 129, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          box-shadow: 0 8px 32px rgba(50, 140, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
 
         .logo-text {
@@ -597,59 +765,62 @@ const Header: React.FC = () => {
           letter-spacing: -0.5px;
         }
 
-        @media (max-width: 768px) {
-          .logo-text {
-            font-size: 28px;
-            font-weight: 600;
-          }
-        }
+        @media (max-width: 768px) { .logo-text { font-size: 28px; font-weight: 600; } }
 
         .profile-icon-3d {
           background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 140, 109));
-          box-shadow: 
-            0 4px 15px rgba(50, 140, 129, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 15px rgba(50, 140, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
           transform: perspective(100px) rotateX(5deg);
           transition: all 0.3s ease;
         }
-
         .profile-icon-3d:hover {
           transform: perspective(100px) rotateX(0deg) translateY(-2px);
-          box-shadow: 
-            0 6px 20px rgba(50, 140, 129, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 6px 20px rgba(50, 140, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
         }
 
-        /* Desktop Profile Dropdown */
-        .profile-dropdown {
+        .profile-dropdown, .book-dropdown {
           position: absolute;
           top: calc(100% + 8px);
           right: 0;
-          min-width: 280px;
-          background: linear-gradient(135deg, 
-            rgba(255, 255, 255, 0.98) 0%,
-            rgba(250, 252, 255, 0.95) 100%
-          );
+          min-width: 240px;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 0.95) 100%);
           backdrop-filter: blur(15px);
           border: 2px solid rgba(50, 140, 129, 0.2);
           border-radius: 16px;
-          box-shadow: 
-            0 10px 40px rgba(50, 140, 129, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+          box-shadow: 0 10px 40px rgba(50, 140, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
           opacity: 0;
           visibility: hidden;
           transform: translateY(-10px);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 1000;
+          overflow: hidden;
+          padding: 4px;
         }
+        .profile-dropdown { min-width: 280px; }
+        .book-dropdown { left: 50%; right: auto; transform: translateX(-50%) translateY(-10px); }
+        .profile-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+        .book-dropdown.open { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-        .profile-dropdown.open {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
+        .mobile-book-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          left: auto;
+          min-width: 200px;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 0.95) 100%);
+          backdrop-filter: blur(15px);
+          border: 2px solid rgba(50, 140, 129, 0.2);
+          border-radius: 16px;
+          box-shadow: 0 10px 40px rgba(50, 140, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1000;
+          overflow: hidden;
+          padding: 4px;
         }
+        .mobile-book-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
 
         .profile-dropdown-item {
           padding: 12px 16px;
@@ -657,133 +828,147 @@ const Header: React.FC = () => {
           align-items: center;
           gap: 12px;
           color: #374151;
-          transition: all 0.2s ease;
+          transition: background-color 0.2s ease, color 0.2s ease;
           border-radius: 8px;
-          margin: 4px 8px;
+          margin: 4px 4px;
           font-weight: 500;
+          width: calc(100% - 8px);
+          box-sizing: border-box;
         }
-
-        .profile-dropdown-item:hover {
-          background: rgba(50, 140, 129, 0.1);
-          transform: translateX(4px);
-        }
-
-        .profile-dropdown-item.logout:hover {
-          background: rgba(239, 68, 68, 0.1);
-          color: #dc2626;
-        }
-
-        .profile-dropdown-item.admin:hover {
-          background: rgba(234, 179, 8, 0.1);
-          color: #ca8a04;
-        }
+        .profile-dropdown-item:hover { background: rgba(50, 140, 129, 0.1); }
+        .profile-dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+        .profile-dropdown-item.admin:hover { background: rgba(234, 179, 8, 0.1); color: #ca8a04; }
+        .profile-dropdown-item.buy:hover { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+        .profile-dropdown-item.sell:hover { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
 
         .watercolor-mobile-menu {
-          background: linear-gradient(180deg, 
-            rgba(50, 140, 129, 0.95) 0%,
-            rgba(34, 120, 109, 0.9) 100%
-          );
+          background: linear-gradient(180deg, rgba(50, 140, 129, 0.95) 0%, rgba(34, 120, 109, 0.9) 100%);
           backdrop-filter: blur(15px);
           border-top: 2px solid rgba(255, 255, 255, 0.2);
         }
+        .menu-item-hover { transition: all 0.3s ease; }
+        .menu-item-hover:hover { background: rgba(255, 255, 255, 0.15); transform: translateX(4px); }
 
-        .menu-item-hover {
+        .book-nav-button {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #374151;
+          font-weight: 500;
+          padding: 6px 12px;
+          border-radius: 10px;
           transition: all 0.3s ease;
+          background: linear-gradient(135deg, rgba(50, 140, 129, 0.08), rgba(34, 197, 94, 0.08));
+          border: 1px solid rgba(50, 140, 129, 0.2);
+        }
+        .book-nav-button:hover {
+          background: linear-gradient(135deg, rgba(50, 140, 129, 0.15), rgba(34, 197, 94, 0.15));
+          transform: translateY(-1px);
+          color: rgb(50, 140, 129);
         }
 
-        .menu-item-hover:hover {
-          background: rgba(255, 255, 255, 0.15);
-          transform: translateX(4px);
+        .book-nav-button-mobile {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #374151;
+          font-weight: 500;
+          padding: 6px 10px;
+          border-radius: 10px;
+          transition: all 0.3s ease;
+          background: linear-gradient(135deg, rgba(50, 140, 129, 0.08), rgba(34, 197, 94, 0.08));
+          border: 1px solid rgba(50, 140, 129, 0.2);
+          font-size: 14px;
+        }
+        .book-nav-button-mobile:hover,
+        .book-nav-button-mobile:active {
+          background: linear-gradient(135deg, rgba(50, 140, 129, 0.15), rgba(34, 197, 94, 0.15));
+          color: rgb(50, 140, 129);
         }
 
-        /* Profile Button Animation */
-        .profile-button {
-          position: relative;
-          overflow: hidden;
+        /* ✅ Simple Rooms link with Home icon — plain text, no box */
+        .rooms-nav-link-mobile {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #374151;
+          font-weight: 500;
+          padding: 6px 8px;
+          font-size: 14px;
+          background: transparent;
+          border: none;
+          transition: color 0.2s ease;
         }
-
-        .profile-button::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 12px;
-          padding: 2px;
-          background: linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .profile-button:hover::before {
-          opacity: 1;
+        .rooms-nav-link-mobile:hover,
+        .rooms-nav-link-mobile:active {
+          color: rgb(50, 140, 129);
         }
       `}</style>
-      
+
       <div className="fixed top-0 left-0 right-0 z-50 p-4" style={{ background: 'transparent' }}>
         <header className="watercolor-header shadow-lg rounded-2xl transition-all duration-300">
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
             <div className="flex items-center justify-between h-16">
-              {/* Left side - Logo */}
               <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <h1 className="logo-text font-semibold tracking-tight cursor-pointer" onClick={() => window.location.href = '/home'}>
-                    mamatiffin
-                  </h1>
-                </div>
+                <h1 className="logo-text font-semibold tracking-tight cursor-pointer" onClick={() => (window.location.href = '/home')}>
+                  mamatiffin
+                </h1>
               </div>
-              
-              {/* Center - Navigation Menu (Desktop) */}
-              <nav className="hidden lg:flex items-center space-x-8">
+
+              {/* Desktop Navigation */}
+              <nav className="hidden lg:flex items-center space-x-6">
+                <a href="/home" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Home</a>
+                <button onClick={() => handleNavigation('/veg-menu')} className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Veg Menu</button>
+                <button onClick={() => handleNavigation('/non-veg-menu')} className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Non-Veg Menu</button>
+                <a href="/about-us" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">About Us</a>
+                <a href="/contact" className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium">Contact</a>
+
+                {/* ✅ Rooms link — simple plain text style with Home icon */}
                 <a 
-                  href="/home" 
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
+                  href="/rooms" 
+                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium flex items-center gap-1"
                 >
-                  Home
+                  <Home size={16} />
+                  Rooms
                 </a>
-                <button
-                  onClick={() => handleNavigation('/veg-menu')}
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
-                >
-                  Veg Menu
-                </button>
-                <button
-                  onClick={() => handleNavigation('/non-veg-menu')}
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
-                >
-                  Non-Veg Menu
-                </button>
-                <a 
-                  href="/about-us" 
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
-                >
-                  About Us
-                </a>
-                <a 
-                  href="/contact" 
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
-                >
-                  Contact
-                </a>
-                <a 
-                  href="/our-story" 
-                  className="text-gray-700 hover:text-[rgb(50,140,129)] transition-colors font-medium"
-                >
-                  Our Story
-                </a>
+
+                <div className="relative" ref={bookDropdownRef}>
+                  <button onClick={toggleBookDropdown} className="book-nav-button">
+                    <BookOpen size={18} />
+                    <span>Book</span>
+                    <ChevronDown size={16} className={`transition-transform duration-300 ${isBookDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  <div className={`book-dropdown ${isBookDropdownOpen ? 'open' : ''}`}>
+                    <div className="py-2">
+                      <button className="profile-dropdown-item buy" onClick={handleBuyClick}>
+                        <ShoppingCart size={18} />
+                        <span>Buy Books</span>
+                      </button>
+                      <button className="profile-dropdown-item sell" onClick={handleSellClick}>
+                        <Tag size={18} />
+                        <span>Sell Book</span>
+                      </button>
+                      {user && (
+                        <>
+                          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+                          <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+                            <List size={18} />
+                            <span>My Listings</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </nav>
 
-              {/* Right side - Location & User Profile (Desktop) */}
               <div className="hidden lg:flex items-center space-x-4">
                 <LocationDropdown />
 
                 {user ? (
                   <div className="relative" ref={profileDropdownRef}>
-                    <button
-                      onClick={toggleProfileDropdown}
-                      className="profile-button flex items-center space-x-3 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-300 border border-gray-200"
-                    >
+                    <button onClick={toggleProfileDropdown} className="profile-button flex items-center space-x-3 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-300 border border-gray-200">
                       <div className="profile-icon-3d w-9 h-9 rounded-full flex items-center justify-center">
                         <User size={18} className="text-white" />
                       </div>
@@ -791,53 +976,36 @@ const Header: React.FC = () => {
                         <p className="text-sm font-semibold text-gray-800 leading-tight">{user.name}</p>
                         <p className="text-xs text-gray-500">{user.phone}</p>
                       </div>
-                      <ChevronDown 
-                        size={18} 
-                        className={`text-gray-600 transition-transform duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
-                      />
+                      <ChevronDown size={18} className={`text-gray-600 transition-transform duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {/* Desktop Dropdown Menu */}
                     <div className={`profile-dropdown ${isProfileDropdownOpen ? 'open' : ''}`}>
                       <div className="py-2">
-                        <button
-                          className="profile-dropdown-item w-full"
-                          onClick={handleMyOrdersClick}
-                        >
+                        <button className="profile-dropdown-item" onClick={handleMyOrdersClick}>
                           <ShoppingBag size={18} />
                           <span>My Orders</span>
                         </button>
-                        
-                        <button
-                          className="profile-dropdown-item w-full"
-                          onClick={handleOrderSkipClick}
-                        >
+                        <button className="profile-dropdown-item" onClick={handleOrderSkipClick}>
                           <SkipForward size={18} />
                           <span>Order Skip</span>
                         </button>
-                        
+                        <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+                          <BookOpen size={18} />
+                          <span>My Book Listings</span>
+                        </button>
+
                         {(user.role === 'admin' || user.role === 'moderator') && (
                           <>
                             <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
-                            <button
-                              className="profile-dropdown-item admin w-full"
-                              onClick={() => {
-                                setIsProfileDropdownOpen(false);
-                                window.location.href = '/admin-dashboard';
-                              }}
-                            >
+                            <button className="profile-dropdown-item admin" onClick={() => { setIsProfileDropdownOpen(false); window.location.href = '/admin-dashboard'; }}>
                               <User size={18} />
                               <span>Admin Dashboard</span>
                             </button>
                           </>
                         )}
-                        
+
                         <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
-                        
-                        <button
-                          className="profile-dropdown-item logout w-full"
-                          onClick={handleLogout}
-                        >
+                        <button className="profile-dropdown-item logout" onClick={handleLogout}>
                           <LogOut size={18} />
                           <span>Logout</span>
                         </button>
@@ -845,86 +1013,101 @@ const Header: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setIsAuthModalOpen(true)}
-                    className="px-6 py-2.5 rounded-xl font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    style={{ background: 'linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94))' }}
-                  >
+                  <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2.5 rounded-xl font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94))' }}>
                     Sign In
                   </button>
                 )}
               </div>
 
-              {/* Mobile menu button */}
-              <button
-                onClick={toggleMobileMenu}
-                className="lg:hidden p-2 rounded-lg text-white hover:bg-white hover:bg-opacity-20 transition-all duration-300"
-                style={{ backgroundColor: 'rgb(50, 140, 129)' }}
-                aria-label="Toggle menu"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
+              {/* Mobile right side: Rooms (simple text + icon) + Book button + Menu icon */}
+              <div className="lg:hidden flex items-center gap-2">
+                {/* ✅ Rooms — simple text link with Home icon, no box */}
+                <button 
+                  onClick={handleRoomsClick} 
+                  className="rooms-nav-link-mobile"
+                  aria-label="Rooms"
+                >
+                  <Home size={16} />
+                  <span>Rooms</span>
+                </button>
+
+                <div className="relative" ref={mobileBookDropdownRef}>
+                  <button onClick={toggleMobileBookDropdown} className="book-nav-button-mobile" aria-label="Books menu">
+                    <BookOpen size={16} />
+                    <span>Book</span>
+                    <ChevronDown size={14} className={`transition-transform duration-300 ${isMobileBookDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  <div className={`mobile-book-dropdown ${isMobileBookDropdownOpen ? 'open' : ''}`}>
+                    <div className="py-2">
+                      <button className="profile-dropdown-item buy" onClick={handleBuyClick}>
+                        <ShoppingCart size={18} />
+                        <span>Buy Books</span>
+                      </button>
+                      <button className="profile-dropdown-item sell" onClick={handleSellClick}>
+                        <Tag size={18} />
+                        <span>Sell Book</span>
+                      </button>
+                      {user && (
+                        <>
+                          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2 mx-4"></div>
+                          <button className="profile-dropdown-item" onClick={handleMyListingsClick}>
+                            <List size={18} />
+                            <span>My Listings</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={toggleMobileMenu} className="p-2 rounded-lg text-white hover:bg-white hover:bg-opacity-20 transition-all duration-300" style={{ backgroundColor: 'rgb(50, 140, 129)' }} aria-label="Toggle menu">
+                  {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Mobile menu */}
           {isMobileMenuOpen && (
             <div className="lg:hidden watercolor-mobile-menu">
               <div className="px-6 py-4 space-y-4">
-                <div className="mb-4">
-                  <LocationDropdown />
-                </div>
-                
+                <div className="mb-4"><LocationDropdown /></div>
+
                 <nav className="flex flex-col space-y-3">
-                  <a 
-                    href="/home" 
-                    className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <a href="/home" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
+                  <button onClick={() => { handleNavigation('/veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Veg Menu</button>
+                  <button onClick={() => { handleNavigation('/non-veg-menu'); setIsMobileMenuOpen(false); }} className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2">Non-Veg Menu</button>
+
+                  <button 
+                    onClick={handleRoomsClick} 
+                    className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-2"
                   >
-                    Home
-                  </a>
-                  <button
-                    onClick={() => {
-                      handleNavigation('/veg-menu');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                  >
-                    Veg Menu
+                    <Home size={18} />
+                    <span>Rooms</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      handleNavigation('/non-veg-menu');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                  >
-                    Non-Veg Menu
-                  </button>
-                  <a 
-                    href="/about-us" 
-                    className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    About Us
-                  </a>
-                  <a 
-                    href="/contact" 
-                    className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Contact
-                  </a>
-                  <a 
-                    href="/our-story" 
-                    className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Our Story
-                  </a>
+
+                  <div className="border-t border-white border-opacity-20 pt-3">
+                    <p className="text-white text-xs uppercase tracking-wider mb-2 px-2 opacity-70">Books</p>
+                    <button onClick={handleBuyClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+                      <ShoppingCart size={18} />
+                      <span>Buy Books</span>
+                    </button>
+                    <button onClick={handleSellClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+                      <Tag size={18} />
+                      <span>Sell Book</span>
+                    </button>
+                    {user && (
+                      <button onClick={handleMyListingsClick} className="w-full text-left text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2 flex items-center gap-3">
+                        <List size={18} />
+                        <span>My Listings</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <a href="/about-us" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>About Us</a>
+                  <a href="/contact" className="text-white hover:text-gray-200 transition-colors py-2 menu-item-hover rounded-lg px-2" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
                 </nav>
 
-                {/* Mobile user section */}
                 {user ? (
                   <div className="pt-4 border-t border-white border-opacity-20">
                     <div className="flex items-center space-x-3 mb-4">
@@ -937,62 +1120,25 @@ const Header: React.FC = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <button
-                        className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3"
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          handleMyOrdersClick();
-                        }}
-                      >
-                        <ShoppingBag size={16} />
-                        <span>My Orders</span>
+                      <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); handleMyOrdersClick(); }}>
+                        <ShoppingBag size={16} /><span>My Orders</span>
                       </button>
-                      
-                      <button
-                        className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3"
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          handleOrderSkipClick();
-                        }}
-                      >
-                        <SkipForward size={16} />
-                        <span>Order Skip</span>
+                      <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-white rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); handleOrderSkipClick(); }}>
+                        <SkipForward size={16} /><span>Order Skip</span>
                       </button>
-                      
                       {(user.role === 'admin' || user.role === 'moderator') && (
-                        <button
-                          className="menu-item-hover w-full text-left px-4 py-3 text-sm text-yellow-300 rounded-lg transition-colors flex items-center space-x-3"
-                          onClick={() => {
-                            setIsMobileMenuOpen(false);
-                            window.location.href = '/admin-dashboard';
-                          }}
-                        >
-                          <User size={16} />
-                          <span>Admin Dashboard</span>
+                        <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-yellow-300 rounded-lg transition-colors flex items-center space-x-3" onClick={() => { setIsMobileMenuOpen(false); window.location.href = '/admin-dashboard'; }}>
+                          <User size={16} /><span>Admin Dashboard</span>
                         </button>
                       )}
-                      
-                      <button
-                        className="menu-item-hover w-full text-left px-4 py-3 text-sm text-red-300 rounded-lg transition-colors flex items-center space-x-3"
-                        onClick={() => {
-                          handleLogout();
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LogOut size={16} />
-                        <span>Logout</span>
+                      <button className="menu-item-hover w-full text-left px-4 py-3 text-sm text-red-300 rounded-lg transition-colors flex items-center space-x-3" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>
+                        <LogOut size={16} /><span>Logout</span>
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="pt-4 border-t border-white border-opacity-20">
-                    <button
-                      onClick={() => {
-                        setIsAuthModalOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full bg-transparent hover:bg-opacity-10 hover:bg-gray-500 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm border border-white border-opacity-20"
-                    >
+                    <button onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }} className="w-full bg-transparent hover:bg-opacity-10 hover:bg-gray-500 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm border border-white border-opacity-20">
                       Sign In
                     </button>
                   </div>
@@ -1002,12 +1148,7 @@ const Header: React.FC = () => {
           )}
         </header>
 
-        {/* Auth Modal */}
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          onLoginSuccess={handleLoginSuccess}
-        />
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={handleLoginSuccess} />
       </div>
     </>
   );
