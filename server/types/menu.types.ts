@@ -22,9 +22,12 @@ export interface MenuBody {
   description?: string;
   deliveryTime?: string;
   priceMonthly?: number;
+  priceWeekly?: number;   // ✅ FIX — yeh field missing thi, isliye priceWeekly save nahi ho raha tha
   price?: number;
   priceTrial?: number;
   weeklyMenu?: any;
+  imageUrl?: string;      // ✅ BONUS — image update ke liye bhi helpful
+  imagePublicId?: string; // ✅ BONUS — Cloudinary public ID ke liye
 }
 
 export interface MenuResponse {
