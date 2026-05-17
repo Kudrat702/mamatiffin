@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Save, X, AlertCircle, CheckCircle, Clock, ChefHat, Upload, Image as ImageIcon } from 'lucide-react';
-import { apiEndpoints } from '../configapi/api';
+import { apiEndpoints, API_BASE_URL } from '../configapi/api';
 
 // Types
 interface MenuItem {
@@ -68,7 +68,7 @@ const imageUploadUtils = {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       const response = await fetch(apiEndpoints.uploadImage, {
         method: 'POST',
         body: formData
@@ -79,7 +79,7 @@ const imageUploadUtils = {
       }
 
       const data = await response.json() as { imageUrl: string; publicId: string };
-      
+
       return {
         imageUrl: data.imageUrl,
         imagePublicId: data.publicId
@@ -93,7 +93,7 @@ const imageUploadUtils = {
   deleteImageFromCloudinary: async (publicId: string): Promise<void> => {
     try {
       let deleteEndpoint: string;
-      
+
       if (typeof apiEndpoints.deleteImage === 'function') {
         deleteEndpoint = apiEndpoints.deleteImage(publicId);
       } else if (typeof apiEndpoints.uploadImage === 'string') {
@@ -102,12 +102,10 @@ const imageUploadUtils = {
         console.error('No valid delete endpoint found');
         return;
       }
-      
+
       const response = await fetch(deleteEndpoint, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ publicId })
       });
 
@@ -120,10 +118,13 @@ const imageUploadUtils = {
   }
 };
 
-// API Service
+// ✅ API Service — createOrUpdateMenuItem FIXED
+// Problem tha: JSON bheja ja raha tha lekin backend multipart/form-data expect karta hai
+// Aur endpoint bhi galat tha — menuDetails() GET endpoint tha, admin/menu POST endpoint nahi
 const apiService = {
   createOrUpdateMenuItem: async (diet: 'veg' | 'non-veg', menuData: {
     category: string;
+    menuType: string;
     title: string;
     description: string;
     imageUrl: string;
@@ -134,19 +135,43 @@ const apiService = {
     priceTrial: number;
   }): Promise<MenuItem> => {
     try {
-      const endpoint = apiEndpoints.menuDetails(diet, menuData.category);
+      // ✅ FIX 1: FormData use karo — backend uploadMenu.single('image') middleware expect karta hai multipart
+      const formData = new FormData();
+
+      // ✅ FIX 2: category = diet ('veg' ya 'non-veg') — backend isi se veg/non-veg decide karta hai
+      formData.append('category', diet);
+      formData.append('menuType', menuData.menuType);
+      formData.append('title', menuData.title);
+      formData.append('description', menuData.description);
+      formData.append('imageUrl', menuData.imageUrl);
+      formData.append('imagePublicId', menuData.imagePublicId || '');
+      formData.append('deliveryTime', menuData.deliveryTime);
+      formData.append('priceMonthly', menuData.priceMonthly.toString());
+
+      // ✅ FIX 3: priceWeekly FormData mein append — yahi asli bug tha
+      // Pehle JSON mein tha lekin backend parse nahi kar raha tha
+      formData.append('priceWeekly', menuData.priceWeekly.toString());
+
+      formData.append('priceTrial', menuData.priceTrial.toString());
+
+      // ✅ FIX 4: Sahi admin endpoint use karo
+      // Pehle: apiEndpoints.menuDetails(diet, menuData.category) — yeh GET endpoint hai
+      // Ab: /api/menus/admin/menu — yeh sahi POST/save endpoint hai
+      const endpoint = `${API_BASE_URL}/api/menus/admin/menu`;
+
+      console.log('📤 Saving menu to:', endpoint);
+      console.log('💰 priceWeekly being sent:', menuData.priceWeekly);
+
+      // ✅ FIX 5: Content-Type header mat lagao — browser khud boundary set karta hai FormData ke liye
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(menuData)
+        body: formData
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data: ApiResponse<MenuItem> = await response.json();
       if (data.success && data.data) {
         return data.data;
@@ -161,11 +186,7 @@ const apiService = {
   getAllVegMenus: async (): Promise<MenuItem[]> => {
     try {
       const response = await fetch(apiEndpoints.vegMenus);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data: ApiResponse<MenuItem[]> = await response.json();
       return data.success && data.data ? data.data : [];
     } catch (error) {
@@ -177,11 +198,7 @@ const apiService = {
   getAllNonVegMenus: async (): Promise<MenuItem[]> => {
     try {
       const response = await fetch(apiEndpoints.nonVegMenus);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data: ApiResponse<MenuItem[]> = await response.json();
       return data.success && data.data ? data.data : [];
     } catch (error) {
@@ -195,19 +212,12 @@ const apiService = {
       if (imagePublicId) {
         await imageUploadUtils.deleteImageFromCloudinary(imagePublicId);
       }
-
       const response = await fetch(apiEndpoints.adminCategoryMenu(diet, category), {
         method: 'DELETE'
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data: ApiResponse = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to delete menu item');
-      }
+      if (!data.success) throw new Error(data.message || 'Failed to delete menu item');
     } catch (error) {
       console.error('Error deleting menu item:', error);
       throw error;
@@ -216,10 +226,10 @@ const apiService = {
 };
 
 // Notification Component
-const Notification: React.FC<{ 
-  message: string; 
-  type: 'success' | 'error' | 'info'; 
-  onClose: () => void 
+const Notification: React.FC<{
+  message: string;
+  type: 'success' | 'error' | 'info';
+  onClose: () => void;
 }> = ({ message, type, onClose }) => {
   const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
   const Icon = type === 'success' ? CheckCircle : type === 'error' ? AlertCircle : Clock;
@@ -236,11 +246,11 @@ const Notification: React.FC<{
 };
 
 // Modal Component
-const Modal: React.FC<{ 
-  isOpen: boolean; 
-  onClose: () => void; 
-  title: string; 
-  children: React.ReactNode 
+const Modal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
 }> = ({ isOpen, onClose, title, children }) => {
   useEffect(() => {
     if (isOpen) {
@@ -248,7 +258,6 @@ const Modal: React.FC<{
     } else {
       document.body.style.overflow = 'unset';
     }
-    
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -261,8 +270,8 @@ const Modal: React.FC<{
       <div className="bg-white rounded-xl p-8 w-full max-w-4xl mx-4 max-h-[95vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
           <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
           >
             <X className="w-6 h-6" />
@@ -291,7 +300,6 @@ const ImageUploadComponent: React.FC<{
       if (!validation.isValid) {
         throw new Error(validation.error);
       }
-
       const previewUrl = await imageUploadUtils.fileToBase64(file);
       onImageChange(file, previewUrl);
     } catch (error) {
@@ -305,9 +313,9 @@ const ImageUploadComponent: React.FC<{
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -316,18 +324,13 @@ const ImageUploadComponent: React.FC<{
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      handleFileChange(files[0]);
-    }
+    if (files && files[0]) handleFileChange(files[0]);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files[0]) {
-      handleFileChange(files[0]);
-    }
+    if (files && files[0]) handleFileChange(files[0]);
   };
 
   return (
@@ -335,7 +338,7 @@ const ImageUploadComponent: React.FC<{
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Menu Image <span className="text-red-500">*</span>
       </label>
-      
+
       <div
         className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           dragActive
@@ -356,7 +359,7 @@ const ImageUploadComponent: React.FC<{
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           disabled={uploading}
         />
-        
+
         {uploading ? (
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-3"></div>
@@ -364,11 +367,7 @@ const ImageUploadComponent: React.FC<{
           </div>
         ) : imageUrl ? (
           <div className="space-y-3">
-            <img 
-              src={imageUrl} 
-              alt="Preview" 
-              className="w-full h-48 object-cover rounded-lg border"
-            />
+            <img src={imageUrl} alt="Preview" loading="lazy" className="w-full h-48 object-cover rounded-lg border" />
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>Image selected {imageFile ? `(${imageFile.name})` : ''}</span>
@@ -404,13 +403,14 @@ const ImageUploadComponent: React.FC<{
 
 // Menu Form Component
 const MenuForm: React.FC<{
-  initialData?: MenuItem; 
+  initialData?: MenuItem;
   diet: 'veg' | 'non-veg';
   onSubmit: (data: FormData) => void;
   onCancel: () => void;
   loading: boolean;
 }> = ({ initialData, diet, onSubmit, onCancel, loading }) => {
-  const [formData, setFormData] = useState<FormData>({
+
+  const getInitialFormData = (): FormData => ({
     category: initialData?.category || '',
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -419,12 +419,21 @@ const MenuForm: React.FC<{
     imagePublicId: initialData?.imagePublicId || '',
     deliveryTime: initialData?.deliveryTime || '',
     priceMonthly: initialData?.priceMonthly?.toString() || '',
+    // ✅ priceWeekly database se exact value load hoti hai
     priceWeekly: initialData?.priceWeekly?.toString() || '',
     priceTrial: initialData?.priceTrial?.toString() || ''
   });
 
+  const [formData, setFormData] = useState<FormData>(getInitialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData | 'imageFile', string>>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // ✅ initialData._id change hone pe form reset hota hai — edit mein sahi data dikhta hai
+  useEffect(() => {
+    setFormData(getInitialFormData());
+    setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData?._id]);
 
   const categories = [
     'Breakfast',
@@ -442,24 +451,15 @@ const MenuForm: React.FC<{
     if (!formData.category) newErrors.category = 'Category is required';
     if (!formData.title) newErrors.title = 'Title is required';
     if (!formData.description) newErrors.description = 'Description is required';
-    
-    if (!formData.imageFile && !formData.imageUrl) {
-      newErrors.imageFile = 'Please select an image';
-    }
-    
+    if (!formData.imageFile && !formData.imageUrl) newErrors.imageFile = 'Please select an image';
     if (!formData.deliveryTime) newErrors.deliveryTime = 'Delivery time is required';
-    
-    // ✅ Monthly Price Validation
+
     if (!formData.priceMonthly || isNaN(parseFloat(formData.priceMonthly)) || parseFloat(formData.priceMonthly) <= 0) {
       newErrors.priceMonthly = 'Valid monthly price is required';
     }
-    
-    // ✅ Weekly Price Validation - Mandatory
     if (!formData.priceWeekly || isNaN(parseFloat(formData.priceWeekly)) || parseFloat(formData.priceWeekly) <= 0) {
       newErrors.priceWeekly = 'Valid weekly price is required';
     }
-    
-    // ✅ Trial Price Validation - Mandatory
     if (!formData.priceTrial || isNaN(parseFloat(formData.priceTrial)) || parseFloat(formData.priceTrial) <= 0) {
       newErrors.priceTrial = 'Valid trial price is required';
     }
@@ -482,13 +482,7 @@ const MenuForm: React.FC<{
         finalImagePublicId = uploadResult.imagePublicId;
       }
 
-      const submissionData = {
-        ...formData,
-        imageUrl: finalImageUrl,
-        imagePublicId: finalImagePublicId
-      };
-
-      onSubmit(submissionData);
+      onSubmit({ ...formData, imageUrl: finalImageUrl, imagePublicId: finalImagePublicId });
     } catch (error) {
       console.error('Error during submission:', error);
       setErrors({ ...errors, imageFile: 'Failed to upload image. Please try again.' });
@@ -499,9 +493,7 @@ const MenuForm: React.FC<{
 
   const handleImageChange = (file: File | null, url: string) => {
     setFormData({ ...formData, imageFile: file, imageUrl: url });
-    if (errors.imageFile) {
-      setErrors({ ...errors, imageFile: undefined });
-    }
+    if (errors.imageFile) setErrors({ ...errors, imageFile: undefined });
   };
 
   const isVeg = diet === 'veg';
@@ -577,7 +569,7 @@ const MenuForm: React.FC<{
       {/* Image and Pricing */}
       <div className="bg-gray-50 p-6 rounded-xl">
         <h4 className="text-lg font-semibold text-gray-900 mb-4">Image & Pricing</h4>
-        
+
         <div className="mb-6">
           <ImageUploadComponent
             imageFile={formData.imageFile}
@@ -587,7 +579,6 @@ const MenuForm: React.FC<{
           />
         </div>
 
-        {/* ✅ 4 columns - All prices independent, NO auto-calculation */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -608,7 +599,6 @@ const MenuForm: React.FC<{
             {errors.deliveryTime && <p className="text-red-500 text-sm mt-1">{errors.deliveryTime}</p>}
           </div>
 
-          {/* ✅ Monthly Price - Manual Entry */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Monthly Price (₹) <span className="text-red-500">*</span>
@@ -629,7 +619,6 @@ const MenuForm: React.FC<{
             {errors.priceMonthly && <p className="text-red-500 text-sm mt-1">{errors.priceMonthly}</p>}
           </div>
 
-          {/* ✅ Weekly Price - Manual Entry */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Weekly Price (₹) <span className="text-red-500">*</span>
@@ -650,7 +639,6 @@ const MenuForm: React.FC<{
             {errors.priceWeekly && <p className="text-red-500 text-sm mt-1">{errors.priceWeekly}</p>}
           </div>
 
-          {/* ✅ Trial Price - Manual Entry */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Trial Price (₹) <span className="text-red-500">*</span>
@@ -672,13 +660,12 @@ const MenuForm: React.FC<{
           </div>
         </div>
 
-        {/* ✅ Show all 3 prices summary */}
         {formData.priceMonthly && formData.priceWeekly && formData.priceTrial && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm font-semibold text-gray-700">Price Summary:</p>
             <p className="text-sm text-gray-600 mt-1">
-              Monthly: ₹{parseFloat(formData.priceMonthly) || 0} | 
-              Weekly: ₹{parseFloat(formData.priceWeekly) || 0} | 
+              Monthly: ₹{parseFloat(formData.priceMonthly) || 0} |
+              Weekly: ₹{parseFloat(formData.priceWeekly) || 0} |
               Trial: ₹{parseFloat(formData.priceTrial) || 0}
             </p>
           </div>
@@ -726,11 +713,11 @@ const MenuCard: React.FC<{
   onView: (menu: MenuItem) => void;
 }> = ({ menu, onEdit, onDelete, onView }) => {
   const isVeg = menu.diet === 'veg';
-  
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all hover:scale-105 border border-gray-100">
       <div className="relative">
-        <img 
+        <img
           src={apiEndpoints.getImageUrl(menu.imageUrl)}
           alt={menu.title}
           className="w-full h-52 object-cover"
@@ -751,15 +738,13 @@ const MenuCard: React.FC<{
           </div>
         )}
       </div>
-      
+
       <div className="p-6">
         <h3 className={`font-bold text-xl mb-3 ${isVeg ? 'text-green-700' : 'text-red-600'}`}>
           {menu.title}
         </h3>
-        
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{menu.description}</p>
-        
-        {/* ✅ Show all 3 prices */}
+
         <div className="space-y-2 mb-4">
           <div className="flex items-center justify-between">
             <span className="text-teal-600 font-bold text-xl">
@@ -768,9 +753,7 @@ const MenuCard: React.FC<{
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-purple-600 font-semibold">
-              Weekly: ₹{menu.priceWeekly || 0}
-            </span>
+            <span className="text-purple-600 font-semibold">Weekly: ₹{menu.priceWeekly || 0}</span>
             <span className="text-gray-500">Trial: ₹{menu.priceTrial}</span>
           </div>
         </div>
@@ -779,28 +762,16 @@ const MenuCard: React.FC<{
           <Clock className="w-4 h-4 mr-2" />
           {menu.deliveryTime}
         </div>
-        
+
         <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => onView(menu)}
-            className="py-2 px-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm font-semibold"
-          >
-            <Eye className="w-4 h-4 inline mr-1" />
-            View
+          <button onClick={() => onView(menu)} className="py-2 px-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm font-semibold">
+            <Eye className="w-4 h-4 inline mr-1" />View
           </button>
-          <button
-            onClick={() => onEdit(menu)}
-            className="py-2 px-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm font-semibold"
-          >
-            <Edit className="w-4 h-4 inline mr-1" />
-            Edit
+          <button onClick={() => onEdit(menu)} className="py-2 px-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm font-semibold">
+            <Edit className="w-4 h-4 inline mr-1" />Edit
           </button>
-          <button
-            onClick={() => onDelete(menu.diet, menu.category, menu.imagePublicId)}
-            className="py-2 px-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm font-semibold"
-          >
-            <Trash2 className="w-4 h-4 inline mr-1" />
-            Delete
+          <button onClick={() => onDelete(menu.diet, menu.category, menu.imagePublicId)} className="py-2 px-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm font-semibold">
+            <Trash2 className="w-4 h-4 inline mr-1" />Delete
           </button>
         </div>
       </div>
@@ -815,11 +786,11 @@ const AdminMenuCatalogManager: React.FC = () => {
   const [nonVegMenus, setNonVegMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [notification, setNotification] = useState<{ 
-    message: string; 
-    type: 'success' | 'error' | 'info' 
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
   } | null>(null);
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -832,7 +803,6 @@ const AdminMenuCatalogManager: React.FC = () => {
         apiService.getAllVegMenus(),
         apiService.getAllNonVegMenus()
       ]);
-      
       setVegMenus(vegData);
       setNonVegMenus(nonVegData);
     } catch (error) {
@@ -862,15 +832,18 @@ const AdminMenuCatalogManager: React.FC = () => {
         title: formData.title,
         description: formData.description,
         imageUrl: formData.imageUrl,
-        imagePublicId: formData.imagePublicId,
+        imagePublicId: formData.imagePublicId || '',
         deliveryTime: formData.deliveryTime,
         priceMonthly: parseFloat(formData.priceMonthly),
+        // ✅ priceWeekly correctly parsed aur pass kiya ja raha hai
         priceWeekly: parseFloat(formData.priceWeekly),
         priceTrial: parseFloat(formData.priceTrial)
       };
 
+      console.log('📋 Submitting menu data:', menuData);
+
       const savedMenu = await apiService.createOrUpdateMenuItem(activeTab, menuData);
-      
+
       if (activeTab === 'veg') {
         const existingIndex = vegMenus.findIndex(m => m.category === savedMenu.category);
         if (existingIndex >= 0) {
@@ -908,7 +881,7 @@ const AdminMenuCatalogManager: React.FC = () => {
 
     try {
       await apiService.deleteMenuItem(diet, category, imagePublicId);
-      
+
       if (diet === 'veg') {
         setVegMenus(prev => prev.filter(m => m.category !== category));
       } else {
@@ -949,28 +922,24 @@ const AdminMenuCatalogManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
             <div className="flex items-center">
-              <div className="p-4 bg-green-100 rounded-2xl">
-                <span className="text-3xl">🌱</span>
-              </div>
+              <div className="p-4 bg-green-100 rounded-2xl"><span className="text-3xl">🌱</span></div>
               <div className="ml-6">
                 <h3 className="text-xl font-bold text-gray-900">Veg Menus</h3>
                 <p className="text-4xl font-bold text-green-600 mt-1">{vegMenus.length}</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
             <div className="flex items-center">
-              <div className="p-4 bg-red-100 rounded-2xl">
-                <span className="text-3xl">🍖</span>
-              </div>
+              <div className="p-4 bg-red-100 rounded-2xl"><span className="text-3xl">🍖</span></div>
               <div className="ml-6">
                 <h3 className="text-xl font-bold text-gray-900">Non-Veg Menus</h3>
                 <p className="text-4xl font-bold text-red-600 mt-1">{nonVegMenus.length}</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
             <div className="flex items-center">
               <div className="p-4 bg-blue-100 rounded-2xl">
@@ -992,9 +961,7 @@ const AdminMenuCatalogManager: React.FC = () => {
                 <button
                   onClick={() => setActiveTab('veg')}
                   className={`py-3 px-2 border-b-3 font-semibold text-lg transition-colors ${
-                    activeTab === 'veg'
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                    activeTab === 'veg' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   🌱 Vegetarian ({vegMenus.length})
@@ -1002,15 +969,13 @@ const AdminMenuCatalogManager: React.FC = () => {
                 <button
                   onClick={() => setActiveTab('non-veg')}
                   className={`py-3 px-2 border-b-3 font-semibold text-lg transition-colors ${
-                    activeTab === 'non-veg'
-                      ? 'border-red-500 text-red-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                    activeTab === 'non-veg' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   🍖 Non-Vegetarian ({nonVegMenus.length})
                 </button>
               </div>
-              
+
               <button
                 onClick={() => setShowCreateModal(true)}
                 className={`px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 ${
@@ -1023,7 +988,6 @@ const AdminMenuCatalogManager: React.FC = () => {
             </div>
           </div>
 
-          {/* Content */}
           <div className="p-8">
             {loading ? (
               <div className="flex justify-center items-center h-80">
@@ -1054,15 +1018,9 @@ const AdminMenuCatalogManager: React.FC = () => {
                   <MenuCard
                     key={menu._id}
                     menu={menu}
-                    onEdit={menu => {
-                      setSelectedMenu(menu);
-                      setShowEditModal(true);
-                    }}
+                    onEdit={menu => { setSelectedMenu(menu); setShowEditModal(true); }}
                     onDelete={handleDelete}
-                    onView={menu => {
-                      setSelectedMenu(menu);
-                      setShowViewModal(true);
-                    }}
+                    onView={menu => { setSelectedMenu(menu); setShowViewModal(true); }}
                   />
                 ))}
               </div>
@@ -1071,13 +1029,14 @@ const AdminMenuCatalogManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Create Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title={`Create ${activeTab === 'veg' ? 'Vegetarian' : 'Non-Vegetarian'} Menu`}
       >
         <MenuForm
+          key="create"
           diet={activeTab}
           onSubmit={handleCreateOrUpdate}
           onCancel={() => setShowCreateModal(false)}
@@ -1085,40 +1044,35 @@ const AdminMenuCatalogManager: React.FC = () => {
         />
       </Modal>
 
+      {/* Edit Modal */}
       <Modal
         isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedMenu(null);
-        }}
+        onClose={() => { setShowEditModal(false); setSelectedMenu(null); }}
         title={`Edit ${activeTab === 'veg' ? 'Vegetarian' : 'Non-Vegetarian'} Menu`}
       >
         {selectedMenu && (
+          // ✅ key={selectedMenu._id} — har menu ke liye fresh component, sahi data load hoga
           <MenuForm
+            key={selectedMenu._id}
             initialData={selectedMenu}
             diet={activeTab}
             onSubmit={handleCreateOrUpdate}
-            onCancel={() => {
-              setShowEditModal(false);
-              setSelectedMenu(null);
-            }}
+            onCancel={() => { setShowEditModal(false); setSelectedMenu(null); }}
             loading={formLoading}
           />
         )}
       </Modal>
 
+      {/* View Modal */}
       <Modal
         isOpen={showViewModal}
-        onClose={() => {
-          setShowViewModal(false);
-          setSelectedMenu(null);
-        }}
+        onClose={() => { setShowViewModal(false); setSelectedMenu(null); }}
         title="Menu Details"
       >
         {selectedMenu && (
           <div className="space-y-6">
             <div className="text-center">
-              <img 
+              <img
                 src={apiEndpoints.getImageUrl(selectedMenu.imageUrl)}
                 alt={selectedMenu.title}
                 className="w-full h-64 object-cover rounded-2xl border-2 border-gray-200 shadow-lg"
@@ -1129,7 +1083,7 @@ const AdminMenuCatalogManager: React.FC = () => {
                 </p>
               )}
             </div>
-            
+
             <div className="bg-gray-50 p-6 rounded-xl">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Information</h4>
               <div className="grid grid-cols-2 gap-6">
@@ -1167,12 +1121,9 @@ const AdminMenuCatalogManager: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <button
-              onClick={() => {
-                setShowViewModal(false);
-                setShowEditModal(true);
-              }}
+              onClick={() => { setShowViewModal(false); setShowEditModal(true); }}
               className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 ${
                 selectedMenu.diet === 'veg' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
               }`}

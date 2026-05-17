@@ -1,5 +1,5 @@
 // components/OrderSkip.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Calendar from 'react-calendar';
 import { 
   Calendar as CalendarIcon, 
@@ -15,22 +15,10 @@ import {
 } from 'lucide-react';
 import 'react-calendar/dist/Calendar.css';
 import { apiEndpoints } from '../configapi/api';
+import { useAuth } from '../context/AuthContext';
 
 // Define the Value type that react-calendar uses
 type Value = Date | null | [Date | null, Date | null];
-
-interface LocalUser {
-  id: string;
-  name: string;
-  phone: string;
-  address: {
-    district: string;
-    block: string;
-    city: string;
-    homeLodgeName: string;
-  };
-  role: string;
-}
 
 interface UserOrder {
   _id: string;
@@ -61,7 +49,7 @@ interface MealAvailability {
 
 const OrderSkip: React.FC = () => {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [user, setUser] = useState<LocalUser | null>(null);
+  const { user } = useAuth();
   const [userOrders, setUserOrders] = useState<UserOrder[]>([]);
   const [foodPreferences, setFoodPreferences] = useState<Record<string, FoodPreference>>({});
   const [mealAvailability, setMealAvailability] = useState<MealAvailability>({
@@ -72,49 +60,23 @@ const OrderSkip: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Load user data
-  useEffect(() => {
-    const loadUserData = () => {
-      const savedUser = sessionStorage.getItem('user');
-      if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        fetchUserOrders(userData.phone);
-      } else {
-        window.location.href = '/';
-      }
-    };
-
-    loadUserData();
-  }, []);
-
-  // Fetch user's active orders
-  const fetchUserOrders = async (phone: string) => {
+  const fetchUserOrders = useCallback(async (phone: string) => {
     try {
       setLoading(true);
       const response = await fetch(`${apiEndpoints.customerOrders(phone)}?status=active`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setUserOrders(data.data || []);
-        
-        // Determine meal availability from active orders
-        const availability = {
-          breakfast: false,
-          lunch: false,
-          dinner: false
-        }; 
 
+        const availability = { breakfast: false, lunch: false, dinner: false };
         data.data.forEach((order: UserOrder) => {
           const category = order.menuCategory.toLowerCase();
           if (category.includes('breakfast')) availability.breakfast = true;
           if (category.includes('lunch')) availability.lunch = true;
           if (category.includes('dinner')) availability.dinner = true;
         });
-
         setMealAvailability(availability);
-        
-        // Fetch existing food preferences
         await fetchFoodPreferences(phone);
       }
     } catch (error) {
@@ -122,7 +84,15 @@ const OrderSkip: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserOrders(user.phone);
+    } else {
+      window.location.href = '/';
+    }
+  }, [user, fetchUserOrders]);
 
   // Fetch user's food preferences
   const fetchFoodPreferences = async (phone: string) => {

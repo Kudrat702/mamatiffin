@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, IndianRupee, RefreshCw, User, LogIn } from 'lucide-react';
 import { apiEndpoints } from '../configapi/api';
+import { getCache, setCache, TTL } from '../utils/apiCache';
+import { useAuth } from '../context/AuthContext';
 
 // Menu interface
 interface WeeklyMenuItem {
@@ -25,47 +27,15 @@ interface MenuDetails {
   weeklyMenu: WeeklyMenuItem[];
 }
 
-interface User {
-  name?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
-}
-
 const MenuDetailsPage: React.FC = () => {
   const { diet, category } = useParams<{ diet: string; category: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [menuData, setMenuData] = useState<MenuDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const loadUserData = () => {
-      const savedUser = sessionStorage.getItem('user');
-      const savedToken = sessionStorage.getItem('token');
-      
-      if (savedUser && savedToken) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    loadUserData();
-
-    const handleAuthChange = () => {
-      loadUserData();
-    };
-
-    window.addEventListener('userAuthChanged', handleAuthChange);
-
     const fetchMenuData = async () => {
       try {
         setLoading(true);
@@ -89,20 +59,54 @@ const MenuDetailsPage: React.FC = () => {
         const url = apiEndpoints.menuDetails(diet, category);
         console.log('API URL:', url);
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        type RawMenuData = {
+          _id: string; title?: string; menuType: string; category?: string;
+          description?: string; deliveryTime?: string; imageUrl?: string; imagePublicId?: string;
+          price?: number; priceMonthly?: number; priceWeekly?: number;
+          priceTrial?: number | { value?: number; price?: number; amount?: number; [key: string]: unknown } | null; weeklyMenu?: unknown;
+        };
+        type MenuApiResponse = { success: boolean; data: RawMenuData; message?: string };
+        const cached = getCache<MenuApiResponse>(url);
+        let data: MenuApiResponse;
 
-        console.log('Response status:', response.status);
+        if (cached) {
+          data = cached;
+        } else {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Raw API Response:', data);
-          
-          if (data.success && data.data) {
+          console.log('Response status:', response.status);
+
+          if (!response.ok) {
+            let errorMessage = `Server error: ${response.status}`;
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorMessage;
+            } catch {
+              const errorText = await response.text();
+              errorMessage = errorText || errorMessage;
+            }
+            console.error('Error response:', errorMessage);
+            if (response.status === 404) {
+              throw new Error(`Menu not found for ${formatDietPreference(diet)} ${formatCategoryName(category)}`);
+            } else if (response.status === 400) {
+              throw new Error(`Invalid request: ${errorMessage}`);
+            } else {
+              throw new Error(errorMessage);
+            }
+          }
+
+          data = await response.json();
+          if (data.success) setCache(url, data, TTL.MENU);
+        }
+
+        console.log('Raw API Response:', data);
+
+        if (data.success && data.data) {
             const rawMenuData = data.data;
             console.log('Raw menu data from API:', rawMenuData);
             
@@ -117,10 +121,10 @@ const MenuDetailsPage: React.FC = () => {
                 }));
               } else if (typeof rawMenuData.weeklyMenu === 'object') {
                 const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-                const weeklyMenuObj = rawMenuData.weeklyMenu;
+                const weeklyMenuObj = rawMenuData.weeklyMenu as Record<string, string>;
                 normalizedWeeklyMenu = weekDays.map(day => ({
                   day: day.charAt(0).toUpperCase() + day.slice(1),
-                  items: weeklyMenuObj[day] 
+                  items: weeklyMenuObj[day]
                     ? weeklyMenuObj[day].split(',').map((item: string) => item.trim()).filter(Boolean)
                     : []
                 }));
@@ -135,7 +139,7 @@ const MenuDetailsPage: React.FC = () => {
               }));
             }
 
-            // ✅ UPDATED: NO fallback calculation - sirf admin's exact value use karte hain
+            // NO fallback calculation - sirf admin's exact value use karte hain
             const normalizedMenuData: MenuDetails = {
               _id: rawMenuData._id,
               title: rawMenuData.title || formatCategoryName(rawMenuData.menuType),
@@ -167,27 +171,6 @@ const MenuDetailsPage: React.FC = () => {
           } else {
             throw new Error(data.message || 'Menu data not found in response');
           }
-        } else {
-          let errorMessage = `Server error: ${response.status}`;
-          
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-          } catch {
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
-          }
-          
-          console.error('Error response:', errorMessage);
-          
-          if (response.status === 404) {
-            throw new Error(`Menu not found for ${formatDietPreference(diet)} ${formatCategoryName(category)}`);
-          } else if (response.status === 400) {
-            throw new Error(`Invalid request: ${errorMessage}`);
-          } else {
-            throw new Error(errorMessage);
-          }
-        }
       } catch (err) {
         console.error('Error fetching menu:', err);
         setError(err instanceof Error ? err.message : 'Failed to load menu details. Please try again.');
@@ -199,9 +182,6 @@ const MenuDetailsPage: React.FC = () => {
     console.log('useEffect triggered with params:', { diet, category });
     fetchMenuData();
 
-    return () => {
-      window.removeEventListener('userAuthChanged', handleAuthChange);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diet, category]);
 
@@ -231,6 +211,7 @@ const MenuDetailsPage: React.FC = () => {
 
           if (response.ok) {
             const data = await response.json();
+            if (data.success) setCache(url, data, TTL.MENU);
             if (data.success && data.data) {
               const rawMenuData = data.data;
               
@@ -243,10 +224,10 @@ const MenuDetailsPage: React.FC = () => {
                   }));
                 } else if (typeof rawMenuData.weeklyMenu === 'object') {
                   const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-                  const weeklyMenuObj = rawMenuData.weeklyMenu;
+                  const weeklyMenuObj = rawMenuData.weeklyMenu as Record<string, string>;
                   normalizedWeeklyMenu = weekDays.map(day => ({
                     day: day.charAt(0).toUpperCase() + day.slice(1),
-                    items: weeklyMenuObj[day] 
+                    items: weeklyMenuObj[day]
                       ? weeklyMenuObj[day].split(',').map((item: string) => item.trim()).filter(Boolean)
                       : []
                   }));
@@ -376,9 +357,9 @@ const MenuDetailsPage: React.FC = () => {
       customerInfo: {
         name: user.name || '',
         phone: user.phone || '',
-        email: user.email || '',
+        email: '',
         address: user.address || '',
-        city: user.city || ''
+        city: user.address?.city || ''
       },
       subscriptionType: 'monthly',
       startDate: new Date().toISOString(),
@@ -449,9 +430,9 @@ const MenuDetailsPage: React.FC = () => {
       customerInfo: {
         name: user.name || '',
         phone: user.phone || '',
-        email: user.email || '',
+        email: '',
         address: user.address || '',
-        city: user.city || ''
+        city: user.address?.city || ''
       },
       subscriptionType: 'weekly',
       startDate: new Date().toISOString(),
@@ -520,9 +501,9 @@ const MenuDetailsPage: React.FC = () => {
       customerInfo: {
         name: user.name || '',
         phone: user.phone || '',
-        email: user.email || '',
+        email: '',
         address: user.address || '',
-        city: user.city || ''
+        city: user.address?.city || ''
       },
       subscriptionType: 'trial',
       trialDuration: '1-day',
@@ -715,6 +696,7 @@ const MenuDetailsPage: React.FC = () => {
             <img
               src={apiEndpoints.getImageUrl(menuData.imageUrl || '')}
               alt={`${formatDietPreference(menuData.category)} ${formatCategoryName(menuData.menuType)}`}
+              loading="eager"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;

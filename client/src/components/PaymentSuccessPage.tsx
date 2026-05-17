@@ -1,16 +1,16 @@
-// components/PaymentSuccessPage.tsx
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { 
-  CheckCircle, 
-  Calendar, 
-  IndianRupee, 
-  Clock, 
-  User, 
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import {
+  CheckCircle,
+  Calendar,
+  IndianRupee,
+  Clock,
+  User,
   ArrowRight,
   Download,
-  Share2,
-  Home
+  ShoppingBag,
+  Home,
+  MapPin,
 } from 'lucide-react';
 import { apiEndpoints } from '../configapi/api';
 
@@ -18,300 +18,326 @@ interface PaymentDetails {
   orderId: string;
   paymentId: string;
   menuTitle: string;
-  subscriptionType: 'monthly' | 'trial';
+  subscriptionType: 'monthly' | 'trial' | 'weekly';
   totalAmount: number;
   customerName: string;
+  customerPhone?: string;
+  address?: {
+    city?: string;
+    homeLodgeName?: string;
+  };
   startDate: string;
   endDate: string;
   dietaryPreference: string;
   deliveryTime: string;
 }
 
+const getSubscriptionLabel = (type: PaymentDetails['subscriptionType']) => {
+  if (type === 'trial') return '1 Day Trial';
+  if (type === 'weekly') return '7 Days Weekly Plan';
+  return 'Monthly Plan (30 Days)';
+};
+
 const PaymentSuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(15);
 
-  // Get payment details from URL parameters
   useEffect(() => {
     const orderId = searchParams.get('orderId');
     const paymentId = searchParams.get('paymentId');
-    
+
     if (orderId && paymentId) {
-      fetchPaymentDetails(orderId);
+      fetchPaymentDetails(orderId, paymentId);
     } else {
-      // If no proper parameters, redirect after a short delay
-      setTimeout(() => {
-        navigate('/user/dashboard');
-      }, 3000);
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, []);
 
-  // Countdown timer for auto redirect
   useEffect(() => {
-    if (paymentDetails && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      
+    if (!loading && countdown > 0) {
+      const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (countdown === 0) {
-      navigate('/user/dashboard');
     }
-  }, [countdown, paymentDetails, navigate]);
+    if (countdown === 0) navigate('/my-orders');
+  }, [countdown, loading, navigate]);
 
-  const fetchPaymentDetails = async (orderId: string) => {
+  const fetchPaymentDetails = async (orderId: string, paymentId: string) => {
     try {
       const response = await fetch(apiEndpoints.paymentStatus(orderId));
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data) {
+        if (data.success && data.data?.orderDetails) {
+          const d = data.data.orderDetails;
           setPaymentDetails({
-            orderId: orderId,
-            paymentId: searchParams.get('paymentId') || '',
-            menuTitle: data.data.orderDetails.menuTitle,
-            subscriptionType: data.data.orderDetails.subscriptionType,
-            totalAmount: data.data.orderDetails.totalAmount,
-            customerName: data.data.orderDetails.customerName,
-            startDate: data.data.orderDetails.startDate,
-            endDate: data.data.orderDetails.endDate,
-            dietaryPreference: data.data.orderDetails.dietaryPreference || 'veg',
-            deliveryTime: data.data.orderDetails.deliveryTime || 'Standard'
+            orderId,
+            paymentId,
+            menuTitle: d.menuTitle || 'Tiffin Plan',
+            subscriptionType: d.subscriptionType || 'monthly',
+            totalAmount: d.totalAmount || 0,
+            customerName: d.customerName || '',
+            customerPhone: d.customerPhone,
+            address: d.address,
+            startDate: d.startDate,
+            endDate: d.endDate,
+            dietaryPreference: d.dietaryPreference || 'veg',
+            deliveryTime: d.deliveryTime || '',
           });
         }
       }
-    } catch (error) {
-      console.error('Error fetching payment details:', error);
+    } catch {
+      // Show page even if fetch fails
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-IN', {
-      weekday: 'long',
+      weekday: 'short',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
-  const handleGoToDashboard = () => {
-    navigate('/user/dashboard');
-  };
-
-
   const handleDownloadReceipt = () => {
-    // Create a simple receipt download
-    const receiptContent = `
-FOOD DELIVERY SERVICE - PAYMENT RECEIPT
-=====================================
+    const d = paymentDetails;
+    const lines = [
+      '╔══════════════════════════════════════════╗',
+      '║         MAMATIFFIN — PAYMENT RECEIPT         ║',
+      '╚══════════════════════════════════════════╝',
+      '',
+      `  Date       : ${new Date().toLocaleDateString('en-IN')}`,
+      `  Order ID   : ${d?.orderId ?? '—'}`,
+      `  Payment ID : ${d?.paymentId ?? '—'}`,
+      '',
+      '──────────────────────────────────────────',
+      '  ORDER DETAILS',
+      '──────────────────────────────────────────',
+      `  Customer   : ${d?.customerName ?? '—'}`,
+      `  Menu       : ${d?.menuTitle ?? '—'}`,
+      `  Plan       : ${getSubscriptionLabel(d?.subscriptionType ?? 'monthly')}`,
+      `  Delivery   : ${d?.deliveryTime ?? '—'}`,
+      `  Start Date : ${d?.startDate ? formatDate(d.startDate) : '—'}`,
+      `  End Date   : ${d?.endDate ? formatDate(d.endDate) : '—'}`,
+      '',
+      '──────────────────────────────────────────',
+      `  AMOUNT PAID: ₹${d?.totalAmount ?? 0}`,
+      '──────────────────────────────────────────',
+      '',
+      '  Thank you for choosing MamaTiffin!',
+      '  For support: mamatiffin.com/contact',
+      '',
+    ];
 
-Order ID: ${paymentDetails?.orderId}
-Payment ID: ${paymentDetails?.paymentId}
-Customer: ${paymentDetails?.customerName}
-Menu: ${paymentDetails?.menuTitle}
-Amount Paid: ₹${paymentDetails?.totalAmount}
-Subscription: ${paymentDetails?.subscriptionType === 'trial' ? '1 Day Trial' : 'Monthly Plan'}
-Start Date: ${paymentDetails?.startDate ? formatDate(paymentDetails.startDate) : 'N/A'}
-End Date: ${paymentDetails?.endDate ? formatDate(paymentDetails.endDate) : 'N/A'}
-
-Thank you for your order!
-    `;
-
-    const element = document.createElement('a');
-    const file = new Blob([receiptContent], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
-    element.download = `receipt-${paymentDetails?.orderId}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
-  const handleShareSuccess = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Food Delivery Order Confirmed!',
-          text: `I just subscribed to ${paymentDetails?.menuTitle} for ₹${paymentDetails?.totalAmount}. Order ID: ${paymentDetails?.orderId}`,
-          url: window.location.href
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-      }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(
-        `Food Delivery Order Confirmed! Menu: ${paymentDetails?.menuTitle}, Amount: ₹${paymentDetails?.totalAmount}, Order ID: ${paymentDetails?.orderId}`
-      );
-      alert('Order details copied to clipboard!');
-    }
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `MamaTiffin-Receipt-${d?.orderId ?? 'order'}.txt`;
+    link.click();
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#f0fdf9] to-[#e6f7f5] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading payment details...</p>
+          <div className="w-14 h-14 border-4 border-[#328c81] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Loading your order details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        {/* Success Animation */}
+    <div className="min-h-screen bg-gradient-to-br from-[#f0fdf9] to-[#e6f7f5] flex items-center justify-center p-4 py-10">
+      <div className="max-w-xl w-full">
+
+        {/* ── Success Header ── */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-6 animate-bounce">
-            <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-[#328c81] rounded-full mb-5 shadow-lg">
+            <CheckCircle className="w-12 h-12 text-white" strokeWidth={2} />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-          <p className="text-lg text-gray-600">Thank you for your order. Your subscription is now active.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+          <p className="text-gray-500">
+            Aapka order confirm ho gaya hai. Delivery schedule ke according tiffin milega.
+          </p>
         </div>
 
-        {/* Order Details Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          {paymentDetails ? (
-            <>
-              {/* Order Summary */}
-              <div className="border-b border-gray-200 pb-6 mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">Order Confirmation</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Customer</p>
-                        <p className="font-semibold">{paymentDetails.customerName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Subscription Type</p>
-                        <p className="font-semibold">
-                          {paymentDetails.subscriptionType === 'trial' ? '1 Day Trial' : 'Monthly Plan'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Clock className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Delivery Time</p>
-                        <p className="font-semibold">{paymentDetails.deliveryTime}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <IndianRupee className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Amount Paid</p>
-                        <p className="font-semibold text-green-600 text-xl">₹{paymentDetails.totalAmount}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className={`inline-block w-3 h-3 rounded-full ${
-                        paymentDetails.dietaryPreference === 'veg' ? 'bg-green-400' : 'bg-red-400'
-                      }`}></span>
-                      <div>
-                        <p className="text-sm text-gray-500">Menu Type</p>
-                        <p className="font-semibold">{paymentDetails.menuTitle}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* ── Order Card ── */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-5">
 
-              {/* Subscription Period */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Subscription Period</h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Start Date</p>
-                    <p className="font-medium">{formatDate(paymentDetails.startDate)}</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">End Date</p>
-                    <p className="font-medium">{formatDate(paymentDetails.endDate)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Transaction Details */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Transaction Details</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Order ID:</span>
-                    <span className="font-mono bg-white px-2 py-1 rounded">{paymentDetails.orderId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Payment ID:</span>
-                    <span className="font-mono bg-white px-2 py-1 rounded">{paymentDetails.paymentId}</span>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Payment confirmed! Your order is being processed.</p>
+          {/* Card Header */}
+          <div className="bg-[#328c81] px-6 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-white/70 text-sm">Order Confirmed</p>
+              <p className="text-white font-bold text-lg">
+                {paymentDetails?.menuTitle ?? 'Tiffin Plan'}
+              </p>
             </div>
-          )}
+            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+              paymentDetails?.dietaryPreference === 'veg'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {paymentDetails?.dietaryPreference === 'veg' ? '🟢 Veg' : '🔴 Non-Veg'}
+            </span>
+          </div>
+
+          <div className="p-6 space-y-5">
+
+            {/* Amount */}
+            <div className="flex items-center justify-between bg-[#f0fdf9] rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3">
+                <IndianRupee className="w-5 h-5 text-[#328c81]" />
+                <span className="text-gray-600 font-medium">Amount Paid</span>
+              </div>
+              <span className="text-2xl font-bold text-[#328c81]">
+                ₹{paymentDetails?.totalAmount ?? 0}
+              </span>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-start gap-3">
+                <User className="w-4 h-4 text-[#328c81] mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-400">Customer</p>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {paymentDetails?.customerName || '—'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Calendar className="w-4 h-4 text-[#328c81] mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-400">Plan</p>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {getSubscriptionLabel(paymentDetails?.subscriptionType ?? 'monthly')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Clock className="w-4 h-4 text-[#328c81] mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-400">Delivery Time</p>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {paymentDetails?.deliveryTime || '—'}
+                  </p>
+                </div>
+              </div>
+
+              {paymentDetails?.address?.city && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-[#328c81] mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Location</p>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {paymentDetails.address.homeLodgeName
+                        ? `${paymentDetails.address.homeLodgeName}, `
+                        : ''}
+                      {paymentDetails.address.city}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Subscription Period */}
+            {paymentDetails?.startDate && paymentDetails?.endDate && (
+              <div className="border border-[#328c81]/20 rounded-xl p-4">
+                <p className="text-xs text-gray-400 mb-3 font-medium uppercase tracking-wide">
+                  Subscription Period
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400">Start</p>
+                    <p className="text-sm font-bold text-gray-800">
+                      {formatDate(paymentDetails.startDate)}
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#328c81]" />
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400">End</p>
+                    <p className="text-sm font-bold text-gray-800">
+                      {formatDate(paymentDetails.endDate)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transaction IDs */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">
+                Transaction Details
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Order ID</span>
+                <span className="text-xs font-mono bg-white border border-gray-200 px-2 py-1 rounded">
+                  {paymentDetails?.orderId
+                    ? `...${paymentDetails.orderId.slice(-10)}`
+                    : searchParams.get('orderId')?.slice(-10) ?? '—'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Payment ID</span>
+                <span className="text-xs font-mono bg-white border border-gray-200 px-2 py-1 rounded">
+                  {paymentDetails?.paymentId
+                    ? `...${paymentDetails.paymentId.slice(-12)}`
+                    : searchParams.get('paymentId')?.slice(-12) ?? '—'}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <button
-            onClick={handleGoToDashboard}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
+        {/* ── Action Buttons ── */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <Link
+            to="/my-orders"
+            className="flex items-center justify-center gap-2 bg-[#328c81] hover:bg-[#2a7568] text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg"
           >
-            <Home className="w-5 h-5" />
-            <span>Go to Dashboard</span>
-          </button>
-          
+            <ShoppingBag className="w-4 h-4" />
+            My Orders
+          </Link>
+
           <button
             onClick={handleDownloadReceipt}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
+            className="flex items-center justify-center gap-2 bg-white border border-[#328c81] text-[#328c81] hover:bg-[#f0fdf9] font-semibold py-3 px-4 rounded-xl transition-all"
           >
-            <Download className="w-5 h-5" />
-            <span>Download Receipt</span>
+            <Download className="w-4 h-4" />
+            Receipt
           </button>
-          
-          <button
-            onClick={handleShareSuccess}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
+
+          <Link
+            to="/home"
+            className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-xl transition-all col-span-2"
           >
-            <Share2 className="w-5 h-5" />
-            <span>Share</span>
-          </button>
+            <Home className="w-4 h-4" />
+            Go to Home
+          </Link>
         </div>
 
-        {/* Auto-redirect notification */}
-        {paymentDetails && countdown > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-            <p className="text-sm text-yellow-800">
-              Automatically redirecting to dashboard in {countdown} seconds...
-              <button 
-                onClick={() => setCountdown(0)} 
-                className="ml-2 underline hover:no-underline"
-              >
-                Skip
-              </button>
-            </p>
-          </div>
-        )}
-
-        {/* Additional Info */}
-        <div className="text-center text-sm text-gray-500 mt-6">
-          <p>You will receive a confirmation message shortly.</p>
-          <p>For any queries, contact our support team.</p>
+        {/* ── Auto Redirect ── */}
+        <div className="text-center">
+          <p className="text-sm text-gray-400">
+            My Orders pe automatically redirect hoga{' '}
+            <span className="font-bold text-[#328c81]">{countdown}s</span> mein
+            {' · '}
+            <button
+              onClick={() => navigate('/my-orders')}
+              className="underline text-[#328c81] hover:text-[#2a7568]"
+            >
+              Abhi jao
+            </button>
+          </p>
         </div>
       </div>
     </div>

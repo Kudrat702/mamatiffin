@@ -22,9 +22,10 @@ const OurStory: React.FC = () => {
         {/* Hero Image Section */}
         <div className="text-center mb-12">
           <div className="relative inline-block">
-            <img 
-              src="/story.png" 
-              alt="MamaTiffin Story - From Kitchen Conflicts to Food Solutions" 
+            <img
+              src="/story.png"
+              alt="MamaTiffin Story - From Kitchen Conflicts to Food Solutions"
+              loading="lazy"
               className="mx-auto w-full max-w-4xl h-80 object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
               style={{ 
                 filter: 'brightness(0.95) contrast(1.1)',

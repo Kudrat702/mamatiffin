@@ -1,79 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Leaf, Drumstick } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// User interface matching AuthContext
-interface User {
-  id: string;
-  name: string;
-  phone: string;
-  address: {
-    district: string;
-    block: string;
-    city: string;
-    homeLodgeName: string;
-  };
-  role: string;
-}
-
 const VegNonVegCards: React.FC = () => {
   const navigate = useNavigate();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
-  
-  // Load user data from localStorage on component mount
-  useEffect(() => {
-    const checkUserLogin = () => {
-      // First priority: Check AuthContext
-      if (authUser && isAuthenticated) {
-        setUser(authUser as User);
-        return;
-      }
-
-      // Second priority: Check localStorage
-      const savedUser = localStorage.getItem('user');
-      const savedToken = localStorage.getItem('token');
-      
-      if (savedUser && savedToken) {
-        try {
-          const parsedUser = JSON.parse(savedUser) as User;
-          setUser(parsedUser);
-        } catch (error) {
-          console.error('Error parsing user data from localStorage:', error);
-          // Clear corrupted data
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    // Check on mount
-    checkUserLogin();
-
-    // Listen for storage changes (when user logs in/out from another tab)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'user' || e.key === 'token') {
-        checkUserLogin();
-      }
-    };
-
-    // Listen for custom events (for same-tab login/logout from header)
-    const handleAuthChange = () => {
-      checkUserLogin();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('userAuthChanged', handleAuthChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('userAuthChanged', handleAuthChange);
-    };
-  }, [authUser, isAuthenticated]);
+  const { user } = useAuth();
   
   // Card click handler with redirect logic
   const handleCardClick = (menuType: 'veg' | 'non-veg') => {

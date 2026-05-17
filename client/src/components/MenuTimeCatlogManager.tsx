@@ -395,9 +395,10 @@ const ImageUploadComponent: React.FC<{
           </div>
         ) : imageUrl ? (
           <div className="space-y-2">
-            <img 
-              src={imageUrl} 
-              alt="Preview" 
+            <img
+              src={imageUrl}
+              alt="Preview"
+              loading="lazy"
               className="w-full h-32 object-cover rounded-md border"
             />
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
@@ -621,11 +622,11 @@ const ItemCard: React.FC<{
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
-        <img 
-          src={apiEndpoints.getImageUrl(item.imageUrl)} 
+        <img
+          src={apiEndpoints.getImageUrl(item.imageUrl)}
           alt={item.category}
-          className="w-full h-48 object-cover"
           loading="lazy"
+          className="w-full h-48 object-cover"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = 'https://via.placeholder.com/400x300?text=No+Image';
@@ -1016,9 +1017,10 @@ const MenuTimeCatalogManager: React.FC = () => {
         {selectedItem && (
           <div className="space-y-4">
             <div>
-              <img 
-                src={apiEndpoints.getImageUrl(selectedItem.imageUrl)} 
+              <img
+                src={apiEndpoints.getImageUrl(selectedItem.imageUrl)}
                 alt={selectedItem.category}
+                loading="lazy"
                 className="w-full h-48 object-cover rounded-md border"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;

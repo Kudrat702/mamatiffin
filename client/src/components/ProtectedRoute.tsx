@@ -201,9 +201,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole }
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setShowAuthModal(false);
-    
-    // Dispatch event to notify other components
-    window.dispatchEvent(new CustomEvent('userAuthChanged'));
   };
 
   // ============================================

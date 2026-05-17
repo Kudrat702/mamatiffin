@@ -12,6 +12,7 @@ import type {
   BookClass,
   Book,
 } from '../configapi/api';
+import { useAuth } from '../context/AuthContext';
 
 const BuyBooksPage: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -22,12 +23,7 @@ const BuyBooksPage: React.FC = () => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [imageIdx, setImageIdx] = useState<number>(0);
   const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [user, setUser] = useState<{ id: string; name: string } | null>(null);
-
-  useEffect(() => {
-    const savedUser = sessionStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+  const { user } = useAuth();
 
   const subjectOptions = useMemo<string[]>(() => {
     if (!selectedClass) return [];
@@ -155,7 +151,7 @@ const BuyBooksPage: React.FC = () => {
                 {books.map((book) => (
                   <div key={book._id} onClick={() => handleViewDetails(book)} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer group">
                     <div className="aspect-square overflow-hidden bg-gray-100 relative">
-                      <img src={book.images[0]?.url} alt={book.bookName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={book.images[0]?.url} alt={book.bookName} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-semibold text-gray-700">
                         {book.class} • {book.subject}
                       </div>
@@ -189,7 +185,7 @@ const BuyBooksPage: React.FC = () => {
 
               <div className="p-5 space-y-5">
                 <div className="relative aspect-video bg-gray-100 rounded-xl overflow-hidden">
-                  <img src={selectedBook.images[imageIdx]?.url} alt={selectedBook.bookName} className="w-full h-full object-contain" />
+                  <img src={selectedBook.images[imageIdx]?.url} alt={selectedBook.bookName} loading="lazy" className="w-full h-full object-contain" />
                   {selectedBook.images.length > 1 && (
                     <>
                       <button onClick={() => setImageIdx((i) => (i === 0 ? selectedBook.images.length - 1 : i - 1))} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow hover:bg-white">

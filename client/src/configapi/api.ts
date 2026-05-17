@@ -347,6 +347,11 @@ export const apiEndpoints = {
   createPayment: `${API_BASE_URL}/api/payments/create-order`,
   verifyPayment: `${API_BASE_URL}/api/payments/verify`,
   paymentStatus: (orderId: string): string => `${API_BASE_URL}/api/payments/status/${orderId}`,
+
+  // NOTIFICATIONS
+  notificationVapidKey: `${API_BASE_URL}/api/notifications/vapid-public-key`,
+  notificationSubscribe: `${API_BASE_URL}/api/notifications/subscribe`,
+  notificationUnsubscribe: `${API_BASE_URL}/api/notifications/unsubscribe`,
   
   // MESSAGES
   messages: `${API_BASE_URL}/api/messages`,
@@ -402,8 +407,21 @@ export const apiEndpoints = {
   adminRoomToggle: (id: string): string => `${API_BASE_URL}/api/admin/rooms/${id}/toggle`,
   
   // UTILITY FUNCTIONS
-  getImageUrl: (imagePath: string): string => {
+  // width: display width in px (default 800). thumbnail: true for small previews (400px).
+  getImageUrl: (imagePath: string, options?: { width?: number; thumbnail?: boolean }): string => {
     if (!imagePath) return '';
+
+    // Cloudinary URL — inject WebP + quality + size transformations
+    if (imagePath.includes('res.cloudinary.com') && imagePath.includes('/upload/')) {
+      const w = options?.width ?? (options?.thumbnail ? 400 : 800);
+      const transforms = `f_auto,q_auto,w_${w},c_limit`;
+      // Avoid double-injecting if transforms already present
+      if (!imagePath.includes('f_auto')) {
+        return imagePath.replace('/upload/', `/upload/${transforms}/`);
+      }
+      return imagePath;
+    }
+
     if (imagePath.startsWith('http')) return imagePath;
     if (imagePath.startsWith('/uploads')) return `${API_BASE_URL}${imagePath}`;
     return `${API_BASE_URL}/uploads/${imagePath}`;

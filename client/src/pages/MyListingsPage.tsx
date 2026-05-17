@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Trash2, Tag, RotateCcw, Loader2, BookOpen, AlertTriangle, Plus } from 'lucide-react';
 import type { Book } from '../configapi/api';
 import {
@@ -11,21 +12,18 @@ import {
 const MyListingsPage: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [token, setToken] = useState<string>('');
+  const { token, isAuthenticated, loading: authLoading } = useAuth();
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold'; bookId: string; bookName: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<'all' | 'available' | 'sold'>('all');
 
   useEffect(() => {
-    const savedUser = sessionStorage.getItem('user');
-    const savedToken = sessionStorage.getItem('token');
-    if (!savedUser || !savedToken) {
+    if (authLoading) return;
+    if (!isAuthenticated || !token) {
       sessionStorage.setItem('redirectAfterLogin', '/books/my-listings');
       window.location.href = '/home';
-      return;
     }
-    setToken(savedToken);
-  }, []);
+  }, [isAuthenticated, token, authLoading]);
 
   const refreshList = async (currentToken: string): Promise<void> => {
     try {
@@ -132,7 +130,7 @@ const MyListingsPage: React.FC = () => {
             {filteredBooks.map((book) => (
               <div key={book._id} className={`bg-white rounded-2xl shadow-md overflow-hidden ${book.status === 'Sold' ? 'opacity-75' : ''}`}>
                 <div className="aspect-square overflow-hidden bg-gray-100 relative">
-                  <img src={book.images[0]?.url} alt={book.bookName} className={`w-full h-full object-cover ${book.status === 'Sold' ? 'grayscale' : ''}`} />
+                  <img src={book.images[0]?.url} alt={book.bookName} loading="lazy" className={`w-full h-full object-cover ${book.status === 'Sold' ? 'grayscale' : ''}`} />
                   {book.status === 'Sold' && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                       <span className="bg-red-500 text-white px-4 py-1.5 rounded-lg font-bold text-lg shadow-lg">SOLD</span>

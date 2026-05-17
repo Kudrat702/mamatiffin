@@ -14,6 +14,13 @@ export class MenuAdminService {
       deliveryTime: body.deliveryTime || MENU_CONFIG.DEFAULT_DELIVERY_TIME,
       priceMonthly: body.priceMonthly || body.price ||
         (body.category === 'veg' ? MENU_CONFIG.DEFAULT_VEG_PRICE : MENU_CONFIG.DEFAULT_NON_VEG_PRICE),
+      // ✅ FIX: priceWeekly explicitly include karo
+      // Pehle yeh missing tha — ...body se aata tha lekin
+      // multipart/form-data mein string hoti hai toh parseFloat zaroori hai
+      // Agar 0 hai toh bhi 0 rakho, undefined nahi
+      priceWeekly: body.priceWeekly !== undefined && body.priceWeekly !== null
+        ? parseFloat(body.priceWeekly.toString())
+        : 0,
       priceTrial: body.priceTrial ||
         (body.price ? Math.floor(body.price * MENU_CONFIG.TRIAL_PRICE_MULTIPLIER) :
         (body.category === 'veg' ?

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Upload, X, Loader2, CheckCircle, BookOpen } from 'lucide-react';
 import {
@@ -12,21 +13,26 @@ import type {
   BookCondition,
 } from '../configapi/api';
 
-interface LocalUser {
-  id: string;
-  name: string;
-  phone: string;
-  address?: {
-    district?: string;
-    block?: string;
-    city?: string;
-    homeLodgeName?: string;
-  };
-}
-
 const SellBookPage: React.FC = () => {
-  const [user, setUser] = useState<LocalUser | null>(null);
-  const [token, setToken] = useState<string>('');
+  const { user, token, isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated || !token) {
+      sessionStorage.setItem('redirectAfterLogin', '/books/sell');
+      window.location.href = '/home';
+      return;
+    }
+    if (user) {
+      setSellerName(user.name || '');
+      setSellerPhone(user.phone || '');
+      if (user.address) {
+        const addr = [user.address.homeLodgeName, user.address.block, user.address.city, user.address.district]
+          .filter(Boolean).join(', ');
+        setSellerAddress(addr);
+      }
+    }
+  }, [isAuthenticated, token, user, authLoading]);
 
   const [bookName, setBookName] = useState<string>('');
   const [price, setPrice] = useState<string>('');
@@ -44,25 +50,6 @@ const SellBookPage: React.FC = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    const savedUser = sessionStorage.getItem('user');
-    const savedToken = sessionStorage.getItem('token');
-    if (!savedUser || !savedToken) {
-      sessionStorage.setItem('redirectAfterLogin', '/books/sell');
-      window.location.href = '/home';
-      return;
-    }
-    const u: LocalUser = JSON.parse(savedUser);
-    setUser(u);
-    setToken(savedToken);
-    setSellerName(u.name || '');
-    setSellerPhone(u.phone || '');
-    if (u.address) {
-      const addr = [u.address.homeLodgeName, u.address.block, u.address.city, u.address.district]
-        .filter(Boolean).join(', ');
-      setSellerAddress(addr);
-    }
-  }, []);
 
   const subjectOptions = useMemo<string[]>(() => {
     if (!bookClass) return [];

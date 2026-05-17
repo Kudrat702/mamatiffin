@@ -8,23 +8,9 @@ import LocationDropdown from './LocationDropdown';
 import AuthModal from './AuthModal';
 import { useAuth } from '../context/AuthContext';
 
-interface LocalUser {
-  id: string;
-  name: string;
-  phone: string;
-  address: {
-    district: string;
-    block: string;
-    city: string;
-    homeLodgeName: string;
-  };
-  role: string;
-}
-
 const Header: React.FC = () => {
-  const { user: authUser, logout: authLogout } = useAuth();
+  const { user, logout: authLogout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [user, setUser] = useState<LocalUser | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
   const [isBookDropdownOpen, setIsBookDropdownOpen] = useState<boolean>(false);
@@ -34,25 +20,10 @@ const Header: React.FC = () => {
   const mobileBookDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const loadUserData = (): void => {
-      if (authUser) {
-        setUser(authUser as LocalUser);
-      } else {
-        const savedUser = sessionStorage.getItem('user');
-        const savedToken = sessionStorage.getItem('token');
-        if (savedUser && savedToken) {
-          setUser(JSON.parse(savedUser));
-        } else {
-          setUser(null);
-        }
-      }
-    };
-    loadUserData();
-
     const handleTriggerLogin = (): void => setIsAuthModalOpen(true);
     window.addEventListener('triggerLogin', handleTriggerLogin);
     return () => window.removeEventListener('triggerLogin', handleTriggerLogin);
-  }, [authUser]);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
@@ -70,11 +41,7 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLoginSuccess = (user: LocalUser, token: string): void => {
-    setUser(user);
-    sessionStorage.setItem('user', JSON.stringify(user));
-    sessionStorage.setItem('token', token);
-    window.dispatchEvent(new CustomEvent('userAuthChanged'));
+  const handleLoginSuccess = (): void => {
     const redirectPath = sessionStorage.getItem('redirectAfterLogin');
     if (redirectPath) {
       sessionStorage.removeItem('redirectAfterLogin');
@@ -83,13 +50,8 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = (): void => {
-    setUser(null);
-    if (authLogout) authLogout();
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('redirectAfterLogin');
+    authLogout();
     setIsProfileDropdownOpen(false);
-    window.dispatchEvent(new CustomEvent('userAuthChanged'));
   };
 
   const toggleMobileMenu = (): void => setIsMobileMenuOpen((p) => !p);

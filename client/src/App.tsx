@@ -20,6 +20,7 @@ import Brand from './components/Brand';
 import MenuDetailsPage from './components/MenuDetailsPage';
 import PaymentPage from './components/Payment';
 import PaymentResult from './components/PaymentResult';
+import PaymentSuccessPage from './components/PaymentSuccessPage';
 import AdminOrders from './components/AdminOrder';
 import UsersList from "./components/UsersList";
 import MyOrders from './components/MyOrders';
@@ -34,6 +35,7 @@ import RefundCancellationPolicy from './components/footer/Refund';
 import ReturnPolicy from './components/footer/Return_Policy';
 import OurStory from './components/OurStory';
 import OurStoryPage from './components/OurStoryHeader';
+import InstallPromptBanner from './components/InstallPromptBanner';
 // import HeroText from './components/HeroText';
 
 // ✅ NEW: Book Buy/Sell System imports
@@ -105,6 +107,7 @@ const CustomerLayout: React.FC = () => {
           <Outlet />
         </main>
         <Footer />
+        <InstallPromptBanner />
       </div>
     </AuthProvider>
   );
@@ -174,6 +177,7 @@ const UserRoutes: React.FC = () => {
         <Route path="/non-veg-menu" element={<NonVegMenu />} />
         <Route path="/menu/:diet/:category" element={<MenuDetailsPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
         <Route path="/payment-result" element={<PaymentResult />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />

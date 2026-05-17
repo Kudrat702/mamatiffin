@@ -170,6 +170,12 @@ if (import.meta.env.DEV) {
 // // Start the application
 // startApp();
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
 // Normal React app start (without server wait)
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

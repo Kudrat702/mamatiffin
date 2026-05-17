@@ -18,6 +18,8 @@ import {
   Utensils
 } from 'lucide-react';
 import { apiEndpoints } from '../configapi/api';
+import { useAuth } from '../context/AuthContext';
+import { generateReceipt } from '../utils/generateReceipt';
 
 interface WeeklyMenu {
   [key: string]: string[] | undefined;
@@ -39,20 +41,6 @@ interface UserOrder {
   weeklyMenu?: WeeklyMenu;
 }
 
-interface UserAddress {
-  city: string;
-  district: string;
-  block: string;
-  homeLodgeName: string;
-}
-
-interface UserInfo {
-  name: string;
-  phone: string;
-  email?: string;
-  address?: UserAddress;
-}
-
 interface OrderStats {
   totalOrders: number;
   activeSubscriptions: number;
@@ -67,9 +55,9 @@ interface OrderResponse {
 }
 
 const UserDashboard: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<UserOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
   const [stats, setStats] = useState<OrderStats>({
     totalOrders: 0,
@@ -79,21 +67,13 @@ const UserDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    // Load user info from sessionStorage or localStorage
-    const savedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser) as UserInfo;
-        setUserInfo(user);
-        fetchUserOrders(user.phone);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
+    if (authLoading) return;
+    if (user) {
+      fetchUserOrders(user.phone);
     } else {
-      // No user found - redirect to login or show message
       setLoading(false);
     }
-  }, []);
+  }, [user, authLoading]);
 
   const fetchUserOrders = async (phone: string): Promise<void> => {
     try {
@@ -186,8 +166,8 @@ const UserDashboard: React.FC = () => {
   };
 
   const handleRefresh = (): void => {
-    if (userInfo) {
-      fetchUserOrders(userInfo.phone);
+    if (user) {
+      fetchUserOrders(user.phone);
     }
   };
 
@@ -203,7 +183,7 @@ const UserDashboard: React.FC = () => {
   }
 
   // Show login prompt if no user info
-  if (!userInfo) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md p-8">
@@ -239,7 +219,7 @@ const UserDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {userInfo.name}!
+                Welcome back, {user.name}!
               </h1>
               <p className="text-gray-600 mt-1">Manage your food subscriptions and orders</p>
             </div>
@@ -304,22 +284,22 @@ const UserDashboard: React.FC = () => {
               <User className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Name</p>
-                <p className="font-medium">{userInfo.name}</p>
+                <p className="font-medium">{user.name}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Phone className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Phone</p>
-                <p className="font-medium">{userInfo.phone}</p>
+                <p className="font-medium">{user.phone}</p>
               </div>
             </div>
-            {userInfo.address && (
+            {user.address && (
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-500">City</p>
-                  <p className="font-medium">{userInfo.address.city}</p>
+                  <p className="font-medium">{user.address.city}</p>
                 </div>
               </div>
             )}
@@ -454,7 +434,24 @@ const UserDashboard: React.FC = () => {
                         <span>View Details</span>
                       </button>
                       {order.paymentStatus === 'success' && (
-                        <button className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => generateReceipt({
+                            orderId: order._id,
+                            customerName: user?.name || '',
+                            customerPhone: user?.phone || '',
+                            menuTitle: order.menuTitle,
+                            menuCategory: order.menuCategory,
+                            dietaryPreference: order.dietaryPreference,
+                            subscriptionType: order.subscriptionType,
+                            totalAmount: order.totalAmount,
+                            paymentStatus: order.paymentStatus,
+                            orderDate: order.orderDate,
+                            startDate: order.startDate,
+                            endDate: order.endDate,
+                            deliveryTime: order.deliveryTime,
+                          })}
+                          className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                        >
                           <Download className="w-4 h-4" />
                           <span>Receipt</span>
                         </button>

@@ -13,22 +13,12 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
 import { apiEndpoints } from '../configapi/api';
-
-interface LocalUser {
-  id: string;
-  name: string;
-  phone: string;
-  address: {
-    district: string;
-    block: string;
-    city: string;
-    homeLodgeName: string;
-  };
-  role: string;
-}
+import { useAuth } from '../context/AuthContext';
+import { generateReceipt } from '../utils/generateReceipt';
 
 interface Order {
   _id: string;
@@ -88,31 +78,24 @@ const MyOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<LocalUser | null>(null);
+  const { user, token } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filter, setFilter] = useState<OrderFilter>('all');
 
   useEffect(() => {
-    // Load user data from session storage
-    const savedUser = sessionStorage.getItem('user');
-    const savedToken = sessionStorage.getItem('token');
-    
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      fetchOrders(JSON.parse(savedUser).phone, savedToken);
-    } else {
+    if (user && token) {
+      fetchOrders(user.phone, token);
+    } else if (!user) {
       setError('Please login to view your orders');
       setLoading(false);
     }
-  }, []);
+  }, [user, token]);
 
   const fetchOrders = async (customerPhone: string, token: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching orders for phone:', customerPhone);
-      
       const response = await fetch(apiEndpoints.customerOrders(customerPhone), {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -120,34 +103,25 @@ const MyOrders: React.FC = () => {
         },
       });
 
-      // Debug logging
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
       const textResponse = await response.text();
-      console.log('Raw response:', textResponse);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${textResponse}`);
       }
 
-      // Try to parse JSON
-      let data;
+      let data: { success: boolean; data: Order[]; message?: string };
       try {
         data = JSON.parse(textResponse);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
+      } catch {
         throw new Error('Invalid JSON response from server');
       }
 
       if (data.success) {
-        console.log('Orders fetched successfully:', data.data.length);
         setOrders(data.data || []);
       } else {
         setError(data.message || 'Failed to fetch orders');
       }
     } catch (err) {
-      console.error('Fetch orders error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch orders');
     } finally {
       setLoading(false);
@@ -266,7 +240,7 @@ const MyOrders: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Orders</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <button
-              onClick={() => user && fetchOrders(user.phone, sessionStorage.getItem('token') || '')}
+              onClick={() => user && token && fetchOrders(user.phone, token)}
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl transition-colors"
             >
               Retry
@@ -540,6 +514,35 @@ const MyOrders: React.FC = () => {
                       <p className="text-gray-900 dark:text-white">{selectedOrder.notes}</p>
                     </div>
                   </div>
+                )}
+
+                {selectedOrder.paymentStatus === 'success' && (
+                  <button
+                    onClick={() => generateReceipt({
+                      orderId: selectedOrder._id,
+                      customerName: selectedOrder.customerName,
+                      customerPhone: selectedOrder.customerPhone,
+                      customerEmail: selectedOrder.customerEmail,
+                      menuTitle: selectedOrder.menuTitle,
+                      menuCategory: selectedOrder.menuCategory,
+                      dietaryPreference: selectedOrder.dietaryPreference,
+                      subscriptionType: selectedOrder.subscriptionType,
+                      duration: selectedOrder.duration,
+                      totalAmount: selectedOrder.totalAmount,
+                      paymentStatus: selectedOrder.paymentStatus,
+                      paymentMethod: selectedOrder.paymentMethod,
+                      paymentId: selectedOrder.paymentId,
+                      orderDate: selectedOrder.orderDate,
+                      startDate: selectedOrder.startDate,
+                      endDate: selectedOrder.endDate,
+                      deliveryTime: selectedOrder.deliveryTime,
+                    })}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all active:scale-95"
+                    style={{ background: 'linear-gradient(135deg, rgb(50, 140, 129), rgb(34, 197, 94))' }}
+                  >
+                    <Download size={18} />
+                    Download Receipt (PDF)
+                  </button>
                 )}
               </div>
             </div>

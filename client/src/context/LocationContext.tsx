@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { apiEndpoints } from '../configapi/api';
+import { getCache, setCache, TTL } from '../utils/apiCache';
 
 // Types
 interface Location {
@@ -39,9 +40,18 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const loadLocations = async () => {
       try {
-        const response = await axios.get(apiEndpoints.locations);
-        const data = response.data as { data: Location[] };
-        const fetchedLocations: Location[] = data.data;
+        const CACHE_KEY = apiEndpoints.locations;
+        const cached = getCache<Location[]>(CACHE_KEY);
+
+        let fetchedLocations: Location[];
+        if (cached) {
+          fetchedLocations = cached;
+        } else {
+          const response = await axios.get(apiEndpoints.locations);
+          const data = response.data as { data: Location[] };
+          fetchedLocations = data.data;
+          setCache(CACHE_KEY, fetchedLocations, TTL.LOCATION);
+        }
         setLocations(fetchedLocations);
         setIsLoading(false);
 
